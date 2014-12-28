@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="398px" height="398px" viewBox="0 0 398 398" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <title>loading</title>
+    <defs/>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <path d="M60.2230537,340.226694 L123.867098,276.58265 C142.638121,294.764585 167.987485,306.195146 196,306.959138 L196,396.977833 C143.135401,396.19255 95.2904214,374.689538 60.2230537,340.226694 Z" id="segment-7" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+1.5s" repeatCount="indefinite"/>
+        </path>
+        <path d="M338.280406,339.730154 L274.639241,276.088988 C256.041179,294.339454 230.867662,305.912663 203.000006,306.927298 L203,396.9604 C255.720947,395.915684 303.388677,374.264674 338.280406,339.730154 Z" id="segment-6" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+1.25s" repeatCount="indefinite"/>
+        </path>
+        <path d="M335.233021,55.3172315 L271.552328,118.997925 C253.299612,102.434924 229.354569,92.0322468 203.000006,91.0727018 L203,1.03959955 C254.202024,2.05421691 300.63781,22.5048728 335.233021,55.3172315 Z" id="segment-3" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+0.5s" repeatCount="indefinite"/>
+        </path>
+        <path d="M63.2810918,54.8313443 L126.973573,118.523825 C145.391151,102.028811 169.504299,91.7634853 196,91.0408625 L196,1.02226574 C144.656232,1.78486145 98.0474243,22.0903931 63.2810918,54.8313443 Z" id="segment-2" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+0.25s" repeatCount="indefinite"/>
+        </path>
+        <path d="M1.00061789,199.5 L91.001052,199.5 C91.1267902,227.231841 101.704574,252.494783 118.997918,271.552334 L55.3172315,335.233021 C21.7587863,299.851185 1.13059524,252.084191 1.00061789,199.5 Z" id="segment-8" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+1.75s" repeatCount="indefinite"/>
+        </path>
+        <path d="M396.895322,192.499967 L306.80762,192.5 C305.22734,165.878882 294.004256,141.853157 276.582645,123.867103 L340.226694,60.2230537 C373.927353,94.5148667 395.235084,141.025359 396.895322,192.499967 Z" id="segment-4" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+0.75s" repeatCount="indefinite"/>
+        </path>
+        <path d="M396.999382,199.5 L306.998867,199.5 C306.874319,226.977506 296.488546,252.031191 279.476175,271.026428 L343.168656,334.718908 C376.440221,299.389137 396.870033,251.829931 396.999382,199.5 Z" id="segment-5" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="+1s" repeatCount="indefinite"/>
+        </path>
+        <path d="M1.10467829,192.499967 L91.1923798,192.5 C92.7875364,165.628276 104.207903,141.401039 121.911012,123.360759 L58.2698464,59.7195938 C24.2820392,94.0589553 2.77305541,140.773007 1.10467829,192.499967 Z" id="segment-1" fill="#777777" sketch:type="MSShapeGroup">
+            <animate attributeName="fill" values="#777777;#E0E0E0;#777777" calcMode="paced" dur="1.75s" begin="0s" repeatCount="indefinite"/>
+        </path>
+    </g>
+</svg>
