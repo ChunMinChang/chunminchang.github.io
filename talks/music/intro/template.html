@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Slide Topic</title>
+    <meta name="description" content="add some description">
+    <meta name="author" content="add your name here">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="stylesheet" href="../../reveal.js-master/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js-master/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js-master/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 
+	'../../reveal.js-master/css/print/pdf.css' : '../../reveal.js-master/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h1>時代的聲音</h1>
+	  <h3>搖滾樂與社會</h3>
+          <p><small>speaker - <a href="http://www.google.com">張鈞閔</a>
+              / <a href="www.google.com">@email</a></small></p>
+	</section>
+
+	<section>
+	  <h2>搖滾樂可能改變世界嗎?</h2>
+	  <p>
+	  </p>
+	</section>
+
+	<!-- Example of nested vertical slides -->
+        <section>
+
+          <section>
+	    <h2>Vertical Slides</h2>
+	    <p>Slides can be nested inside of each other.</p>
+	    <p>Use the <em>Space</em> key to navigate through all slides.</p>
+	    <br>
+	    <a href="#" class="navigate-down">
+	      <img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+	    </a>
+          </section>
+
+	  <section>
+	    <h2>Basement Level 1</h2>
+	    <p>Nested slides are useful for adding additional detail underneath a high level horizontal slide.</p>
+	  </section>
+	  <section>
+	    <h2>Basement Level 2</h2>
+	    <p>That's it, time to go back up.</p>
+	    <br>
+	    <a href="#/2">
+	      <img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+	    </a>
+          </section>
+
+	</section>
+
+        <section data-markdown>
+
+	  <script type="text/template">
+## Markdown support
+
+Write content using inline or external Markdown.
+Instructions and more info available in the [readme](https://github.com/hakimel/reveal.js#markdown).
+
+```
+int main(){
+  return 0;
+}
+```
+
+	  </script>
+	</section>
+
+      </div>
+    </div>
+
+    <script src="../../reveal.js-master/lib/js/head.min.js"></script>
+    <script src="../../reveal.js-master/js/reveal.js"></script>
+    <script>
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+	progress: true,
+        history: true,
+	center: true,
+	transition: 'slide', // none/fade/slide/convex/concave/zoom
+        // Optional reveal.js plugins
+        dependencies: [
+	  { src: '../../reveal.js-master/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+	  { src: '../../reveal.js-master/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+	  { src: '../../reveal.js-master/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+	  { src: '../../reveal.js-master/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+	  { src: '../../reveal.js-master/plugin/zoom-js/zoom.js', async: true },
+	  { src: '../../reveal.js-master/plugin/notes/notes.js', async: true }
+	]
+      });
+    </script>
+  </body>
+</html>

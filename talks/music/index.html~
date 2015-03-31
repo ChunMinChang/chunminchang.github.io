@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>時代的聲音</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="../slidedown-master/lib/solarized_dark.css" />
+    <link rel="stylesheet" type="text/css" href="../slidedown-master/slidedown.css" />
+    <script type="text/javascript" src="../slidedown-master/lib/hammer.js"></script>
+    <script type="text/javascript" src="../slidedown-master/slidedown.build.js"></script>
+
+    <style type="text/css">
+        #slides {
+            height: 100%;
+            background: rgba(0,0,0,1);
+            color: white;
+        }
+    </style>
+
+    <script>
+        function parseQuery(querystring) {
+            // remove any preceding url and split
+            querystring = querystring.substring(querystring.indexOf('?')+1).split('&');
+            var params = {}, pair, d = decodeURIComponent;
+            // march and parse
+            for (var i = querystring.length - 1; i >= 0; i--) {
+                pair = querystring[i].split('=');
+                params[d(pair[0])] = d(pair[1]);
+            }
+            console.log(params);
+            return params;
+        };
+        // console.log(document.location);
+        var mdSource = parseQuery(document.location.search).src || 'template.md';
+        console.log(mdSource);
+        Slidedown.fromXHR(mdSource).to('#slides');
+    </script>
+</head>
+
+<body>
+
+    <div id="slides"></div>
+
+    <script>
+        document.getElementById('github-ribbon').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+
+</html>
