@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36px" height="36px" viewBox="0 0 36 36" zoomAndPan="disable" preserveAspectRatio="none">
+    <style type="text/css"><![CDATA[ line { stroke: #39454B; stroke-width: 1; } ]]></style>
+	<circle cx="18" cy="18" r="11" stroke="#39454B" stroke-width="1" fill="rgba(0,0,0,0)"/>
+	<circle cx="18" cy="18" r="7" stroke="#39454B" stroke-width="1" fill="rgba(0,0,0,0)"/>
+	<line x1="15" y1="3" x2="18" y2="0" />
+	<line x1="21" y1="3" x2="18" y2="0" />
+	<line x1="18" y1="36" x2="18" y2="0" />
+	<line x1="3" y1="15" x2="0" y2="18" />
+	<line x1="3" y1="21" x2="0" y2="18" />
+	<line x1="0" y1="18" x2="36" y2="18" />
+</svg>
