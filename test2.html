@@ -15,7 +15,7 @@
 <body>
   <script type="text/javascript" charset="utf-8">
     function dumpEvt(evt) {
-      var str = "type: " + evt.type +
+      var str = "[test2] type: " + evt.type +
         "\nphase >> " + evt.phase +
         "\ntarget >> " + evt.target.nodeName +
         "\ncur target >> " + evt.currentTarget +
@@ -29,8 +29,7 @@
     // bubbling phase
     window.addEventListener("keydown", dumpEvt, false);
   </script>
-  Hello! <br />
+  Hello! I am test2<br />
   <input type="text" name="hello" id="in1" value="" />
-  <iframe mozbrowser="true" src="test2.html" frameborder="0"></iframe>
 </body>
 </html>
