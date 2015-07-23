@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head;
+  any other head content must come *after* these tags -->
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="">
+<title>Foo</title>
+</head>
+<body>
+  <script type="text/javascript" charset="utf-8">
+    function dumpEvt(evt) {
+      var str = "type: " + evt.type +
+        "\nphase >> " + evt.phase +
+        "\ntarget >> " + evt.target.nodeName +
+        "\ncur target >> " + evt.currentTarget +
+        "\nkey >> " + evt.key + "\n";
+      dump(str);
+      console.log(str);
+    }
+    // keydown
+    // capturing phase
+    window.addEventListener("keydown", dumpEvt, true);
+    // bubbling phase
+    window.addEventListener("keydown", dumpEvt, false);
+  </script>
+  Hello! <br />
+  <input type="text" name="hello" id="in1" value="" />
+  <iframe mozbrowser="true" src="http://github.com/" frameborder="0"></iframe>
+</body>
+</html>
