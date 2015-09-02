@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head;
+  any other head content must come *after* these tags -->
+<meta name="description" content="Encounter-based Cooperative Tracking">
+<meta name="author" content="Chun-Min Chang">
+<link rel="icon" href="http://getbootstrap.com/favicon.ico">
+<title>Encounter-based Cooperative Tracking</title>
+
+<!-- Boostrap
+================================================== -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="../../css/bootstrap-3.3.5.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="../../css/bootstrap-3.3.5-theme.min.css">
+<!-- Include jquery: This must be placed in front of bootstrap.min.js -->
+<!--
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+<!-- Latest compiled and minified JavaScript -->
+<!--
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+-->
+
+<!-- Custom CSS
+================================================== -->
+<link href="style.css" rel="stylesheet">
+
+<!-- Font-Awesome icon
+================================================== -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Math Jax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+<!-- Google analytics -->
+<script type="text/javascript" src="../../js/google-analytics.js"></script>
+</head>
+<!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+<!-- Navigation Bar
+================================================== -->
+<nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand page-scroll" href="#page-top">
+        <!-- Logo -->
+        <svg id="logo" height="40" width="40" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ><image x="" y="0" height="30" width="30"  xlink:href="../../images/works/ECT/ECT_icon.svg" /></svg>
+      </a>
+    </div>
+    <div>
+      <!--<ul class="nav navbar-nav">-->
+      <ul class="nav navbar-nav navbar-right">
+        <!-- <li class="active"><a href="#">Hi!</a></li> -->
+        <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+        <li class="hidden">
+            <!-- class "page-scroll" is used to show the page scrolling animation -->
+           <a class="page-scroll" href="#page-top">cover</a>
+        </li>
+        <li><a class="page-scroll" href="#whatitdoes">What It does</a></li>
+        <li><a class="page-scroll" href="#howitworks">How It Works</a></li>
+        <li><a class="page-scroll" href="#researchers">Researchers</a></li>
+        <li><a class="page-scroll" href="#livedemo">Live Demo</a></li>
+      </ul>
+    </div>
+  </div> <!-- /container-fluid -->
+</nav>
+
+<!-- Intro Section -->
+<section id="page-top" class="intro-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="title">Encounter-based Cooperative Tracking</h1>
+        <p class="subtitle">Location estimating without infrastructure.</p>
+        <!-- <a class="btn btn-default page-scroll" href="#about">Click Me to Scroll Down!</a> -->
+        <a href="#whatitdoes" class="btn btn-circle page-scroll">
+          <i class="fa fa-angle-double-down animated"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What It Does Section -->
+<section id="whatitdoes" class="whatitdoes-section">
+  <div class="container">
+    <h1 class="title">What It Does</h1>
+    <p class="subtitle">Location estimating without infrastructure.</p>
+    <div class="row">
+      <div class="col-lg-4">
+        <h3>Positioning</h3>
+        <div id="positioning" class="feature-icon"></div>
+        <p class="feature">No need for WiFi or GPS</p>
+      </div>
+      <div class="col-lg-4">
+        <h3>Trajectory tracking</h3>
+        <div id="trajectory" class="feature-icon"></div>
+        <p class="feature">Logging your moving path</p>
+      </div>
+      <div class="col-lg-4">
+        <h3>Motion analyzing</h3>
+        <div id="motion" class="feature-icon"></div>
+        <p class="feature">Analyzing distance and direction</p>
+      </div>
+    </div>
+    <p class="abstract">One of the fundamental features of the Internet of Things (IoT) is the
+    ability to track its user's location over time as a way to provide
+    service in the right context. While many localization and tracking
+    techniques using cameras and RF-based techniques have been proposed,
+    their ability is rather limited owing to the requirement of deploying
+    tracking infrastructure; moreover, they cannot operate when outside coverage area.
+    To overcome this limitation, we propose encounter-based cooperative
+    tracking for proximity-enabled wireless nodes. These nodes, carried
+    by the targets, can sense their trajectories (e.g., by inertial sensing) and
+    each other's proximity while roaming inside a mapped area,
+    without the need to access to localizing infrastructure such as beacons.
+    We model their locations over time on the map as particles
+    and apply particle filtering as the basis for tracking. Our
+    contribution is to augment the base technique with encounter
+    information to dramatically reduce the number of possible particles in
+    the model by spatial-temporal intersection.
+    Therefore, our technique is effective
+    even when there are more than one possible matches of the node's trajectories.</p>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="howitworks" class="howitworks-section">
+  <h1 class="title">How It Works</h1>
+  <p class="subtitle">Powered by beatiful math model</p>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        <div id="particle-filter-example"></div>
+      </div>
+      <div class="col-lg-8">
+        <!--
+        <i>State estimation</i> is nowadays a widely used class
+        in innumerable practical applications
+        including navigation and location tracking.
+        It aim to sequentially estimate the unobserved
+        time-varying states of a dynamic system.
+        Two key models used for estimating must be defined first.
+        At time $t$, based on prior knowledge about its physical phenomena,
+        <i>state model</i> $f$ can be describe as \( S_t = f_t(S_{t-1}, v_{t-1}) \).
+        $S_k$ and $v_k$ denote the <i>state</i> and <i>state noise</i> at time $k$.
+        On the other hand, <i>observation model</i> $h$,
+        \( Z_t = h_t(S_t, n_t) \), can use those observed data
+        during evolution of the system to correct the estimated states.
+        $Z_k$, $n_k$ denote the <i>observation</i> and <i>observation noise</i>
+        at time $k$ respectively. The <i>state</i> $S_t$ here
+        stands for <strong>location</strong> at time $t$.
+        Thus, $S_{1:t}$ is the <i>trajectory</i> of the target from time $1$ to $t$.
+        The goal is to estimate $S_t$, given all <i>observation</i>
+        $Z_{1:t}$ up to now. Alternatively, the <i>posterior distribution</i>
+        $P(S_{1:t}|Z_{1:t})$ is needed to be find out.
+        In this project, these values can be calculated
+        by <strong>partical filtering</strong>.
+        -->
+        <p class="map-particle-filter">To estimate the <strong>unobserved</strong> target's location over time with a map,
+        <i>particle filtering</i>(PF) plays the key part in this project.
+        There are two main models in PF. <i>State model</i> will calculate
+        the next location from previous location, movement data and its possible error.
+        <i>Observation model</i> will correct the estimated location
+        by the observed information.
+        If the math details are ignored, from the perspective of physical significance,
+        the basic steps are generally as the following:<br />
+        1)Spread all the particles on possible locations on the given map <br />
+        2)Calculate the target's movement vector $\vec{V}$ from sensor data <br />
+        3)Move particle along with a vector $\vec{V^\prime}$,
+          $\vec{V^\prime}$ is a combination of $\vec{V}$
+          and its possible error $\vec{e}$ <br />
+        4)If the particles cross the wall on the map, then they will be eliminated<br />
+        5)The target's location will be concluded by the surviving particles
+        (Repeat to (2) if receving new data) </p>
+        <a target="_blank" href="particle-filter-intro.pdf" class="btn btn-default page-scroll" role="button">Read more about particle filter</a>
+        <a href="#livedemo" class="btn btn-info page-scroll" role="button">Live Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Researchers Section -->
+<section id="researchers" class="researchers-section">
+  <h1 class="title">Researchers</h1>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <img id="chunmin" class="headshot" src="http://www.gravatar.com/avatar/8092c68fbfa26b5e17e2265e612bd1c3?s=200"/>
+        <h1>Chun-Min Chang</h1>
+        Had B.S. and M.S. degree in Computer Science.
+        He is now exploring the new possibilities on Internet-of-Things
+        and focusing on the development of new applications.
+      </div>
+      <div class="col-lg-6">
+        <img id="pai" class="headshot" src="http://www.gravatar.com/avatar/e4ebbe16b6f7fe25b5126342c55cd31f?s=200"/>
+        <h1>Pai.H.Chou</h1>
+        Professor in EECS dept.at University of California, Irvine
+        and CS dept. at National Tsing-Hua University.
+        Pai specializes in embedded systems hardware, software
+        and wireless sensor network.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Talks Section -->
+<section id="livedemo" class="livedemo-section">
+  <h1 class="title">Live Demo</h1>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        It will be released after paper is published.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bootsrap Core Javascript
+================================================== -->
+<!-- Placed at the end of document so the page will be loaded faster-->
+<!-- Include jquery: This must be placed in front of bootstrap.min.js -->
+<script src="../../js/jquery-1.11.3.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="../../js/bootstrap-3.3.5.min.js"></script>
+
+<!-- Scrolling Nav JavaScript
+================================================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+<script src="../../js/scrolling-nav.js"></script>
+</body>
+</html>

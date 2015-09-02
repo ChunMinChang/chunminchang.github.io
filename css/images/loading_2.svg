@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg height="100" width="100" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
-  <desc>Created by awef.</desc>
-  <path d="M20 50 a30 30 0 0 0 30 30" fill="none" stroke-linecap="round" stroke-width="10" stroke="#333">
-    <animateTransform attributeName="transform" dur="1500ms" repeatCount="indefinite" type="rotate" values="0 50 50;360 50 50"/>
-  </path>
-</svg>
