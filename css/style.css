@@ -28,7 +28,7 @@ html {
   padding-top: 30vh;
   text-align: center;
   /*background: #bbb;*/
-  background: url('../images/overlay.png'), url('../images/blur120_mini.jpg');
+  background: url('../images/overlay.png'), url('../images/chunmin/blur120_mini_tiny.jpg');
   background-size: 256px 256px, contain;
 	background-attachment: fixed, fixed;
 	background-position: top left, center;
@@ -97,7 +97,7 @@ img.headshot{
   background-size: contain;
   margin: 0;
   padding: 0;
-  background-image: url("../images/me_mini.jpg");
+  background-image: url("../images/chunmin/me_mini_tiny.jpg");
 }
 
 /*img.myPhoto {

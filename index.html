@@ -14,11 +14,27 @@
 
 <!-- Dev Note
 ==================================================
-Unable to load Prezi embedded iframe because flash in popup has been default-blocked
-by Google Chrome, Safari, .. after 9/1.
-To make sure the flash will be displayed, it should be put into the first layer
-web page instead of a pop-up window.
+
+Pictures loading
+===================
+By JPEGmini and TinyJPG, the images can be compressed to load faster!
+1) XXX_mini.jpg: optimized by http://www.jpegmini.com/main/shrink_photo
+2) XXX_tiny.jpg: optimized by https://tinyjpg.com/
+3) XXX_mini_tiny.jpg: do 1 then 2
+
+Prezi
+===================
+Unable to load Prezi embedded iframe in popup div
+because flash in popup has been default-blocked
+by Google Chrome after 9/1.
+(To make sure the flash will be displayed,
+it should be put into the first layer
+web page instead of a pop-up window.)
 Thus, the bootstrap-modal-div to popup the Works are commented.
+Instead of displaying a pop-up to show prezi,
+the prezi-link will be automatically opened
+upon the read-more button is clicked.
+
 -->
 
 
@@ -150,7 +166,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- ECT -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#ECT" class="image featured"><img src="images/works/ECT/ECT_oxford_circus.png" alt="" /></a> -->
-          <a target="_blank" href="works/ECT/" class="image featured"><img src="images/works/ECT/ECT_oxford_circus.png" alt="" /></a>
+          <a target="_blank" href="works/ECT/" class="image featured"><img src="images/works/ECT/ECT_oxford_circus_tiny.jpg" alt="" /></a>
           <h2>Encounter-based Cooperative Tracking</h2>
           <p>August 13, 2014</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#ECT">Read more</button> -->
@@ -160,7 +176,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- ecoTag -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#ecoTag" class="image featured"><img src="images/works/ecoTag/ecoTag.jpg" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/512_h5gv7_sy/ecotag/" class="image featured"><img src="images/works/ecoTag/ecoTag.jpg" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/512_h5gv7_sy/ecotag/" class="image featured"><img src="images/works/ecoTag/ecoTag_mini_tiny.jpg" alt="" /></a>
           <h2>ecoTag: Never lose things again</h2>
           <p>January, 2014</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#ecoTag">Read more</button> -->
@@ -170,7 +186,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- BLE Light Control -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#bleLightControl" class="image featured"><img src="images/works/ble-light-control/LightControl.jpg" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/qqa0hm96eh2a/light-control-via-bluetooth-40/" class="image featured"><img src="images/works/ble-light-control/LightControl.jpg" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/qqa0hm96eh2a/light-control-via-bluetooth-40/" class="image featured"><img src="images/works/ble-light-control/LightControl_mini_tiny.jpg" alt="" /></a>
           <h2>Bluetooth4.0 Light Control Hardware Module and App</h2>
           <p>September, 2013</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#bleLightControl">Read more</button> -->
@@ -180,7 +196,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- Smart Logistic Container -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#smartLogisticContainer" class="image featured"><img src="images/works/ble-temperature-moniter/TemperatureReader.jpg" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/r6kmbn85bau0/smart-logistic-container/" class="image featured"><img src="images/works/ble-temperature-moniter/TemperatureReader.jpg" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/r6kmbn85bau0/smart-logistic-container/" class="image featured"><img src="images/works/ble-temperature-moniter/TemperatureReader_tiny.jpg" alt="" /></a>
           <h2>Smart Logistic Container</h2>
           <p>September, 2013</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#smartLogisticContainer">Read more</button> -->
@@ -190,7 +206,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- Meetoo -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#meetoo" class="image featured"><img src="images/works/meetoo/Meetoo.png" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/qaaomv9m8of9/meetoo/" class="image featured"><img src="images/works/meetoo/Meetoo.png" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/qaaomv9m8of9/meetoo/" class="image featured"><img src="images/works/meetoo/Meetoo_mini_tiny.jpg" alt="" /></a>
           <h2>Meetoo: Blind Date for Quick Matching</h2>
           <p>September, 2013</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#meetoo">Read more</button> -->
@@ -200,7 +216,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- CoursePointer -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#coursePointer" class="image featured"><img src="images/works/coursePointer/CoursePointer_News.jpg" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/octlzwy5qd48/coursepointer/" class="image featured"><img src="images/works/coursePointer/CoursePointer_News.jpg" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/octlzwy5qd48/coursepointer/" class="image featured"><img src="images/works/coursePointer/CoursePointer_News_mini_tiny.jpg" alt="" /></a>
           <h2>CoursePinter: Pointer for course selection</h2>
           <p>May, 2013</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#coursePointer">Read more</button> -->
@@ -210,7 +226,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- NTHU Matchmaker -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#nthuMatchmaker" class="image featured"><img src="images/works/matchmaker/Matchmaker.jpg" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/aaddacccl2sp/matchmaker/" class="image featured"><img src="images/works/matchmaker/Matchmaker.jpg" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/aaddacccl2sp/matchmaker/" class="image featured"><img src="images/works/matchmaker/Matchmaker_mini_tiny.jpg" alt="" /></a>
           <h2>Matchmaker - Confess your love: impossible to be rejected</h2>
           <p>March, 2013</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#nthuMatchmaker">Read more</button> -->
@@ -220,7 +236,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- Motorcycle Assistant -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#motorcycleAssistant" class="image featured"><img src="images/works/DrivingAssistant/DrivingAssistant_UI.png" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/s3rszmlmee9d/driving-assistant/" class="image featured"><img src="images/works/DrivingAssistant/DrivingAssistant_UI.png" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/s3rszmlmee9d/driving-assistant/" class="image featured"><img src="images/works/DrivingAssistant/DrivingAssistant_UI_tiny.jpg" alt="" /></a>
           <h2>Motorcycle Assistant: Always Ride Safely</h2>
           <p>January, 2013</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#motorcycleAssistant">Read more</button> -->
@@ -230,7 +246,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         <!-- WordTrends -->
         <div class="item">
           <!-- <a data-toggle="modal" href="#wordTrends" class="image featured"><img src="images/works/wordTrends/trend_report.png" alt="" /></a> -->
-          <a target="_blank" href="https://prezi.com/incqq2zvs0yk/is-your-word-out-of-fashion/" class="image featured"><img src="images/works/wordTrends/trend_report.png" alt="" /></a>
+          <a target="_blank" href="https://prezi.com/incqq2zvs0yk/is-your-word-out-of-fashion/" class="image featured"><img src="images/works/wordTrends/trend_report_mini_tiny.jpg" alt="" /></a>
           <h2>WordTrends: Is your word out of fashion?</h2>
           <p>June, 2012</p>
           <!-- <button type="button" class="btn btn-info" data-toggle="modal" data-target="#wordTrends">Read more</button> -->
@@ -239,7 +255,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
 
         <!-- ThirdEye -->
         <div class="item">
-          <a data-toggle="modal" href="#thirdEye" class="image featured"><img src="images/works/ThirdEye/ThirdEye.jpg" alt="" /></a>
+          <a data-toggle="modal" href="#thirdEye" class="image featured"><img src="images/works/ThirdEye/ThirdEye_mini_tiny.jpg" alt="" /></a>
           <h2>ThirdEye: WiFi webcam car</h2>
           <p>September, 2011</p>
           <button type="button" class="btn btn-info" data-toggle="modal" data-target="#thirdEye">Read more</button>
@@ -478,7 +494,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
 
         <div class="item">
           <a target="_blank" href="https://developer.mozilla.org/en-US/Firefox_OS/Platform/Keyboard_events_in_Firefox_OS_TV"
-            class="image featured"><img src="https://mozorg.cdn.mozilla.net/media/img/firefox/os/devices/tv/screen2.ec03ac45bd01.jpg" alt="" /></a>
+            class="image featured"><img src="images/articles/fxos_tv_mini_tiny.jpg" alt="" /></a>
           <h2>Implementation: Keyboard events in Firefox OS TV</h2>
           <p>2015-08-24, Mozilla Developer Network</p>
           <a target="_blank" href="https://developer.mozilla.org/en-US/Firefox_OS/Platform/Keyboard_events_in_Firefox_OS_TV"
@@ -486,7 +502,8 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         </div>
 
         <div class="item">
-          <a target="_blank" href="https://hacks.mozilla.org/2015/07/keyboard-events-in-firefox-os-tv" class="image featured"><img src="http://ffp4g1ylyit3jdyti1hqcvtb-wpengine.netdna-ssl.com/ux/files/2015/04/Picture6-600x337.jpg" alt="" /></a>
+          <a target="_blank" href="https://hacks.mozilla.org/2015/07/keyboard-events-in-firefox-os-tv"
+          class="image featured"><img src="images/articles/fxos_tv_2_mini_tiny.jpg" alt="" /></a>
           <h2>Introduction: Keyboard events in Firefox OS TV</h2>
           <p>2015-07-28, Mozilla Hacks</p>
           <a target="_blank" href="https://hacks.mozilla.org/2015/07/keyboard-events-in-firefox-os-tv"
@@ -494,7 +511,8 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
         </div>
 
         <div class="item">
-          <a target="_blank" href="http://tech.mozilla.com.tw/posts/6218/%E6%B7%BA%E8%AB%87-w3c-sensor-api%E7%9A%84%E7%99%BC%E5%B1%95" class="image featured"><img src="http://buzzap.net/images/2014/12/23/fx0/P1150276.jpg" alt="" /></a>
+          <a target="_blank" href="http://tech.mozilla.com.tw/posts/6218/%E6%B7%BA%E8%AB%87-w3c-sensor-api%E7%9A%84%E7%99%BC%E5%B1%95"
+          class="image featured"><img src="images/articles/fx0_tiny.jpg" alt="" /></a>
           <h2>淺談 W3C Sensor API的發展</h2>
           <p>2015-07-06, Mozilla Tech Blog</p>
           <a target="_blank" href="http://tech.mozilla.com.tw/posts/6218/%E6%B7%BA%E8%AB%87-w3c-sensor-api%E7%9A%84%E7%99%BC%E5%B1%95"
@@ -579,7 +597,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
 
         <div class="item">
           <a target="_blank" href="http://www.cw.com.tw/article/article.action?id=5054163"
-            class="image featured"><img src="images/works/matchmaker/Matchmaker.jpg" alt="" /></a>
+            class="image featured"><img src="images/works/matchmaker/Matchmaker_mini_tiny.jpg" alt="" /></a>
           <h2>清大月老網 找真愛成功率6%</h2>
           <p>2013-11-27, 天下雜誌-教育特刊</p>
           <a target="_blank" href="http://www.cw.com.tw/article/article.action?id=5054163"
@@ -588,7 +606,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
 
         <div class="item">
           <a target="_blank" href="https://goo.gl/GyI0qB"
-            class="image featured"><img src="images/works/coursePointer/CoursePointer_News.jpg" alt="" /></a>
+            class="image featured"><img src="images/works/coursePointer/CoursePointer_News_mini_tiny.jpg" alt="" /></a>
           <h2>清大生發明蹺課救星，臉書自動提醒</h2>
           <p>2013-05-12, 聯合報</p>
           <a target="_blank" href="https://goo.gl/GyI0qB"
@@ -597,7 +615,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
 
         <div class="item">
           <a target="_blank" href="https://www.youtube.com/watch?v=TDNXdYc38yU"
-            class="image featured"><img src="images/works/coursePointer/CoursePointer_CTV.png" alt="" /></a>
+            class="image featured"><img src="images/works/coursePointer/CoursePointer_CTV_tiny.jpg" alt="" /></a>
           <h2>教授要點名了！清大生發明蹺課警示FB</h2>
           <p>2013-05-12, 中視</p>
           <a target="_blank" href="https://www.youtube.com/watch?v=TDNXdYc38yU"
@@ -606,7 +624,7 @@ Thus, the bootstrap-modal-div to popup the Works are commented.
 
         <div class="item">
           <a target="_blank" href="http://www.uonline.nccu.edu.tw/index_content.asp?sn=0&an=15756"
-            class="image featured"><img src="images/works/matchmaker/Matchmaker_Uonline.png" alt="" /></a>
+            class="image featured"><img src="images/works/matchmaker/Matchmaker_Uonline_tiny.jpg" alt="" /></a>
           <h2>清大MARS LAB 自學開發新程式</h2>
           <p>2013-05-02, 大學報</p>
           <a target="_blank" href="http://www.uonline.nccu.edu.tw/index_content.asp?sn=0&an=15756"
