@@ -27,7 +27,7 @@ html {
   height:auto;
   padding-top: 150px;
   text-align: center;
-  background: url('../../images/overlay.png'), url('../../images/works/ECT/ECT.png');
+  background: url('../../images/overlay.png'), url('../../images/works/ECT/ECT_mini_tiny.jpg');
   background-size: 256px 256px, cover;
 	background-attachment: fixed, fixed;
 	background-position: top left, center;
@@ -114,11 +114,11 @@ html {
 }
 
 #positioning{
-  background-image: url("../../images/works/ECT/geo-location.png");
+  background-image: url("../../images/works/ECT/geo-location_tiny.png");
 }
 
 #trajectory{
-  background-image: url("../../images/works/ECT/lightblue-path.png");
+  background-image: url("../../images/works/ECT/lightblue-path_tiny.png");
 }
 
 #motion{
@@ -179,7 +179,7 @@ html {
   background-size: contain;
   margin: 0;
   padding: 0;
-  background-image: url("../../images/works/ECT/particle-filter-example.png");
+  background-image: url("../../images/works/ECT/particle-filter-example_tiny.png");
 }
 
 
