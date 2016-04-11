@@ -10,15 +10,9 @@
 
     var presentBtn = document.getElementById("presentBtn");
     presentBtn.onclick = function () {
-    // Start new presentation.
-    request.start()
-      // The connection to the presentation will be passed to setConnection on
-      // success.
-      .then(function(){
-        console.log('Hello world!\n');
-      });
-      // Otherwise, the user canceled the selection dialog or no screens were
-      // found.
+      console.log('Go!');
+      // Start new presentation.
+      request.start()
     };
   </script>
 </body>
