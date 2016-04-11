@@ -1,0 +1,25 @@
+<html>
+<head>
+  <title>Presentation API test</title>
+</head>
+<body>
+  <button id="presentBtn">Present</button>
+  <script>
+    var presUrl = "http://mozilla.org";
+    var request = new PresentationRequest(presUrl);
+
+    var presentBtn = document.getElementById("presentBtn");
+    presentBtn.onclick = function () {
+    // Start new presentation.
+    request.start()
+      // The connection to the presentation will be passed to setConnection on
+      // success.
+      .then(function(){
+        console.log('Hello world!\n');
+      });
+      // Otherwise, the user canceled the selection dialog or no screens were
+      // found.
+    };
+  </script>
+</body>
+</html>
