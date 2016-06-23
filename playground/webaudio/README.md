@@ -1,8 +1,11 @@
 # Run on local computer
-This file can't be open on
+
+To load our sound samples from ```sounds``` folder via ```XMLHttpRequest```,
+we can't use _file protocol_ ```file://``` such as
 ```
 file:///Users/YOUR_NAME/path/to/decode-and-play-sound/decode.html
 ```
+to open our demo page.
 
 Cross origin requests are only supported for protocol schemes:
 http, data, chrome, chrome-extension, https, chrome-extension-resource.
@@ -13,8 +16,7 @@ Run
 ```
 $ python -m SimpleHTTPServer
 ```
-
 and then open the following URL on your browser.
 ```
-http://localhost:8000/path/to/decode.html
+http://localhost:8000/path/to/your/deme_page.html
 ```
