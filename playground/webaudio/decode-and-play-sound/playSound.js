@@ -32,11 +32,15 @@
     stopButton.onclick = stop;
     loop.onclick = setLoop;
 
+    function reserButtonState() {
+      // Make play button clickable
+      playButton.disabled = false;
+      // Make stop button unclickable
+      stopButton.disabled = true;;
+    }
+
     function onEnded(aEvent) {
-      // Set play button clickable
-      playButton.removeAttribute('disabled');
-      // Set stop button unclickable
-      stopButton.setAttribute('disabled', 'disabled');
+      reserButtonState();
     }
 
     function play(aEvent) {
@@ -66,10 +70,8 @@
       }
       // Stop playing the sound now
       source.stop(0);
-      // Make play button clickable
-      playButton.disabled = false;
-      // Make stop button unclickable
-      stopButton.disabled = true;;
+
+      reserButtonState();
     }
 
     function setLoop(aEvent) {
