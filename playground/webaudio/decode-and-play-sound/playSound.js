@@ -119,6 +119,10 @@
         });
       }
 
+      request.onerror = function() {
+        aReject('BufferLoader: XHR error');
+      }
+
       // Send the XMLHttpRequest request
       request.send();
     });
