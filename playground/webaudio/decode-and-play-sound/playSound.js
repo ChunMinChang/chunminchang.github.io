@@ -43,7 +43,7 @@
 
     function play(aEvent) {
       let soundUrl = '../sounds/acoustic-guitar-strummy2.mp3';
-      loadingSound(soundUrl)
+      loadSound(soundUrl)
       .then(setAudioSource)
       .then(function() {
         // Set ended callback that will be fired upon sound finishes playing
@@ -90,7 +90,7 @@
 
   // Media formats for the browsers:
   // https://developer.mozilla.org/en-US/docs/Web/HTML/Supported_media_formats#Browser_compatibility
-  function loadingSound(aUrl) {
+  function loadSound(aUrl) {
     return new Promise(function(aResolve, aReject) {
       // If there is no Audio Context yet, do nothing!
       if (!audioContext) {
