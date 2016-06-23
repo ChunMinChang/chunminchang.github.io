@@ -146,7 +146,6 @@
   function BufferLoader(aUrlList) {
     this.urlList = aUrlList;
     this.bufferList = new Array();
-    this.loadCount = 0;
   }
 
   BufferLoader.prototype.load = function() {
@@ -202,7 +201,7 @@
       // Decode asynchronously
       audioContext.decodeAudioData(audioData, function onDecoded(aBuffer) {
         self.bufferList[aIndex] = aBuffer;
-        if (++self.loadCount == self.urlList.length) {
+        if (self.bufferList.length == self.urlList.length) {
           self.onLoaded();
         }
       }, function onError(aError) {
