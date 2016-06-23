@@ -32,7 +32,7 @@
     stopButton.onclick = stop;
     loop.onclick = setLoop;
 
-    function reserButtonState() {
+    function resetButtonState() {
       // Make play button clickable
       playButton.disabled = false;
       // Make stop button unclickable
@@ -40,7 +40,7 @@
     }
 
     function onEnded(aEvent) {
-      reserButtonState();
+      resetButtonState();
     }
 
     function play(aEvent) {
@@ -71,7 +71,7 @@
       // Stop playing the sound now
       source.stop(0);
 
-      reserButtonState();
+      resetButtonState();
     }
 
     function setLoop(aEvent) {
