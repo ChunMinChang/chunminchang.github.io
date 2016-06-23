@@ -37,8 +37,6 @@
       playButton.removeAttribute('disabled');
       // Set stop button unclickable
       stopButton.setAttribute('disabled', 'disabled');
-      // Disable loop checkbox
-      loop.disabled = true;
     }
 
     function play(aEvent) {
@@ -58,8 +56,6 @@
         playButton.disabled = true;
         // Make stop button clickable
         stopButton.disabled = false;
-        // Make loop checkbox uncheckable
-        loop.disabled = false;
       });
     }
 
@@ -74,8 +70,6 @@
       playButton.disabled = false;
       // Make stop button unclickable
       stopButton.disabled = true;;
-      // Make loop checkbox checkable
-      loop.disabled = false;
     }
 
     function setLoop(aEvent) {
