@@ -1,0 +1,26 @@
+<html>
+<head>
+  <title>Presentation API</title>
+</head>
+<body>
+  <button id="presentBtn">Present</button>
+  <script>
+    let presUrl = "https://www.mozilla.org";
+    let request = new PresentationRequest(presUrl);
+    let presentBtn = document.getElementById("presentBtn");
+    presentBtn.onclick = function () {
+      // Start new presentation.
+      request.start().then(function(aSession) {
+        console.log('id:' + aSession.id);
+        console.log('state: ' + aSession.state);
+        console.log(aSession);
+      });
+    };
+    // request.start().then(function(aSession) {
+    //   console.log('id:' + aSession.id);
+    //   console.log('state: ' + aSession.state);
+    //   console.log(aSession);
+    // });
+  </script>
+</body>
+</html>
