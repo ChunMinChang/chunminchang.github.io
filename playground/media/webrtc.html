@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>gUM Test Page</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" charset="utf-8">
+  <link href='https://fonts.googleapis.com/css?family=Gentium+Basic:400,700' rel='stylesheet' type='text/css'>
+  <style>
+    #main {
+      display: block;
+      margin: 0px auto;
+      text-align: center
+    }
+    #content {
+      display: inline-block;
+    }
+    #frames {
+      display: inline-block;
+      max-width: 180px;
+      vertical-align: top;
+    }
+    #startbuttons {
+      display: block;
+    }
+    #stopbuttons {
+      display: none;
+    }
+    #message {
+      font-size: 24px;
+      font-family: "Gentium Basic", serif;
+    }
+    h1 {
+      font-size: 40px;
+      font-family: "Gentium Basic", serif;
+    }
+    input {
+      font-size: 28px;
+      font-family: "Gentium Basic", serif;
+    }
+    p {
+      color: green;
+    }
+    p.error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="main">
+    <h2><b>getUserMedia Test Page</b></h2>
+    <p><a href="https://mozilla.github.io/webrtc-landing">Main webrtc demo page</a></p>
+    <div id="startbuttons">
+      <input value="Video" onclick="startVideo();" type="button">
+      <input value="Background Video" onclick="backgroundStartVideo();" type="button">
+      <input value="Audio" onclick="startAudio();" type="button">
+      <input value="Audio &amp; Video" onclick="startAudioVideo();" type="button">
+      <input value="Picture" onclick="startPicture();" type="button">
+      <input value="Screen" onclick="startScreen();" type="button">
+      <input value="Window" onclick="startWindow();" type="button">
+      <input value="Application" onclick="startApplication();" type="button">
+    </div>
+    <div id="images">
+       <div id="content"></div>
+       <div id="frames"></div>
+    </div>
+    <div id="message"></div>
+    <div style="display: none;" id="stopbuttons">
+      <input value="Stop" onclick="stopMedia();" type="button">
+      <input value="Pause/Play" onclick="pauseMedia();" type="button">
+      <input id="snapshot" value="Snapshot" onclick="startSnapshot();" type="button">
+    </div>
+  </div>
+
+  <script type="application/javascript">
+  var video_status = false;
+  var video = document.createElement("video");
+  video.setAttribute("width", 640);
+  video.setAttribute("height", 480);
+
+  var snapshots = [];
+
+  var audio_status = false;
+  var audio = document.createElement("audio");
+  audio.setAttribute("controls", true);
+
+  var picture_status = false;
+  var picture = document.createElement("img");
+
+  var start = document.getElementById("startbuttons");
+  var stop = document.getElementById("stopbuttons");
+
+  var message = document.getElementById("message");
+  var content = document.getElementById("content");
+  var frames = document.getElementById("frames");
+  var snapshot = document.getElementById("snapshot");
+
+  var saved_stream = null;
+  var capturing = false;
+
+  function startVideo() {
+    video_status = true;
+    startMedia({video:true});
+  }
+
+  function backgroundStartVideo() {
+    setTimeout(startVideo, 3000);
+  }
+
+  function startScreen() {
+    video_status = true;
+    mediaConstraints = {
+      video: {
+        mediaSource: "screen"
+      },
+    };
+    message.innerHTML = "<p>Note: enable media.getusermedia.screensharing.enabled in about:config</p>";
+    startMedia(mediaConstraints);
+  }
+
+  function startWindow() {
+    video_status = true;
+    mediaConstraints = {
+      video: {
+        mediaSource: "window"
+      }
+    };
+    message.innerHTML = "<p>Note: enable media.getusermedia.screensharing.enabled in about:config</p>";
+    startMedia(mediaConstraints);
+  }
+
+  function startApplication() {
+    video_status = true;
+    mediaConstraints = {
+      video: {
+        mediaSource: "application"
+      }
+    };
+    message.innerHTML = "<p>Note: enable media.getusermedia.screensharing.enabled in about:config</p>";
+    startMedia(mediaConstraints);
+  }
+
+  function startAudioVideo() {
+    video_status = true;
+    audio_status = true;
+    startMedia({video:true, audio:true});
+  }
+
+  function startAudio() {
+    audio_status = true;
+    startMedia({audio:true});
+  }
+
+  function startPicture() {
+    picture_status = true;
+    startMedia({picture:true});
+  }
+
+  function stopMedia() {
+    if (video_status) {
+      if (video.srcObject) {
+        video.srcObject.stop();
+      }
+      video.srcObject.stop();
+      video.srcObject = null;
+      content.removeChild(video);
+      stopbuttons.removeChild(snapshot);
+      snapshot.value = "Snapshot";
+      frames.innerHTML = '';
+      capturing = false;
+      video_status = false;
+    } else if (audio_status) {
+      if (audio.srcObject) {
+        audio.srcObject.stop();
+      }
+      audio.srcObject = null;
+      content.removeChild(audio);
+      audio_status = false;
+    } else if (picture_status) {
+      picture.srcObject = null;
+      content.removeChild(picture);
+      picture_status = false;
+    }
+    saved_stream = null;
+    stop.style.display = "none";
+    start.style.display = "block";
+  }
+
+  function pauseMedia() {
+    if (saved_stream) {
+      if (video_status) {
+        video.srcObject = saved_stream;
+        video.play();
+      } else if (audio_status) {
+        audio.srcObject = saved_stream;
+        audio.play();
+      }
+      saved_stream = null;
+    } else {
+      if (video_status) {
+        video.pause();
+        saved_stream = video.srcObject;
+        video.srcObject = null;
+      } else if (audio_status) {
+        audio.pause();
+        saved_stream = audio.srcObject;
+        audio.srcObject = null;
+      }
+    }
+  }
+
+  function getusermedia_error(err, params) {
+    if (params.video && params.video.mediaSource) {
+      if (location.protocol != "https:") {
+        message.innerHTML = "<p class='error'>" + err + "</p>" +
+          "<p>Screen/window sharing now requires the site be loaded from an https: URL</p>" +
+          "<p>Reloading on https: in 10 seconds</p>";
+        setTimeout(function() {
+            window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+          }, 10000);
+      } else {
+        message.innerHTML = "<p class='error'>" + err + "</p>" +
+          "<p>In <a href=\"about:config\">about:config</a>, please enable media.getusermedia.screensharing.enabled<br> and add this" +
+          " site's domain name to media.getusermedia.screensharing.allowed_domains in about:config</p>";
+      }
+    } else {
+        message.innerHTML = "<p class='error'>" + err + "</p>";
+    }
+    stopMedia();
+  }
+
+  function startMedia(param) {
+    stop.style.display = "block";
+    start.style.display = "none";
+    var p = navigator.mediaDevices.getUserMedia(param)
+      .then(function(stream) {
+        message.innerHTML = "<p>Success!</p>";
+        if (video_status) {
+          content.appendChild(video);
+          video.srcObject = stream;
+          video.muted = true;
+          video.play();
+          frames.innerHTML = '';
+          stopbuttons.appendChild(snapshot);
+        } else if (audio_status) {
+          content.appendChild(audio);
+          audio.srcObject = stream;
+          audio.play();
+        } else if (picture_status) {
+          content.appendChild(picture);
+          picture.src = window.URL.createObjectURL(stream);
+          picture.onload = function(e) {
+            window.URL.revokeObjectURL(this.src);
+          }
+        }
+      })
+    .catch(function (err) { getusermedia_error(err, param); });
+  }
+
+  function startSnapshot() {
+    capturing = !capturing;
+    if (capturing) {
+      captureImage();
+      snapshot.value = "Stop Snapshot";
+    } else {
+      snapshot.value = "Snapshot";
+    }
+  }
+
+  function captureImage() {
+    if (video_status && capturing) {
+      //dump("Capturing len " + snapshots.length + "\n");
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+
+      canvas.width  = video.videoWidth/4;
+      canvas.height = video.videoHeight/4;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      if (snapshots.unshift(canvas) > 4)
+        snapshots.length = 4;
+      frames.innerHTML = '';
+      for(var i=0; i<snapshots.length; i++) {
+        frames.appendChild(snapshots[i]);
+      }
+
+      setTimeout(captureImage, 2000);
+    }
+  }
+</script>
+
+</body>
+</html>

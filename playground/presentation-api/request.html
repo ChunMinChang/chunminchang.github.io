@@ -21,6 +21,18 @@
     //   console.log('state: ' + aSession.state);
     //   console.log(aSession);
     // });
+
+    function backgroundRequest() {
+      setTimeout(function() {
+        request.start().then(function(aSession) {
+          console.log('id:' + aSession.id);
+          console.log('state: ' + aSession.state);
+          console.log(aSession);
+        });
+      }, 2000);
+    }
+
+    backgroundRequest();
   </script>
 </body>
 </html>
