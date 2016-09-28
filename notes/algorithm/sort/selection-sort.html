@@ -1,0 +1,191 @@
+<html>
+<head>
+<title>Selection Sort</title>
+<!-- gist-embed:
+     https://github.com/blairvanderhoof/gist-embed
+     http://blairvanderhoof.com/gist-embed/
+================================================== -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gist-embed/2.4/gist-embed.min.js"></script>
+
+<!-- Math Jax
+================================================== -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  </script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<h1>Selection Sort</h1>
+
+<h2>Idea</h2>
+<p>The concept is quite straight.
+If we could get the minimal value from list <strong>one by one</strong>,
+then we could re-arrange the list from minimal to maximal values.</p>
+
+<p>Imagine we have two lists $L$ and $L_{sorted}$,
+the $L$ is a list contains several items with comparable values and
+the $L_{sorted}$ is a sorted list of $L$.
+At first, $L_{sorted} = [ ]$ is empty.
+Take $L = [ 5, 3, 1, 2, 3 ]$ as an example:
+<ul>
+  <li>At the first round, we get $1$ as minimal value,
+  so we move it into $L_{sorted}$.
+  Now $L_{sorted} = [ 1 ]$ and $L = [ 5, 3, 2, 3 ]$.</li>
+  <li>At the second round, we get $2$ as minimal value,
+  so it is moved from $L$ into $L_{sorted}$.
+  Now $L_{sorted} = [ 1, 2 ]$ and $L = [ 5, 3, 3 ]$.</li>
+  <li>Next, $3$ is picked and moved from $L$ to $L_{sorted}$,
+  so $L_{sorted} = [ 1, 2, 3 ]$ and $L = [ 5, 3 ]$.</li>
+  <li>Then, the current minimal value $3$ is moved from $L$ to $L_{sorted}$,
+  so $L_{sorted} = [ 1, 2, 3, 3 ]$ and $L = [ 5 ]$.</li>
+  <li>Finally, $5$ is moved into $L_{sorted}$,
+  so $L_{sorted} = [ 1, 2, 3, 3, 5 ]$ and $L = [ ]$ is a empty list now.</li>
+</ul>
+</p>
+
+<p>See! the idea is quite simple.
+In the same way, to sort the list from maximal to minimal values,
+the only different is to pick the maximal value from list each round
+instead of minimal value.</p>
+
+<h3>How to get minimal(or maximal) value</h3>
+The way to get minimal(or maximal) items in $L$ is to linearly search the whole list:
+$$
+\begin{align}
+& \text{Min($L$):} \\
+& \space \space \space \space min = L[1] \\
+& \space \space \space \space \text{for $i \leftarrow 1$ to $\vert L \vert$:} \\
+& \space \space \space \space \space \space \space \space \text{if $L[i] < min$:} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space min = L[i] \\
+\end{align}
+$$
+or
+$$
+\begin{align}
+& \text{Max($L$):} \\
+& \space \space \space \space max = L[1] \\
+& \space \space \space \space \text{for $i \leftarrow 1$ to $\vert L \vert$:} \\
+& \space \space \space \space \space \space \space \space \text{if $L[i] > max$:} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space max = L[i] \\
+\end{align}
+$$
+, where $L[i]$ is the $i$th element in the list $L$
+and $\vert L \vert$ is the length of $L$.
+
+<h3>Divide one list into unsorted list and sorted list</h3>
+<p>In implementation, we usually divide the source list,
+which needs to be sorted, into two parts. One is sorted, the other is unsorted.
+This is better for memory usage than
+creating another list to put the sorted results.
+That is, if we have a source list $L = [ 5, 3, 1, 2, 3 ]$,
+it will be divided into $L_{sorted}$ and $L_{unsorted}$.
+They are initialized to $[]$ and $L$ respectively, so
+$L = L_{sorted} \cup L_{unsorted} = [ ] \cup [ 5, 3, 1, 2, 3 ]$.</p>
+
+<p>
+<ul>
+  <li>In the first round, $1$ is picked and moved
+  from $L_{unsorted}$ to $L_{sorted}$,
+  so $L = L_{sorted} \cup L_{unsorted} = [ 1 ] \cup [ 5, 3, 2, 3 ] = [1, 5, 3, 2, 3]$.</li>
+  <li>In the second round, $2$ is picked and moved
+  from $L_{unsorted}$ to $L_{sorted}$,
+  so $L = L_{sorted} \cup L_{unsorted} = [ 1, 2 ] \cup [ 5, 3, 3 ] = [1, 2, 5, 3, 3]$.</li>
+  <li>Next, $3$ is picked,
+  so $L = L_{sorted} \cup L_{unsorted} = [ 1, 2, 3 ] \cup [ 5, 3 ] = [1, 2, 3, 5, 3]$.</li>
+  <li>Then, another $3$ is picked,
+  so $L = L_{sorted} \cup L_{unsorted} = [ 1, 2, 3, 3 ] \cup [ 5 ] = [1, 2, 3, 3, 5]$.</li>
+  <li>Finally, $5$ is picked,
+  so $L = L_{sorted} \cup L_{unsorted} = [ 1, 2, 3, 3, 5 ] \cup [ ] = [1, 2, 3, 3, 5]$
+  and the sort is done.</li>
+</ul>
+</p>
+
+<h2>Algorithm</h2>
+$$
+\begin{align}
+& \text{SelectionSort($L$):} \\
+& \space \space \space \space \text{for $i \leftarrow 1$ to $\vert L \vert - 1$:} \\
+& \space \space \space \space \space \space \space \space m \leftarrow i \\
+& \space \space \space \space \space \space \space \space \text{for $j \leftarrow i + 1$ to $\vert L \vert$:} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space \text{if $L[j] < L[m]$:} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space \space \space \space \space m = j \\
+& \space \space \space \space \space \space \space \space \text{swap $L[i]$ and $L[m]$} \\
+\end{align}
+$$
+
+The above method will divide $L$ into two parts.
+$L[1...i-1] = L_{sorted}$ is sorted, and $L[i...N] = L_{unsorted}$ is unsorted,
+where $N = \vert L \vert$ is the length of $L$.
+
+<ul>
+  <li><p>When $i = 1$, $L_{sorted} = []$ and $L_{unsorted} = L[1...N]$,
+  we need to find the minimal element in list $L[1...N]$:</p>
+  <p>We use a value $m$ to track the index of the minimal element,
+  where $m$ is initialized to $1$.
+  If there is other element in list $L[2...N]$ less than $L[m]$,
+  then we update $m$ to its index.
+  $L[m]$ would be the minimal value in $L[1...N]$
+  after searching whole $L_{unsorted}$.
+  If we swap $L[m]$ and $L[i]$, then $L[1]$ now can be considered as $L_{sorted}$,
+  so $L_{unsorted} = L[2...N]$.</p></li>
+  <li><p>When $i = 2$, $L_{sorted} = L[1]$ and $L_{unsorted} = L[2...N]$,
+  we need to find the minimal element in list $L[2...N]$:</p>
+  <p>Same as above, $m$ is used to keep tracking the index of the minimal
+  element in $L_{unsorted}$. After searching,
+  $L[m]$ would be the minimal value in $L[2...N]$.
+  We can put $L[m]$ into the $L_{sorted}$ by swapping the $L[m]$ and $L[i]$.
+  Thus, $L_{sorted} = L[1...2]$ and $L_{unsorted} = L[3...N]$.</p></li>
+  <li><p>When $i = k$, $L_{sorted} = [1...k-1]$ and $L_{unsorted} = L[k...N]$:</p>
+  <p>After searching the whole $L_{unsorted}$, $L[m]$ would be the minimal
+  value in $L[k...N]$, so swap $L[m]$ and $L[i]$ would put L[m] into $L_{sorted}$.
+  Then, $L_{sorted} = L[1...k]$ and $L_{unsorted} = L[k+1...N]$.</p></li>
+  <li><p>When $i = N - 1$, $L_{sorted} = [1...N-2]$
+  and $L_{unsorted} = L[N-1...N]$:</p>
+  <p>This is the final round. We pick a smaller one and put it into the
+  $L_{sorted}$ like above. Then $L_{sorted} = [1...N-1]$
+  and $L_{unsorted} = L[N]$. The left one(now is $L[N]$) is definitely
+  the maximal item in $L[1...N]$, so we don't need to do anything.</p></li>
+</ul>
+
+<h2>Complexity</h2>
+<p>We need to search whole $L_{unsorted}$ to find a minimal(or maximal) item.
+Suppose $\vert L_{unsorted} \vert = N$ at first.
+(the length of $L_{unsorted}$ is $N$).</p>
+
+<p>At the first round, we need to search $N$ items
+to find the minimal(or maximal) item and move it into $L_{sorted}$.
+After then, $\vert L_{unsorted} \vert = N - 1$.</p>
+
+<p>At the second round, whole $N - 1$ items in $L_{unsorted}$ would be counted
+to find the minimal(or maximal) one.
+After the picked one is moved into $L_{sorted}$,
+the size of $L_{unsorted}$ is reduced to $\vert L_{unsorted} \vert = N - 2$.</p>
+
+<p>The procedure keep working until the list $L_{unsorted}$ is empty
+($\vert L_{unsorted} \vert = 0$).
+Thus, we need to search
+$$
+\begin{align}
+N + (N - 1) + (N - 2) + .... + 1
+&= \frac{ N \cdot (N + 1) }{ 2 } \\
+&= \frac{ 1 }{ 2 } \cdot N^2 + \frac{ 1 }{ 2 } N
+\end{align}
+$$
+times to move all the items into $L_{sorted}$.
+Therfore, the complexity is $\mathcal{O}(N^2)$,
+where the $N$ is the length of the list $L$.</p>
+
+<h2>Implementation</h2>
+<h3>Simple example using <code>int</code> array</h3>
+<p>See the files on <a target="_blank" href="https://gist.github.com/ChunMinChang/dee9f3bd2ceab69726373ae006016edb">gist here</a></p>
+
+<code data-gist-id="dee9f3bd2ceab69726373ae006016edb" data-gist-file="simple_sort.h" data-gist-line="1-16, 25"></code>
+<code data-gist-id="dee9f3bd2ceab69726373ae006016edb" data-gist-file="simple_sort.cpp" data-gist-line="1, 5-20, 37-73"></code>
+<code data-gist-id="dee9f3bd2ceab69726373ae006016edb" data-gist-file="simple_test.cpp" data-gist-line="2-37, 45-64, 100-101"></code>
+<!-- <h3>General version with <code>template</code></h3> -->
+
+<p>The above gist files are imported by
+<a target="_blank" href="https://github.com/blairvanderhoof/gist-embed">gist-embed</a>.</p>
+</body>
+</html>
