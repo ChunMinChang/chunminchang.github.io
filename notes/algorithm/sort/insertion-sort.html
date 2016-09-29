@@ -1,0 +1,220 @@
+<html>
+<head>
+<title>Insertion Sort</title>
+<!-- gist-embed:
+     https://github.com/blairvanderhoof/gist-embed
+     http://blairvanderhoof.com/gist-embed/
+================================================== -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gist-embed/2.4/gist-embed.min.js"></script>
+
+<!-- Math Jax
+================================================== -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  </script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<h1>Insertion Sort</h1>
+
+<h2>Idea</h2>
+<p>The basic concept is similar to
+<a target="_blank" href="selection-sort.html"><i>Selection Sort</i></a>.
+Considering there are two lists. One is already sorted,
+and the other is unsorted, denoted $L_{sorted}$ and $L_{unsorted}$ respectively.
+The key idea is to pick the element from $L_{unsorted}$ one by one
+and then insert them into the correct positions of $L_{sorted}$.
+Suppose we have $L_{sorted} = [3, 8, 34]$
+and $L_{unsorted} = [23, 2, 67, 34, 97]$:</p>
+<ul>
+  <li><p>The step 1 is to pick $23$ (which is the first element) from $L_{unsorted}$,
+  and insert it into $L_{sorted}$.
+  To find a position such that <strong>all elements before it is less than or
+  equal to $23$ and all elements after it is greater than $23$</strong>,
+  we can start comparing it from the last(maximal) element
+  to the first(minimal) one in $L_{sorted}$
+  (Or you can do same thing from the first element to the last one).
+  $34$ is greater than $23$, so we keep moving.
+  Next, we found that $8$ is less than $23$.
+  A-ha! $23$ should be inserted between $8$ and $34$.
+  Currently, the $L_{sorted}$ and $L_{unsorted}$ are updated to $[3, 8, 23, 34]$
+  and $[2, 67, 34, 97]$ respectively.
+  </p></li>
+  <li><p>The step 2 is to pick the current first element, $2$, from $L_{unsorted}$,
+  and insert it into $L_{sorted}$. Same as the previous step,
+  we start comparing $3$ from the maximal element to find the position to insert.
+  $34$ is obviously larger than $2$, so we should keep moving.
+  In this round, we can not find any element less than or equal to $2$ after
+  the all elements in $L_{sorted}$ are checked. Thus, the $2$ is the minimal value
+  among these elements. We should put $2$ as the first element in $L_{sorted}$.
+  That is the position that the minimal element locates.
+  Currently, the $L_{sorted}$ and $L_{unsorted}$ are updated to $[2, 3, 8, 23, 34]$
+  and $[67, 34, 97]$ respectively.
+  </p></li>
+  <li><p>In the same way, the step 3 is also to pick the current first element, $67$,
+  from $L_{unsorted}$ and then insert it into $L_{sorted}$.
+  Start comparing $67$ with $34$, we found $67$ is greater.
+  It means that $67$ is the maximal value among these elements.
+  Therefore, $67$ should be inserted at the last position of $L_{sorted}$.
+  Currently, the $L_{sorted}$ and $L_{unsorted}$ are updated to
+  $[2, 3, 8, 23, 34, 67]$ and $[34, 97]$ respectively.
+  </p></li>
+  <li><p>Next, $34$ is picked to compare with the elements in $L_{sorted}$.
+  $67$ is greater than $34$, so go next. $34$ is equal to $34$, so we stop here.
+  The picked $34$ should be inserted between the existed $34$ and $67$,
+  so the $L_{sorted}$ and $L_{unsorted}$ are updated to
+  $[2, 3, 8, 23, 34, 34, 67]$ and $[97]$ respectively.
+  </p></li>
+  <li><p>Finally, $97$ is picked to insert. $97$ is greater than $67$, so
+  it should be put to the last position of $L_{sorted}$.
+  Now, the $L_{unsorted}$ is empty and
+  $L_{sorted} = [2, 3, 8, 23, 34, 34, 67, 97]$.</p></li>
+</ul>
+
+<h3>How to find the inserted position</h3>
+<p>We can use the following method to find the <strong>first</strong> element
+whose value is <strong>less than or equal to</strong> the picked element:
+$$
+\begin{align}
+& \text{Position($L, x$):} \\
+& \space \space \space \space i \leftarrow N\\
+& \space \space \space \space \text{while $i > 0$ and $L[i] > x$:} \\
+& \space \space \space \space \space \space \space \space i \leftarrow i - 1 \\
+& \space \space \space \space \text{return} \space i \\
+\end{align}
+$$
+,where $x$ is the element needs to be inserted,
+$L[i]$ is the $i$th element in the sorted list $L$,
+and $N = \vert L \vert$ is the length of $L$.</p>
+
+<p>After getting the position $p = Position(L, x)$ given the element $x$,
+we need to insert $x$ between $L[p]$ and $L[p+1]$.
+(If $p = 0$, then we insert $x$ as the first element $L[1]$.
+If $p = N$, then we insert $x$ as the last element $L[p + 1].$)
+</p>
+
+<h3>Divide one list into unsorted list and sorted list</h3>
+<p>In implementation, we usually divide the source list $L$ into two parts.
+One is sorted, the other is unsorted.
+They are denoted $L_{sorted}$ and $L_{unsorted}$ respectively.
+This is better for memory usage than
+creating another list to put the sorted results.</p>
+
+<p>Suppose we have $L = [73, 24, 37, 9, 97, 29] = L_{sorted} \cup L_{unsorted}$.
+$L_{sorted}$ and $L_{unsorted}$ are initialized to $[]$
+and $[73, 24, 37, 9, 97, 29]$.</p>
+
+<ul>
+  <li><p>At the first round, $73$ is picked, but there is nothing could be compared,
+  so we just put it into $L_{sorted}$.
+  Currently, $L_{sorted} = [73]$, $L_{unsorted} = [24, 37, 9, 97, 29]$
+  and $L = L_{sorted} \cup L_{unsorted} = [73, 24, 37, 9, 97, 29]$.</p></li>
+  <li><p>At the second round, $24$ is picked and $p = Position(L_{sorted}, 24) = 0$,
+  so, we should insert $24$ as the first element and update lists to
+  $L_{sorted} = [24, 73]$, $L_{unsorted} = [37, 9, 97, 29]$
+  and $L = L_{sorted} \cup L_{unsorted} = [24, 73, 37, 9, 97, 29]$.</p></li>
+  <li><p>At the third round, $37$ is picked and $p = Position(L_{sorted}, 37) = 1$,
+  so we should insert $37$ between $L[p] = L[1] = 24$ and $L[p + 1] = L[2] = 73$.
+  Currently, $L_{sorted} = [24, 37, 73]$, $L_{unsorted} = [9, 97, 29]$
+  and $L = L_{sorted} \cup L_{unsorted} = [24, 37, 73, 9, 97, 29]$.</p></li>
+  <li><p>Next, $9$ is picked and $p = Position(L_{sorted}, 9) = 0$. Thus,
+  $L_{sorted}, L_{unsorted}$ are updated to $[9, 24, 37, 73]$ and $[97, 29]$.
+  Currently $L = L_{sorted} \cup L_{unsorted} = [9, 24, 37, 73, 97, 29]$.</p></li>
+  <li><p>Next, $97$ is picked and
+  $p = Position(L_{sorted}, 97) = \vert L_{sorted} \vert = 4$,
+  so we should put $97$ as the last element of the $L_{sorted}$.
+  Currently, $L_{sorted} = [9, 24, 37, 73, 97]$, $L_{unsorted} = [29]$
+  and $L = L_{sorted} \cup L_{unsorted} = [9, 24, 37, 73, 97, 29]$.</p></li>
+</ul>
+
+<h2>Algorithm</h2>
+$$
+\begin{align}
+& \text{InsertionSort($L$):} \\
+& \space \space \space \space \text{for $i \leftarrow 2$ to $\vert L \vert$:} \\
+& \space \space \space \space \space \space \space \space j \leftarrow i\\
+& \space \space \space \space \space \space \space \space \text{while $j > 1$ and $L[j-1] > L[j]$:} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space \text{swap $L[j-1]$ and $L[j]$} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space j = j - 1 \\
+\end{align}
+$$
+
+The above method will divide $L$ into two parts.
+$L[1...i-1] = L_{sorted}$ is sorted, and $L[i...N] = L_{unsorted}$ is unsorted,
+where $N = \vert L \vert$ is the length of $L$.
+The $L[i]$ will be picked to insert into $L_{sorted}$ iteratively.
+
+<ul>
+  <li><p>When $i = 2$, $L_{sorted} = L[1]$ and $L_{unsorted} = L[2...N]$.
+  The goal in this round is to insert the $L[2]$ into $L_{sorted}$.</p>
+  <p>The $L[2]$ is picked and compare with $L[1]$.
+  If $L[2] < L[1]$, then we swap them. Otherwise, do nothing.
+  Then, $L[1...2]$ is sorted, so we update $L_{sorted}$ to it
+  and $L_{unsorted} = L[3...N]$ now.</p></li>
+  <li><p>When $i = 3$, $L_{sorted} = L[1...2]$ and $L_{unsorted} = L[3...N]$.
+  The goal in this round is to insert the $L[3]$ into $L_{sorted}$.</p>
+  <p>The $L[3]$ is picked. If $L[3] >= L[2]$, it means that $L[1...3]$ is sorted,
+  so we don't need to do anything. Otherwise($L[3] < L[2]$), swap $L[3]$ and $L[2]$,
+  then check whether it needs to swap again if $L[2] < L[1]$.
+  After finishing checking, $L[1...3]$ is sorted, so $L_{sorted}$ is updated to it
+  and $L_{unsorted} = L[4...N]$ now.</p></li>
+  <li><p>When $i = k$, $L_{sorted} = L[1...k-1]$ and $L_{unsorted} = L[k...N]$.
+  The goal in this round is to insert the $L[k]$ into $L_{sorted}$.</p>
+  <p>The $L[k]$ is picked to compare with the elements one by one in $L_{sorted}$,
+  from the maximal($L[k-1]$) to minimal item($L[1]$), to find a place to insert.
+  After finishing checking, $L[1...k]$ is sorted, so it's set to be $L_{sorted}$
+  and $L_{unsorted}$ is now $L[k+1...N]$.</p></li>
+  <li><p>When $i = N$, $L_{sorted} = L[1...N-1]$ and $L_{unsorted} = L[N]$.
+  The goal in this round is to insert the $L[N]$ into $L_{sorted}$.
+  In the same way, the $L[1...N]$ is sorted after finishing the procedure,
+  so $L_{sorted}$ is updated to it and $L_{unsorted} = []$ is empty now.</p></li>
+</ul>
+
+<h3>Another method without swapping</h3>
+$$
+\begin{align}
+& \text{InsertionSort($L$):} \\
+& \space \space \space \space \text{for $i \leftarrow 2$ to $\vert L \vert$:} \\
+& \space \space \space \space \space \space \space \space c \leftarrow L[i] \\
+& \space \space \space \space \space \space \space \space j \leftarrow i \\
+& \space \space \space \space \space \space \space \space \text{while $j > 1$ and $L[j-1] > c$:} \\
+& \space \space \space \space \space \space \space \space \space \space \space \space L[j] = L[j-1] \\
+& \space \space \space \space \space \space \space \space \space \space \space \space j = j - 1 \\
+& \space \space \space \space \space \space \space \space L[j] = c \\
+\end{align}
+$$
+
+
+<h2>Complexity</h2>
+The time complexity depends on the speed to find the inserted position.
+The more iterations to find the value of $Position(L, x)$ need,
+the more time it takes.
+The worst case is that we need to go through whole $L_{sorted}$ to find correct
+positions to insert. It happens when the list is arranged from maximal to
+minimal values(e.g.,$[5, 4, 3, 2, 1]$).
+In this case, if the length of list is $N$, we need to search
+$$
+\begin{align}
+0 + 1 + 2 + ... + (N - 1)
+&= \frac{ N \cdot (N - 1) }{ 2 } \\
+&= \frac{ 1 }{ 2 } \cdot N^2 - \frac{ 1 }{ 2 } N
+\end{align}
+$$
+times to move all the items into $L_{sorted}$.
+Therfore, the complexity is $\mathcal{O}(N^2)$.
+
+<h2>Implementation</h2>
+<h3>Simple example using <code>int</code> array</h3>
+<p>See the files on <a target="_blank" href="https://gist.github.com/ChunMinChang/dee9f3bd2ceab69726373ae006016edb">gist here</a></p>
+
+<code data-gist-id="dee9f3bd2ceab69726373ae006016edb" data-gist-file="simple_sort.h" data-gist-line="1-14, 17-18, 25"></code>
+<code data-gist-id="dee9f3bd2ceab69726373ae006016edb" data-gist-file="simple_sort.cpp" data-gist-line="1, 5-20, 74-108"></code>
+<code data-gist-id="dee9f3bd2ceab69726373ae006016edb" data-gist-file="simple_test.cpp" data-gist-line="2-37, 45-58, 66-72, 100-101"></code>
+
+<!-- <h3>General version with <code>template</code></h3> -->
+
+<p>The above gist files are imported by
+<a target="_blank" href="https://github.com/blairvanderhoof/gist-embed">gist-embed</a>.</p>
+</body>
+</html>
