@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wasapi</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="cubeb-notes-for-was-api">Cubeb notes for WAS API</h1>
+
+<p>To contribute to <a href="https://github.com/kinetiknz/cubeb">cubeb</a>, it needs to understand what is <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms680573.aspx">COM</a> first before programming on Windows. Then you should know what <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd371455%28v=vs.85%29.aspx">Windows Audio Session API (WASAPI)</a> is.</p>
+
+<p><a href="https://github.com/ChunMinChang/cubeb/tree/audio5.1">Here is my repo</a> for <em>audio 5.1</em> version of cubeb.</p>
+
+
+
+<h2 id="study-dom">Study DOM</h2>
+
+<ul>
+<li><a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ff637359%28v=vs.85%29.aspx">COM Technical Overview</a>(This might be similar to mozilla’s XPCOM)</li>
+<li><a href="http://www.codeproject.com/Articles/9190/Understanding-The-COM-Single-Threaded-Apartment-Pa">Understanding The COM Single-Threaded Apartment Part 1</a></li>
+<li><a href="http://www.codeproject.com/Articles/9506/Understanding-The-COM-Single-Threaded-Apartment">Understanding The COM Single-Threaded Apartment Part 2</a></li>
+<li><a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms693344.aspx">Processes, Threads, and Apartments</a></li>
+</ul>
+
+
+
+<h2 id="how-sound-played-in-was-api">How sound played in WAS API</h2>
+
+
+
+<h3 id="windows-audio-session-wasapi-sample">Windows audio session (WASAPI) sample</h3>
+
+<ul>
+<li><a href="https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/WindowsAudioSession">WindowsAudioSession Sample</a></li>
+<li><a href="https://github.com/Microsoft/Windows-universal-samples/blob/master/Samples/WindowsAudioSession/cpp/WASAPIRenderer.cpp">Renderer(output)</a></li>
+<li><a href="https://github.com/Microsoft/Windows-universal-samples/blob/master/Samples/WindowsAudioSession/cpp/WASAPICapture.cpp">Capture(input)</a></li>
+<li><a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd316756%28v=vs.85%29.aspx">Rendering a Stream</a></li>
+</ul>
+
+
+
+<h3 id="the-persudo-code-flow-in-cubeb">The persudo code flow in cubeb:</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">HRESULT hr;
+IMMDeviceEnumerator* enumerator;
+IMMDevice* device;
+IAudioClient* client;
+WAVEFORMATEX* format;
+typedef bool (*wasapi_render_callback)(wasapi_stream * stm);
+
+struct wasapi_stream
+{
+  <span class="hljs-keyword">...</span>
+  HANDLE thread; /* each stream has its own thread */
+  HANDLE render_event;
+  wasapi_render_callback render_callback;
+  <span class="hljs-keyword">...</span>
+};
+
+wasapi_stream* stm = (wasapi_stream *)calloc(<span class="hljs-number">1</span>, sizeof(wasapi_stream));
+
+HANDLE stm-&gt;render_event = CreateEvent(<span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">NULL</span>);
+<span class="hljs-keyword">if</span> (!stm-&gt;render_event) {
+  <span class="hljs-keyword">return</span>;
+}
+
+/* Get the device enumerator */
+hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), <span class="hljs-literal">NULL</span>, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&amp;enumerator));
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+
+/* Use the device enumerator to get the default output device by eRender (eCapture is <span class="hljs-keyword">for</span> input device) */
+hr = enumerator-&gt;GetDefaultAudioEndpoint(eRender, eConsole, &amp;device);
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+enumerator-&gt;Release();
+
+/* Get a output client. */
+hr = device-&gt;Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, <span class="hljs-literal">NULL</span>, (void **)client);
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+device-&gt;Release();
+
+
+/* Get the default format setting of the speakers */
+hr = client-&gt;GetMixFormat(&amp;format);
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+
+<span class="hljs-keyword">...</span>
+
+/* Initialize the audio stream and enable event-driven buffering with the AUDCLNT_STREAMFLAGS_EVENTCALLBACK flag set */
+hr = client-&gt;Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST, <span class="hljs-keyword">...</span> ,format, <span class="hljs-literal">NULL</span>);
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+
+CoTaskMemFree(format);
+
+/* After enabling event-driven buffering, register the event handle that the system will signal each time a buffer becomes ready to be processed by the client. */
+hr = client-&gt;SetEventHandle(stm-&gt;render_event);
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+
+/* Start the audio stream */
+hr = client-&gt;Start();
+<span class="hljs-keyword">if</span> (FAILED(hr)) {
+  <span class="hljs-keyword">return</span>;
+}
+
+stm-&gt;thread = (HANDLE) _beginthreadex(<span class="hljs-literal">NULL</span>, <span class="hljs-number">512</span> * <span class="hljs-number">1024</span>, stream_render_loop, stm, STACK_SIZE_PARAM_IS_A_RESERVATION, <span class="hljs-literal">NULL</span>);
+<span class="hljs-keyword">if</span> (!stm-&gt;thread) {
+  <span class="hljs-keyword">return</span>;
+}
+<span class="hljs-keyword">...</span>
+
+
+static unsigned int __stdcall
+stream_render_loop(LPVOID stream)
+{
+  wasapi_stream * stm = static_cast&lt;wasapi_stream *&gt;(stream);
+
+  bool is_playing = true;
+  const unsigned int len = <span class="hljs-number">1</span>;
+  HANDLE wait_array[<span class="hljs-number">1</span>] = {
+    stm-&gt;render_event,
+  };
+
+  <span class="hljs-keyword">...</span>
+
+  <span class="hljs-keyword">while</span> (is_playing) {
+    DWORD waitResult = WaitForMultipleObjects(len, wait_array, <span class="hljs-literal">FALSE</span>, <span class="hljs-number">1000</span>);
+    <span class="hljs-keyword">switch</span> (waitResult) {
+      case WAIT_OBJECT_0: /* render_event */
+        /* Check whether the stream is draining */
+        is_playing = stm-&gt;render_callback(stm);
+        <span class="hljs-keyword">break</span>;
+      case WAIT_TIMEOUT:
+      case WAIT_FAILED:
+      default:
+        /* Error handling here */
+        <span class="hljs-keyword">break</span>;
+    }
+  }
+  <span class="hljs-keyword">...</span>
+}
+
+<span class="hljs-keyword">...</span></code></pre>
+
+
+
+<h3 id="event-callback-mechanism">Event callback mechanism</h3>
+
+<ul>
+<li>It needs to set <code>AUDCLNT_STREAMFLAGS_EVENTCALLBACK</code> in <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd370875%28v=vs.85%29.aspx">IAudioClient::Initialize</a>.</li>
+<li>Set your <code>HANDLE event</code> by <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd370878%28v=vs.85%29.aspx">IAudioClient::SetEventHandle</a>.</li>
+<li>Start the stream by <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd370879%28v=vs.85%29.aspx">IAudioClient::Start</a>.</li>
+<li>While the stream is running, the system <strong>periodically signals the event</strong> to indicate to the client that audio data is available for processing.</li>
+<li>Between processing passes, the <strong>client thread waits on the event handle</strong> by calling a synchronization function such as <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms687032%28v=vs.85%29.aspx">WaitForSingleObject</a> or <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms687025%28v=vs.85%29.aspx">WaitForMultipleObjects</a>.</li>
+<li>In the above sample, the client thread is created by <a href="https://msdn.microsoft.com/en-us/library/kdzttdcb.aspx">_beginthreadex</a>.</li>
+</ul>
+
+
+
+<h2 id="multiple-channels">Multiple channels</h2>
+
+<p>To support multiple channels, we need to apply one <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff537083.aspx" title="KSAUDIO_CHANNEL_CONFIG">KSAUDIO_CHANNEL_CONFIG</a> value to <code>dwChannelMask</code>.</p>
+
+
+
+<h3 id="get-default-speaker-settings-via-iaudioclientgetmixformat">Get default speaker settings via <code>IAudioClient::GetMixFormat</code></h3>
+
+<p>In WAS API, we could set channel layouts by <code>dwChannelMask</code>, <code>nChannels</code>,  and other properties in <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd757713%28v=vs.85%29.aspx">WAVEFORMATEX</a> or <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd757714%28v=vs.85%29.aspx">WAVEFORMATEXTENSIBLE structure</a>. However, how do we get the default settings of our speakers? The answer is to use <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd370872%28v=vs.85%29.aspx">IAudioClient::GetMixFormat</a>. We can use it to get default values before applying our desired layout.</p>
+
+
+
+<h3 id="what-is-dwchannelmask">What is <code>dwChannelMask</code>?</h3>
+
+<p>It’s <em>bitmask</em> specifying the assignment of channels in the stream to speaker positions. <br>
+The <em>number of bits</em> set in <code>dwChannelMask</code> should be the <strong>same</strong> as the <em>number of channels</em> specified in <code>WAVEFORMATEX.nChannels</code>. <br>
+If <code>dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT</code>(it has 2 1-bit in these bytes(default is 0)), then <code>WAVEFORMATEX.nChannels = 2</code> and data buffer <code>float* buf</code> will be interpreted as:</p>
+
+<ul>
+<li><code>buf[0]</code> is the audio data for left channel</li>
+<li><code>buf[1]</code> is the audio data for right channel</li>
+<li><code>buf[2]</code> is the audio data for left channel</li>
+<li><code>buf[3]</code> is the audio data for right channel</li>
+<li>….</li>
+<li><code>buf[x + 2 * n]</code> is the audio data for channel <code>x</code>(left or right) , where <code>n</code> is an integer.</li>
+</ul>
+
+<p>See <a href="https://msdn.microsoft.com/zh-tw/library/windows/desktop/dd757714.aspx">WAVEFORMATEXTENSIBLE structure</a> for more detail.</p>
+
+
+
+<h3 id="whats-the-relationship-among-channel-buffers-volumes-and-dwchannelmask">What’s the relationship among channel buffers, volumes, and <code>dwChannelMask</code>?</h3>
+
+<ul>
+<li>The channel buffers and volumes are all <strong>array</strong>.</li>
+<li><code>buffer[x + n * k]</code> and <code>volumes[x + n * k]</code> represent <strong>audio data</strong> and <strong>volume</strong> for channel <code>x</code>, where <code>k</code> is the channel counts and <code>n</code> is an integer.</li>
+<li>The <code>x</code>(left, right, center, …) and <code>k</code>(channel counts) depend on the <code>dwChannelMask</code> and <code>WAVEFORMATEX.nChannels</code>settings.</li>
+<li>The following table shows the relationship between channel buffer data and volumes.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th>buf</th>
+  <th>vol</th>
+  <th>result</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>0.0</td>
+  <td>0.0</td>
+  <td>no sound</td>
+</tr>
+<tr>
+  <td>0.0</td>
+  <td>1.0</td>
+  <td>noise</td>
+</tr>
+<tr>
+  <td>1.0</td>
+  <td>0.0</td>
+  <td>no sound</td>
+</tr>
+<tr>
+  <td>1.0</td>
+  <td>1.0</td>
+  <td>sound</td>
+</tr>
+</tbody></table>
+
+
+<p>See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd370992.aspx">IAudioStreamVolume::SetAllVolumes</a> and <a href="https://msdn.microsoft.com/zh-tw/library/windows/desktop/dd368243.aspx">IAudioRenderClient::GetBuffer</a> for more detail.</p>
+
+
+
+<h3 id="checking-preferred-format-via-iaudioclientisformatsupported">Checking preferred format via <code>IAudioClient::IsFormatSupported</code></h3>
+
+<p>To apply our channel layout setting, we can need to check it is valid. <br>
+The <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd370876%28v=vs.85%29.aspx">IAudioClient::IsFormatSupported</a> indicates whether the audio endpoint device supports a particular stream format. If it return fail, it will also give you a <strong>closest</strong> channel layout to use.</p>
+
+<p>It is <strong>necessary</strong> to call it before playing audio.</p>
+
+
+
+<h2 id="how-to-sound-only-one-speaker">How to sound only one speaker</h2>
+
+
+
+<h3 id="can-we-force-multiple-channel-speaker-to-use-1-channel-only">Can we force multiple-channel-speaker to use 1 channel only?</h3>
+
+<p>Is it possible to set  <code>format_pcm-&gt;dwChannelMask = SPEAKER_FRONT_CENTER;</code> and <code>WAVEFORMATEX.nChannels = 1</code>  to a audio 5.1 speaker(6 channels)?</p>
+
+<p>No! you will get <code>S_FALSE</code> when you call <code>IAudioClient::IsFormatSupported</code>.You will get a <strong>closest</strong> match that has 6 channels.</p>
+
+
+
+<h3 id="how-to-sound-only-one-channel">How to sound only one channel ?</h3>
+
+<p>If you have multiple channels, you should set volume to <code>0.0</code> to all channels except the one you want to sound. <br>
+If you are able to set number of channels of your speakers in their drivers, then there’s possible to set <code>nChannels</code> to a smaller value.</p>
+
+
+
+<h2 id="appendix">Appendix</h2>
+
+
+
+<h3 id="how-sound-played-in-chromium">How sound played in chromium?</h3>
+
+<ol>
+<li>There is a <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.h?l=121">WASAPIAudioOutputStream</a> object to handle the audio render stream on Windows. <br>
+<ul><li>Inherit <a href="https://cs.chromium.org/chromium/src/media/audio/audio_io.h?l=53">AudioOutputStream</a>(base class for audio render stream).</li>
+<li>Inherit <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.h?l=136">base::DelegateSimpleThread::Delegate</a> to handle thread stuffs. <br>
+<ul><li><code>DelegateSimpleThread</code> inherit <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.h?l=60">SimpleThread</a></li>
+<li><code>SimpleThread</code> inherit <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread.h?l=118">PlatformThread::Delegate</a></li>
+<li><code>PlatformThread::Delegate</code> has a member <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread.h?l=120">virtual void ThreadMain()</a></li>
+<li><code>SimpleThread</code> has a member <code>virtual void Run() = 0</code>, which should be overridden by its subclasses.</li></ul></li>
+<li><code>WASAPIAudioOutputStream</code> has a member <code>std::unique_ptr&lt;base::DelegateSimpleThread&gt; render_thread_</code> pointing to the render thread.</li></ul></li>
+<li>Use <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.cc?l=58">WASAPIAudioOutputStream::WASAPIAudioOutputStream</a> to construct a stream object <br>
+<ul><li>Set preferred format such as <code>nChannels</code> and <code>dwChannelMask</code>.</li></ul></li>
+<li>And then open a render stream by <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.cc?l=137">WASAPIAudioOutputStream::Open</a> <br>
+<ul><li>Check the format is supported by <code>IsFormatSupported</code></li>
+<li>Initialize audio client by <a href="https://cs.chromium.org/chromium/src/media/audio/win/core_audio_util_win.cc?l=804">CoreAudioUtil::SharedModeInitialize</a> or <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.cc?l=567">ExclusiveModeInitialization</a> <br>
+<ul><li><code>IAudioClient::Initialize</code> and <code>IAudioClient::SetEventHandle</code> are called</li></ul></li></ul></li>
+<li>Next, run the render stream by <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.cc?l=263">WASAPIAudioOutputStream::Start</a> <br>
+<ul><li><code>render_thread_</code> is setup</li>
+<li>Start running thread by <code>render_thread_-&gt;Start()</code> <br>
+<ul><li><code>DelegateSimpleThread-&gt;Start()</code> is actually <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.cc?l=31">SimpleThread::Start()</a></li>
+<li><a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread_posix.cc?l=188">PlatformThread::CreateWithPriority</a> or <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread_posix.cc?l=196">PlatformThread::CreateNonJoinableWithPriority</a> is called</li>
+<li>Both above two will call <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread_posix.cc?l=81">CreateThread</a></li>
+<li><code>CreateThread</code> will fire <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread_posix.cc?l=110">pthread_create</a></li>
+<li><code>pthread_create</code> will call <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread_posix.cc?l=48">ThreadFunc</a></li>
+<li><code>ThreadFunc</code> will trigger <a href="https://cs.chromium.org/chromium/src/base/threading/platform_thread_posix.cc?l=71">delegate-&gt;ThreadMain()</a></li>
+<li><code>delegate-&gt;ThreadMain()</code> is actually <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.cc?l=58">SimpleThread::ThreadMain()</a></li>
+<li><code>SimpleThread::ThreadMain()</code> will fire <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.cc?l=68">SimpleThread::Run</a></li>
+<li><code>SimpleThread::Run</code> is actually <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.cc?l=85">DelegateSimpleThread::Run()</a></li>
+<li><code>DelegateSimpleThread::Run</code> will call <a href="https://cs.chromium.org/chromium/src/base/threading/simple_thread.cc?l=92">delegate-&gt;Run()</a></li>
+<li><code>delegate-&gt;Run()</code> is actually <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.cc?l=371">WASAPIAudioOutputStream::Run()</a></li></ul></li>
+<li><code>IAudioClient::Start</code> is called</li></ul></li>
+<li>The render events come into <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.cc?l=371">WASAPIAudioOutputStream::Run()</a> <br>
+<ul><li><code>WaitForMultipleObjects</code> is used to wait the <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.h?l=240">stop_render_event_</a> and <a href="https://cs.chromium.org/chromium/src/media/audio/win/audio_low_latency_output_win.h?l=237">audio_samples_render_event_</a></li></ul></li>
+</ol>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+<li><a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff537083.aspx" title="KSAUDIO_CHANNEL_CONFIG">KSAUDIO_CHANNEL_CONFIG</a></li>
+<li><a href="https://msdn.microsoft.com/en-us/library/windows/hardware/dn653308.aspx">Multiple channel audio data and WAVE files</a></li>
+<li><a href="http://www-mmsp.ece.mcgill.ca/documents/audioformats/wave/Docs/ksmedia.h">DirectSound Speaker Config: KSAUDIO_SPEAKER_XXX</a></li>
+<li><a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff538602.aspx">Translating Speaker-Configuration Requests</a></li>
+</ul></div></body>
+</html>
