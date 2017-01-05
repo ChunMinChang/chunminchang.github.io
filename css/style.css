@@ -359,6 +359,24 @@ img.headshot{
 }
 
 /**
+ * Toggle navigation for mobile
+ */
+.navbar-custom .navbar-toggle {
+  border-color: #ddd;
+}
+.navbar-custom .navbar-toggle:hover,
+.navbar-custom .navbar-toggle:focus {
+  background-color: #ddd;
+}
+.navbar-custom .navbar-toggle .icon-bar {
+  background-color: #888;
+}
+.navbar-custom .navbar-collapse,
+/*.navbar-custom .navbar-form*/ {
+  border-color: #e7e7e7;
+}
+
+/**
  * Default text-color
  */
 .navbar-custom a {
