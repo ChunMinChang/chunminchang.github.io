@@ -28,8 +28,8 @@ html {
   padding-top: 30vh;
   text-align: center;
   /*background: #bbb;*/
-  background: url('../images/overlay.png'), url('../images/chunmin/blur120_mini_tiny.jpg');
-  background-size: 256px 256px, contain;
+  background: url('../images/overlay.png'), url('../images/chunmin/kinmen_tiny.jpg');
+  background-size: 256px 256px, cover;
 	background-attachment: fixed, fixed;
 	background-position: top left, center;
 	background-repeat: repeat, no-repeat;
@@ -38,6 +38,16 @@ html {
 	background-attachment: fixed;
 	background-position: right;
 	background-repeat: no-repeat;*/
+}
+
+@media(min-width:500px) {
+  .intro-section {
+    background: url('../images/overlay.png'), url('../images/chunmin/kinmen_extend_2.jpg');
+    background-size: 256px 256px, cover;
+    background-attachment: fixed, fixed;
+    background-position: top left, center;
+    background-repeat: repeat, no-repeat;
+  }
 }
 
 .intro-section .title {
