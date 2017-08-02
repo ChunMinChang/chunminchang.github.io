@@ -1,0 +1,62 @@
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+var ctx = new AudioContext();
+var url = "think-looped.wav";
+// var url = "bossanova.wav";
+buffer = null;
+
+function getFile(url, callback) {
+  var request = new XMLHttpRequest();
+  request.open("GET", url, true);
+  request.responseType = "arraybuffer";
+
+  request.onload = function() {
+    ctx.decodeAudioData(request.response, function(data) {
+        callback(data, undefined);
+      }, function() {
+        callback(undefined, "Error decoding the file " + url);
+      }
+    );
+  }
+  request.send();
+}
+
+function play() {
+  getFile(url, function(data) {
+    source = ctx.createBufferSource();
+    source.buffer = data;
+    source.loop = true;
+    source.connect(ctx.destination);
+    source.start(0);
+  });
+}
+
+function pause() {
+  source.stop(0);
+}
+
+function toggle(t) {
+  if (t.innerHTML == "Play") {
+    t.innerHTML = "Pause";
+    play();
+  } else {
+    t.innerHTML = "Play";
+    pause();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelector("#play-pause").addEventListener("click", function(e) {
+    toggle(e.target);
+  });
+});
+</script>
+</head>
+<body>
+  <h1>Is webaudio seamless-looping yet?</h1>
+  <canvas></canvas>
+  <button id=play-pause>Play</button>
+</body>
+</html>
