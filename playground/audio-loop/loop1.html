@@ -1,11 +1,73 @@
 <html>
   <head>
     <title>loop</title>
+    <script>
+      var SAMPLES = [
+        { id: 'beats', src: 'beats.wav' , name: 'Beats'},
+        { id: '100hz', src: '100Hz_44100Hz_16bit_05sec.wav', name: '100Hz Sine'},
+        { id: '250hz', src: '250Hz_44100Hz_16bit_05sec.wav', name: '250Hz Sine' },
+        { id: '440hz', src: '440Hz_44100Hz_16bit_05sec.wav', name: '440Hz Sine' },
+        { id: '1khz', src: '1kHz_44100Hz_16bit_05sec.wav', name: '1kHz Sine' },
+        { id: '10khz', src: '10kHz_44100Hz_16bit_05sec.wav', name: '10kHz Sine' }
+      ];
+
+      function GetAudio() {
+        return document.getElementById('playback');
+      }
+
+      function GetOptions() {
+        return document.getElementById('options');
+      }
+
+      function SetSource(aSrc) {
+        let element = GetAudio();
+        element.src = aSrc;
+      }
+
+      function Pause() {
+        let element = GetAudio();
+        element.pause();
+      }
+
+      function Play() {
+        let element = GetAudio();
+        element.play();
+      }
+
+      function IsPlaying() {
+        let element = GetAudio();
+        return !element.paused;
+      }
+
+      function SwitchSourceAndPlay(aSrc) {
+        if (IsPlaying()) {
+          Pause();
+        }
+        SetSource(aSrc);
+        Play();
+      }
+
+      function LoadSamples() {
+        for (let i = 0 ; i < SAMPLES.length ; ++i) {
+          let btn = document.createElement('button');
+          btn.id = SAMPLES[i].id;
+          btn.innerText = SAMPLES[i].name;
+          btn.addEventListener('click', function(e) {
+            SwitchSourceAndPlay(SAMPLES[i].src);
+          });
+          GetOptions().appendChild(btn);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        LoadSamples();
+      });
+    </script>
   </head>
   <body>
     <h1>Is playback seamless-looping yet?</h1>
-    <audio autoplay loop controls>
-      <source src="loop-sample.wav">
-    </audio>
+    <div id='options'></div>
+    <br />
+    <audio id='playback' loop controls></audio>
   </body>
 </html>
