@@ -11,12 +11,30 @@
         { id: '10khz', src: '10kHz_44100Hz_16bit_05sec.wav', name: '10kHz Sine' }
       ];
 
+      var EVENTS = [ 'seeking', 'seeked' ];
+
       function GetAudio() {
         return document.getElementById('playback');
       }
 
       function GetOptions() {
         return document.getElementById('options');
+      }
+
+      function GetLog() {
+        return document.getElementById('logger');
+      }
+
+      function GetLoopButton() {
+        return document.getElementById('loop');
+      }
+
+      function GetRate() {
+        return document.getElementById('rate');
+      }
+
+      function GetPlaybackRate() {
+        return Number(GetRate().value);
       }
 
       function SetSource(aSrc) {
@@ -47,6 +65,40 @@
         Play();
       }
 
+      function ShowLoop() {
+        let audioElement = GetAudio();
+        let loopButton = GetLoopButton();
+        loopButton.style.background = audioElement.loop ? 'red' : 'black';
+      }
+
+      function ToggleLoop() {
+        let audioElement = GetAudio();
+        let loopButton = GetLoopButton();
+        audioElement.loop = !audioElement.loop;
+        ShowLoop();
+      }
+
+      function ShowDefaultRate() {
+        let element = GetAudio();
+        GetRate().value = element.playbackRate;
+      }
+
+      function SetPlaybackRate() {
+        let element = GetAudio();
+        element.playbackRate = GetPlaybackRate();
+      }
+
+      function CountEvent(event) {
+        let count = document.getElementById(event.type);
+        count.innerText = Number(count.innerText) + 1;
+      }
+
+      function SetEventListeners() {
+        for (let i = 0 ; i < EVENTS.length ; ++i) {
+          GetAudio().addEventListener(EVENTS[i], CountEvent, false);
+        }
+      }
+
       function LoadSamples() {
         for (let i = 0 ; i < SAMPLES.length ; ++i) {
           let btn = document.createElement('button');
@@ -57,16 +109,37 @@
           });
           GetOptions().appendChild(btn);
         }
+
+        for (let i = 0 ; i < EVENTS.length ; ++i) {
+          let type = document.createTextNode(EVENTS[i] + ': ');
+          GetLog().appendChild(type);
+          let count = document.createElement('p');
+          count.innerText = '0';
+          count.id = EVENTS[i];
+          count.style.display = 'inline';
+          GetLog().appendChild(count);
+          let br = document.createElement('br');
+          GetLog().appendChild(br);
+        }
       }
 
       document.addEventListener("DOMContentLoaded", function() {
         LoadSamples();
+        SetEventListeners();
+        ShowLoop();
+        ShowDefaultRate();
       });
     </script>
   </head>
   <body>
     <h1>Is playback seamless-looping yet?</h1>
     <div id='options'></div>
+    <div id='controlpanel'>
+      <button id='loop' style='color:white' onclick='ToggleLoop()'>Loop</button>
+      rate: <input id='rate' type='text'><button id='setRate' onclick='SetPlaybackRate()'>set</button>
+    </div>
+    <div id='logger'>
+    </div>
     <br />
     <audio id='playback' loop controls></audio>
   </body>
