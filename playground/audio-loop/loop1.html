@@ -38,23 +38,19 @@
       }
 
       function SetSource(aSrc) {
-        let element = GetAudio();
-        element.src = aSrc;
+        GetAudio().src = aSrc;
       }
 
       function Pause() {
-        let element = GetAudio();
-        element.pause();
+        GetAudio().pause();
       }
 
       function Play() {
-        let element = GetAudio();
-        element.play();
+        GetAudio().play();
       }
 
       function IsPlaying() {
-        let element = GetAudio();
-        return !element.paused;
+        return !GetAudio().paused;
       }
 
       function SwitchSourceAndPlay(aSrc) {
@@ -63,29 +59,24 @@
         }
         SetSource(aSrc);
         Play();
+        SetPlaybackRate();
       }
 
       function ShowLoop() {
-        let audioElement = GetAudio();
-        let loopButton = GetLoopButton();
-        loopButton.style.background = audioElement.loop ? 'red' : 'black';
+        GetLoopButton().style.background = GetAudio().loop ? 'red' : 'black';
       }
 
       function ToggleLoop() {
-        let audioElement = GetAudio();
-        let loopButton = GetLoopButton();
-        audioElement.loop = !audioElement.loop;
+        GetAudio().loop = !GetAudio().loop;
         ShowLoop();
       }
 
       function ShowDefaultRate() {
-        let element = GetAudio();
-        GetRate().value = element.playbackRate;
+        GetRate().value = GetAudio().playbackRate;
       }
 
       function SetPlaybackRate() {
-        let element = GetAudio();
-        element.playbackRate = GetPlaybackRate();
+        GetAudio().playbackRate = GetPlaybackRate();
       }
 
       function CountEvent(event) {
