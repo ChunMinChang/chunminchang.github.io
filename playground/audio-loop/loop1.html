@@ -58,6 +58,7 @@
           Pause();
         }
         SetSource(aSrc);
+        ResetLog();
         Play();
         SetPlaybackRate();
       }
@@ -111,6 +112,13 @@
           GetLog().appendChild(count);
           let br = document.createElement('br');
           GetLog().appendChild(br);
+        }
+      }
+
+      function ResetLog() {
+        for (let i = 0 ; i < EVENTS.length ; ++i) {
+          log = document.getElementById(EVENTS[i]);
+          log.innerText = '0';
         }
       }
 
