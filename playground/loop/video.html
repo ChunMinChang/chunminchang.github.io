@@ -1,0 +1,107 @@
+<html>
+  <head>
+    <title>loop</title>
+    <script>
+      var EVENTS = {
+        timeupdate: UpdatePosition,
+        seeking: CountEvent,
+        seeked: CountEvent
+      };
+
+      function GetVideo() {
+        return document.getElementById('playback');
+      }
+
+      function GetLog() {
+        return document.getElementById('logger');
+      }
+
+      function GetLoopButton() {
+        return document.getElementById('loop');
+      }
+
+      function GetRate() {
+        return document.getElementById('rate');
+      }
+
+      function GetPlaybackRate() {
+        return Number(GetRate().value);
+      }
+
+      function ShowLoop() {
+        GetLoopButton().style.background = GetVideo().loop ? 'red' : 'black';
+      }
+
+      function ToggleLoop() {
+        GetVideo().loop = !GetVideo().loop;
+        ShowLoop();
+      }
+
+      function ShowDefaultRate() {
+        GetRate().value = GetVideo().playbackRate;
+      }
+
+      function SetPlaybackRate() {
+        GetVideo().playbackRate = GetPlaybackRate();
+      }
+
+      function UpdatePosition(event) {
+        let pos = document.getElementById(event.type);
+        pos.innerText = GetVideo().currentTime;
+      }
+
+      function CountEvent(event) {
+        let count = document.getElementById(event.type);
+        count.innerText = Number(count.innerText) + 1;
+      }
+
+      function SetEventListeners() {
+        for (key in EVENTS) {
+          GetVideo().addEventListener(key, EVENTS[key], false);
+        }
+      }
+
+      function InitLog() {
+        for (key in EVENTS) {
+          let type = document.createTextNode(key + ': ');
+          GetLog().appendChild(type);
+          let count = document.createElement('p');
+          count.innerText = '0';
+          count.id = key;
+          count.style.display = 'inline';
+          GetLog().appendChild(count);
+          let br = document.createElement('br');
+          GetLog().appendChild(br);
+        }
+      }
+
+      function ResetLog() {
+        for (key in EVENTS) {
+          log = document.getElementById(key);
+          log.innerText = '0';
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        InitLog();
+        SetEventListeners();
+        ShowLoop();
+        ShowDefaultRate();
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Is playback seamless-looping yet?</h1>
+    <div id='controlpanel'>
+      <button id='loop' style='color:white' onclick='ToggleLoop()'>Loop</button>
+      rate: <input id='rate' type='text'><button id='setRate' onclick='SetPlaybackRate()'>set</button>
+    </div>
+    <div id='logger'>
+    </div>
+    <br />
+    <video id='playback' loop controls>
+      <source src="mov_bbb.mp4" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+  </body>
+</html>

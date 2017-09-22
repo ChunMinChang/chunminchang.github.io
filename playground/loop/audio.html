@@ -11,7 +11,11 @@
         { id: '10khz', src: '10kHz_44100Hz_16bit_05sec.wav', name: '10kHz Sine' }
       ];
 
-      var EVENTS = [ 'seeking', 'seeked' ];
+      var EVENTS = {
+        timeupdate: UpdatePosition,
+        seeking: CountEvent,
+        seeked: CountEvent
+      };
 
       function GetAudio() {
         return document.getElementById('playback');
@@ -80,14 +84,19 @@
         GetAudio().playbackRate = GetPlaybackRate();
       }
 
+      function UpdatePosition(event) {
+        let pos = document.getElementById(event.type);
+        pos.innerText = GetAudio().currentTime;
+      }
+
       function CountEvent(event) {
         let count = document.getElementById(event.type);
         count.innerText = Number(count.innerText) + 1;
       }
 
       function SetEventListeners() {
-        for (let i = 0 ; i < EVENTS.length ; ++i) {
-          GetAudio().addEventListener(EVENTS[i], CountEvent, false);
+        for (key in EVENTS) {
+          GetAudio().addEventListener(key, EVENTS[key], false);
         }
       }
 
@@ -102,12 +111,12 @@
           GetOptions().appendChild(btn);
         }
 
-        for (let i = 0 ; i < EVENTS.length ; ++i) {
-          let type = document.createTextNode(EVENTS[i] + ': ');
+        for (key in EVENTS) {
+          let type = document.createTextNode(key + ': ');
           GetLog().appendChild(type);
           let count = document.createElement('p');
           count.innerText = '0';
-          count.id = EVENTS[i];
+          count.id = key;
           count.style.display = 'inline';
           GetLog().appendChild(count);
           let br = document.createElement('br');
@@ -116,8 +125,8 @@
       }
 
       function ResetLog() {
-        for (let i = 0 ; i < EVENTS.length ; ++i) {
-          log = document.getElementById(EVENTS[i]);
+        for (key in EVENTS) {
+          log = document.getElementById(key);
           log.innerText = '0';
         }
       }
