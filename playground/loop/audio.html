@@ -33,6 +33,10 @@
         return document.getElementById('loop');
       }
 
+      function GetLoopRecord() {
+        return document.getElementById('loopRecord');
+      }
+
       function GetRate() {
         return document.getElementById('rate');
       }
@@ -74,6 +78,7 @@
       function ToggleLoop() {
         GetAudio().loop = !GetAudio().loop;
         ShowLoop();
+        GetLoopRecord().innerText = GetAudio().currentTime;
       }
 
       function ShowDefaultRate() {
@@ -145,6 +150,7 @@
     <div id='controlpanel'>
       <button id='loop' style='color:white' onclick='ToggleLoop()'>Loop</button>
       rate: <input id='rate' type='text'><button id='setRate' onclick='SetPlaybackRate()'>set</button>
+      Stop Loop at: <p id='loopRecord' style='display:inline'></p>
     </div>
     <div id='logger'>
     </div>
