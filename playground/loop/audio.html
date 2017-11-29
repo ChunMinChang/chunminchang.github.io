@@ -16,13 +16,19 @@
         { id: 'small-shot-mp3', src: 'small-shot.mp3', name: 'small-shot(mp3)' },
         { id: 'small-shot-ogg', src: 'small-shot.ogg', name: 'small-shot(ogg)' },
         { id: 'sine-440-10s', src: 'sine-440-10s.opus', name: 'sine-440-10s(opus)' },
-        { id: 'r11025', src: 'r11025_s16_c1-short.wav', name: 'r11025' }
+        { id: 'r11025', src: 'r11025_s16_c1-short.wav', name: 'r11025' },
+        { id: 'dc', src: 'dc.wav', name: 'dc' },
+
       ];
 
       var EVENTS = {
         timeupdate: UpdatePosition,
         seeking: CountEvent,
-        seeked: CountEvent
+        seeked: CountEvent,
+        ended: CountEvent,
+        loadeddata: CountEvent,
+        loadedmetadata: CountEvent,
+        loadstart: CountEvent
       };
 
       function GetAudio() {
