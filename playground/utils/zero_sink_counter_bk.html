@@ -1,0 +1,180 @@
+<html>
+<head>
+<title>Zero Sink Finder</title>
+</head>
+<body>
+<script>
+
+//
+//  non-zero         /-----\              /-----\             /-----\
+//  (+ or /)        /       \            /       \           /       \
+//                 /         \          /         \         /         \
+//  zero  --------/           \--------/           \-------/           \-------
+//                                ^                    ^
+//                              sink!                sink!
+//
+// The following method calculate how many sinks in a given data.
+// The size of a sink must be larger than `N`, or it's not a sink.
+
+// ============================================================================
+//   ZeroSinkCounter
+// ============================================================================
+
+//   Helpers
+// ----------------------------------------------
+function SerialSum(size) {
+  // Private:
+  this._queue = [];
+  this._sum = 0;
+  this._size = size;
+}
+
+SerialSum.prototype = {
+  // Public APIs
+  get sum() {
+    return this._sum;
+  },
+
+  count(data) {
+    if (this._queue.length >= this._size) {
+      this._sum -= this._queue.shift();
+    }
+    this._queue.push(data);
+    this._sum += data;
+  },
+}
+
+const TREND = {
+  DOWN: -1,
+  UNKNOWN: 0,
+  UP: 1
+};
+
+//   ZeroSinkCounter
+// ----------------------------------------------
+function ZeroSinkCounter(size) {
+  this._sinks = 0;
+  this._size = size;
+  this._serialSum = new SerialSum(size);
+  this._lastSum = 0;
+  this._trend = TREND.UNKNOWN;
+}
+
+ZeroSinkCounter.prototype = {
+  // Private APIs
+  _countSink() {
+    if (this._lastSum != 0 && this._serialSum.sum == 0) {
+      this._trend = TREND.DOWN;
+    }
+
+    if (this._lastSum == 0 && this._serialSum.sum != 0) {
+      if (this._trend == TREND.DOWN) {
+        ++this._sinks;
+      }
+      this._trend = TREND.UP;
+    }
+
+    this._lastSum = this._serialSum.sum;
+  },
+
+  // Public APIs
+  count(data) {
+    this._serialSum.count(data);
+    this._countSink();
+  },
+
+  get sinks() {
+    return this._sinks;
+  },
+}
+
+// ============================================================================
+//   Test
+// ============================================================================
+function PushData(array, length, value) {
+  while (length) {
+    array.push(value);
+    --length;
+  }
+}
+
+function GenerateSinks(num, size) {
+  let data = [];
+  // Append a zero values.
+  PushData(data, 40, 0);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  data.push(1);
+  data.push(-1);
+  PushData(data, 40, 0);
+  for (let i = 0 ; i < num ; ++i) {
+    // Append some non-zero values in front of the sink.
+    PushData(data, 20, 1);
+    // Produce a zero sink.
+    PushData(data, size + 10, 0);
+  }
+  // Append some non-zero values in the end.
+  PushData(data, 40, 1);
+  return data;
+}
+
+function CountZeroSinks(data, size)
+{
+  let zsc = new ZeroSinkCounter(size);
+  for (let i = 0 ; i < data.length ; ++i) {
+    zsc.count(data[i]);
+  }
+  return zsc.sinks;
+}
+
+function DumpData(data) {
+  for (let i = 0 ; i < data.length ; ++i) {
+    console.log(data[i]);
+  }
+}
+
+function Test()
+{
+  const sinks = 7;
+  const size = 10;
+  let data = GenerateSinks(sinks, size);
+  // DumpData(data);
+  let counts = CountZeroSinks(data, size);
+  console.log("Expect: " + sinks + ", Get: " + counts);
+}
+
+Test();
+
+</script>
+</body>
+</html>
