@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Zero Sink Finder</title>
+<title>Zero Sink Counter</title>
 <!-- Google Chart:
   See more detail in https://developers.google.com/chart/interactive/docs/gallery/linechart -->
 <script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
@@ -186,7 +186,7 @@ function Test(rand) {
   ShowAnswer(sinks, size, count);
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {
+document.addEventListener('DOMContentLoaded', function(event) {
   // Generate a fixed pattern test.
   Test(false);
   // Setup the button for generating random test.
@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
   btn.addEventListener('click', function(e) {
     Test(true);
   }, false);
-});
+}, false);
 </script>
 </head>
 <body>
