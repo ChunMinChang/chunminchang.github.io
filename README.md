@@ -2,6 +2,8 @@
 
 - Mobile friendly
   - [x] Add toggle-able navigation bar for small screen
+  - [ ] Make sure all the background images are fill-screeen on different mobile devices
+    - Full backgrounds doesn't work on iOS devices now!
   - [ ] Adjust the position of down-arrow button on the first page
   - [ ] Adjust the layout of text-content and photo on About-Me page
   - [ ] Adjust the position of the external-link icons on About-Me page
