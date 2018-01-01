@@ -37,7 +37,9 @@ html {
   background-size: contain;
 	background-attachment: fixed;
 	background-position: right;
-	background-repeat: no-repeat;*/
+  background-repeat: no-repeat;*/
+  height: 100%;
+  overflow: hidden;
 }
 
 @media(min-width:500px) {
