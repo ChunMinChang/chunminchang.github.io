@@ -128,24 +128,26 @@ AudioAnalyser.prototype = {
 
 // Create an audio context.
 var context = new AudioContext();
-// Create an Oscillator with 440Hz frequency by default.
-var oscillator = new Oscillator(context, 440);
 // Create an AudioAnalyser and connect its AnalyserNode to the destination
 // of the audio context.
 var analyser = new AudioAnalyser(context);
 analyser.node.connect(context.destination);
+// An Oscillator that will be connected to the analyser.
+var oscillator;
 
 function start()
 {
   analyser.openSpectrum(document.getElementById("plot"));
+  let frequency = document.getElementById("frequency").value;
+  oscillator = new Oscillator(context, frequency);
   oscillator.node.connect(analyser.node);
   oscillator.start();
 }
 
 function stop()
 {
+  oscillator.stop();
   analyser.closeSpectrum();
-  oscillator.node.disconnect();
 }
 
 function toggleSwitch(evt)
@@ -169,6 +171,7 @@ document.addEventListener("DOMContentLoaded", function(evt) {
 </script>
 </head>
 <body>
+  <input id="frequency" type="number" value="440">Hz
   <button id="switch">play</button>
   <div id="plot"></div>
 </body>
