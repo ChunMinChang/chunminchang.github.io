@@ -1,0 +1,175 @@
+<html>
+<head>
+<title>FFT Plot</title>
+<script>
+// Reference: https://searchfox.org/mozilla-central/rev/03877052c151a8f062eea177f684a2743cd7b1d5/dom/media/tests/mochitest/head.js#183
+/**
+ * This class provides utilities to operate an OscillatorNode.
+ *
+ * @constructor
+ * @param {AudioContext} audioContext
+ *        AudioContext in which to create the OscillatorNode.
+ * @param {double} frequency
+ *        The frequency of the Oscillator.
+ */
+function Oscillator(audioContext, frequency)
+{
+  this.context = audioContext;
+  this.oscillator = this.context.createOscillator();
+  this.oscillator.frequency.value = frequency;
+  // this.destination = this.context.createMediaStreamDestination();
+  // this.oscillator.connect(this.destination);
+}
+
+Oscillator.prototype = {
+  /**
+   * Get the internal OscillatorNode.
+   */
+  get node() {
+    return this.oscillator;
+  },
+  /**
+   * Get the audio stream of the internal OscillatorNode.
+   */
+  // get stream() {
+  //   return this.destination.stream;
+  // },
+  /**
+   * Start the OscillatorNode.
+   */
+  start: function() {
+    this.oscillator.start();
+  },
+  /**
+   * Stop the OscillatorNode.
+   *   Once it stops, it cannot start again.
+   */
+  stop: function() {
+    this.oscillator.stop();
+  }
+};
+
+// Reference: https://searchfox.org/mozilla-central/rev/f42618c99dcb522fb674221acfbc68c2d92e7936/dom/media/tests/mochitest/head.js#33
+/**
+ * This class provides helpers around analysing the audio content in a stream
+ * using WebAudio AnalyserNodes.
+ *
+ * @constructor
+ * @param {AudioContext} audioContext
+ *        AudioContext in which to create the AnalyserNode.
+ */
+function AudioAnalyser(audioContext) {
+  this.context = audioContext;
+  this.analyser = this.context.createAnalyser();
+  // this.analyser.smoothingTimeConstant = 0.2;
+  this.analyser.fftSize = 1024;
+  this.fftData = new Uint8Array(this.analyser.frequencyBinCount);
+}
+
+AudioAnalyser.prototype = {
+  /**
+   * Get the internal AnalyserNode for analysing the audio stream.
+   */
+  get node() {
+    return this.analyser;
+  },
+
+  /**
+   * Get an array of frequency domain data for our stream's audio track.
+   *
+   * @returns {array} A Uint8Array containing the frequency domain data.
+   */
+   get frequencyData() {
+     this.analyser.getByteFrequencyData(this.fftData);
+     return this.fftData;
+   },
+
+  /**
+   * Append a canvas to the DOM where the frequency data are drawn.
+   */
+   openSpectrum: function(content) {
+    var cvs = this.canvas = document.createElement("canvas");
+    content.insertBefore(cvs, content.children[0]);
+
+    // Easy: 1px per bin
+    cvs.width = this.analyser.frequencyBinCount;
+    cvs.height = 200;
+    cvs.style.border = "1px solid red";
+
+    var c = cvs.getContext('2d');
+    c.fillStyle = 'black';
+
+    var self = this;
+    function render() {
+      c.clearRect(0, 0, cvs.width, cvs.height);
+      var array = self.frequencyData;
+      for (var i = 0; i < array.length; i++) {
+        c.fillRect(i, (cvs.height - (array[i] / 2)), 1, cvs.height);
+      }
+      if (!cvs.stopDrawing) {
+        requestAnimationFrame(render);
+      }
+    }
+    requestAnimationFrame(render);
+  },
+
+  /**
+   * Stop drawing of and remove the canvas from the DOM.
+   */
+   closeSpectrum: function() {
+    if (!this.canvas || !this.canvas.parentElement) {
+      return;
+    }
+
+    this.canvas.stopDrawing = true;
+    this.canvas.parentElement.removeChild(this.canvas);
+  },
+};
+
+// Create an audio context.
+var context = new AudioContext();
+// Create an Oscillator with 440Hz frequency by default.
+var oscillator = new Oscillator(context, 440);
+// Create an AudioAnalyser and connect its AnalyserNode to the destination
+// of the audio context.
+var analyser = new AudioAnalyser(context);
+analyser.node.connect(context.destination);
+
+function start()
+{
+  analyser.openSpectrum(document.getElementById("plot"));
+  oscillator.node.connect(analyser.node);
+  oscillator.start();
+}
+
+function stop()
+{
+  analyser.closeSpectrum();
+  oscillator.node.disconnect();
+}
+
+function toggleSwitch(evt)
+{
+  let btn = document.getElementById("switch");
+  if (btn.innerHTML == "" || btn.innerHTML == "stop") {
+    btn.innerHTML = "play";
+    stop();
+  } else {
+    btn.innerHTML = "stop";
+    start();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function(evt) {
+  console.log("DOM Content has been loaded.");
+  let btn = document.getElementById("switch");
+  btn.addEventListener("click", toggleSwitch, false);
+}, false);
+
+</script>
+</head>
+<body>
+  <button id="switch">play</button>
+  <div id="plot"></div>
+</body>
+</html>
