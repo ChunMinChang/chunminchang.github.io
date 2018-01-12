@@ -88,7 +88,7 @@ AudioAnalyser.prototype = {
    * Append a canvas to the DOM where the frequency data are drawn.
    */
    openSpectrum: function(content) {
-    var cvs = this.fftCanvas = document.createElement("canvas");
+    let cvs = this.fftCanvas = document.createElement("canvas");
     content.insertBefore(cvs, content.children[0]);
 
     // Easy: 1px per bin
@@ -96,14 +96,14 @@ AudioAnalyser.prototype = {
     cvs.height = 200;
     cvs.style.border = "1px solid red";
 
-    var c = cvs.getContext('2d');
+    let c = cvs.getContext('2d');
     c.fillStyle = 'black';
 
-    var self = this;
+    let self = this;
     function render() {
       c.clearRect(0, 0, cvs.width, cvs.height);
-      var array = self.frequencyData;
-      for (var i = 0; i < array.length; i++) {
+      let array = self.frequencyData;
+      for (let i = 0; i < array.length; ++i) {
         c.fillRect(i, (cvs.height - (array[i] / 2)), 1, cvs.height);
       }
       if (!cvs.stopDrawing) {
@@ -129,7 +129,7 @@ AudioAnalyser.prototype = {
    * Append a canvas to the DOM where the variation of frequency data are drawn.
    */
    openVariation: function(content) {
-    var cvs = this.variationCanvas = document.createElement("canvas");
+    let cvs = this.variationCanvas = document.createElement("canvas");
     content.appendChild(cvs);
 
     // Easy: 1px per bin
@@ -137,17 +137,17 @@ AudioAnalyser.prototype = {
     cvs.height = 200;
     cvs.style.border = "1px solid red";
 
-    var c = cvs.getContext('2d');
+    let c = cvs.getContext('2d');
     c.fillStyle = 'black';
 
-    var lastArray = [];
-    var self = this;
+    let lastArray = [];
+    let self = this;
     function render() {
       c.clearRect(0, 0, cvs.width, cvs.height);
-      var array = self.frequencyData;
+      let array = self.frequencyData;
       if (lastArray.length) {
-        for (var i = 0; i < array.length; i++) {
-          var diff = Math.abs(lastArray[i] - array[i]);
+        for (let i = 0; i < array.length; ++i) {
+          let diff = Math.abs(lastArray[i] - array[i]);
           c.fillRect(i, cvs.height - 100 * diff, 1, cvs.height);
           // if (diff) {
           //   console.log(i + " - last: " + lastArray[i] + ", current: " + array[i]);
