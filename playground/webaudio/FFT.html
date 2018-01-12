@@ -124,6 +124,55 @@ AudioAnalyser.prototype = {
     this.fftCanvas.stopDrawing = true;
     this.fftCanvas.parentElement.removeChild(this.fftCanvas);
   },
+
+  /**
+   * Append a canvas to the DOM where the variation of frequency data are drawn.
+   */
+   openVariation: function(content) {
+    var cvs = this.variationCanvas = document.createElement("canvas");
+    content.appendChild(cvs);
+
+    // Easy: 1px per bin
+    cvs.width = this.analyser.frequencyBinCount;
+    cvs.height = 200;
+    cvs.style.border = "1px solid red";
+
+    var c = cvs.getContext('2d');
+    c.fillStyle = 'black';
+
+    var lastArray = [];
+    var self = this;
+    function render() {
+      c.clearRect(0, 0, cvs.width, cvs.height);
+      var array = self.frequencyData;
+      if (lastArray.length) {
+        for (var i = 0; i < array.length; i++) {
+          var diff = Math.abs(lastArray[i] - array[i]);
+          c.fillRect(i, cvs.height - 100 * diff, 1, cvs.height);
+          // if (diff) {
+          //   console.log(i + " - last: " + lastArray[i] + ", current: " + array[i]);
+          // }
+        }
+      }
+      if (!cvs.stopDrawing) {
+        requestAnimationFrame(render);
+      }
+      lastArray = array.slice(0);
+    }
+    requestAnimationFrame(render);
+  },
+
+  /**
+   * Stop drawing of and remove the canvas from the DOM.
+   */
+   closeVariation: function() {
+    if (!this.variationCanvas || !this.variationCanvas.parentElement) {
+      return;
+    }
+
+    this.variationCanvas.stopDrawing = true;
+    this.variationCanvas.parentElement.removeChild(this.variationCanvas);
+  },
 };
 
 // Create an audio context.
@@ -138,6 +187,7 @@ var oscillator;
 function start()
 {
   analyser.openSpectrum(document.getElementById("plot"));
+  analyser.openVariation(document.getElementById("diff"));
   let frequency = document.getElementById("frequency").value;
   oscillator = new Oscillator(context, frequency);
   oscillator.node.connect(analyser.node);
@@ -148,6 +198,7 @@ function stop()
 {
   oscillator.stop();
   analyser.closeSpectrum();
+  analyser.closeVariation();
 }
 
 function toggleSwitch(evt)
@@ -171,9 +222,15 @@ document.addEventListener("DOMContentLoaded", function(evt) {
 </script>
 </head>
 <body>
+  <H1>WebAudio FFT Tester</H1>
   <p>Play a sine wave and show its frequency-domain data</p>
   <input id="frequency" type="number" value="440">Hz
   <button id="switch">play</button>
+  <h2>Fast Fourier transform(FFT)</h2>
   <div id="plot"></div>
+  <h2>Variation of FFT data</h2>
+  <p>Comparing current data with last one at the same frequency.</p>
+  <p>The data below is 100x of the variation.</p>
+  <div id="diff"></div>
 </body>
 </html>
