@@ -88,7 +88,7 @@ AudioAnalyser.prototype = {
    * Append a canvas to the DOM where the frequency data are drawn.
    */
    openSpectrum: function(content) {
-    var cvs = this.canvas = document.createElement("canvas");
+    var cvs = this.fftCanvas = document.createElement("canvas");
     content.insertBefore(cvs, content.children[0]);
 
     // Easy: 1px per bin
@@ -117,12 +117,12 @@ AudioAnalyser.prototype = {
    * Stop drawing of and remove the canvas from the DOM.
    */
    closeSpectrum: function() {
-    if (!this.canvas || !this.canvas.parentElement) {
+    if (!this.fftCanvas || !this.fftCanvas.parentElement) {
       return;
     }
 
-    this.canvas.stopDrawing = true;
-    this.canvas.parentElement.removeChild(this.canvas);
+    this.fftCanvas.stopDrawing = true;
+    this.fftCanvas.parentElement.removeChild(this.fftCanvas);
   },
 };
 
