@@ -265,8 +265,8 @@ AudioAnalyser.prototype = {
 
 // function start()
 // {
-//   analyser.openSpectrum(document.getElementById("plot"));
-//   analyser.openVariation(document.getElementById("diff"));
+//   analyser.openSpectrum(document.getElementById("fft"));
+//   analyser.openVariation(document.getElementById("change"));
 //   analyser.openNoise(document.getElementById("noise"));
 //   let frequency = document.getElementById("frequency").value;
 //   oscillator = new Oscillator(context, frequency);
@@ -293,8 +293,8 @@ function start()
   analyser = new AudioAnalyser(context, oscillator.stream);
   analyser.node.connect(context.destination);
 
-  analyser.openSpectrum(document.getElementById("plot"));
-  analyser.openVariation(document.getElementById("diff"));
+  analyser.openSpectrum(document.getElementById("fft"));
+  analyser.openVariation(document.getElementById("change"));
   analyser.openNoise(document.getElementById("noise"));
 
   oscillator.start();
@@ -334,11 +334,12 @@ document.addEventListener("DOMContentLoaded", function(evt) {
   <input id="frequency" type="number" value="440">Hz
   <button id="switch">play</button>
   <h2>Fast Fourier transform(FFT)</h2>
-  <div id="plot"></div>
+  <p>Show the frequency-domain data of the audio.</p>
+  <div id="fft"></div>
   <h2>Variation of FFT data</h2>
-  <p>Comparing current data with last one at the same frequency.</p>
-  <p>The data below is 100x of the variation.</p>
-  <div id="diff"></div>
+  <p>Compare the current data with last one at the same frequency.</p>
+  <p>The variation below is 100x of the original value.</p>
+  <div id="change"></div>
   <h2>Noise</h2>
   <p>Show when the frequency data changes from 0 to non-0, or from non-0 to 0.</p>
   <div id="noise"></div>
