@@ -17,8 +17,8 @@ function Oscillator(audioContext, frequency)
   this.context = audioContext;
   this.oscillator = this.context.createOscillator();
   this.oscillator.frequency.value = frequency;
-  // this.destination = this.context.createMediaStreamDestination();
-  // this.oscillator.connect(this.destination);
+  this.destination = this.context.createMediaStreamDestination();
+  this.oscillator.connect(this.destination);
 }
 
 Oscillator.prototype = {
@@ -31,9 +31,9 @@ Oscillator.prototype = {
   /**
    * Get the audio stream of the internal OscillatorNode.
    */
-  // get stream() {
-  //   return this.destination.stream;
-  // },
+  get stream() {
+    return this.destination.stream;
+  },
   /**
    * Start the OscillatorNode.
    */
@@ -58,12 +58,18 @@ Oscillator.prototype = {
  * @param {AudioContext} audioContext
  *        AudioContext in which to create the AnalyserNode.
  */
-function AudioAnalyser(audioContext) {
+function AudioAnalyser(audioContext, audioStream) {
   this.context = audioContext;
   this.analyser = this.context.createAnalyser();
   // this.analyser.smoothingTimeConstant = 0.2;
   this.analyser.fftSize = 1024;
   this.fftData = new Uint8Array(this.analyser.frequencyBinCount);
+
+  if (audioStream) {
+    this.stream = audioStream;
+    this.source = this.context.createMediaStreamSource(this.stream);
+    this.source.connect(this.analyser);
+  }
 }
 
 AudioAnalyser.prototype = {
@@ -246,23 +252,51 @@ AudioAnalyser.prototype = {
   },
 };
 
+// // Using AudioNode to connect AudioAnalyser and Oscillator
+// // ============================================================================
+// // Create an audio context.
+// var context = new AudioContext();
+// // Create an AudioAnalyser and connect its AnalyserNode to the destination
+// // of the audio context.
+// var analyser = new AudioAnalyser(context);
+// analyser.node.connect(context.destination);
+// // An Oscillator that will be connected to the analyser.
+// var oscillator;
+
+// function start()
+// {
+//   analyser.openSpectrum(document.getElementById("plot"));
+//   analyser.openVariation(document.getElementById("diff"));
+//   analyser.openNoise(document.getElementById("noise"));
+//   let frequency = document.getElementById("frequency").value;
+//   oscillator = new Oscillator(context, frequency);
+//   oscillator.node.connect(analyser.node);
+//   oscillator.start();
+// }
+
+// Using MediaStream to initialize AudioAnalyser
+// ============================================================================
 // Create an audio context.
 var context = new AudioContext();
-// Create an AudioAnalyser and connect its AnalyserNode to the destination
-// of the audio context.
-var analyser = new AudioAnalyser(context);
-analyser.node.connect(context.destination);
+// Create an AudioAnalyser that will be connected Oscillator.
+// Remeber to wire its AnalyserNode to the destination of the audio context,
+// or you won't hear the sound.
+var analyser;
 // An Oscillator that will be connected to the analyser.
 var oscillator;
 
 function start()
 {
+  let frequency = document.getElementById("frequency").value;
+  oscillator = new Oscillator(context, frequency);
+
+  analyser = new AudioAnalyser(context, oscillator.stream);
+  analyser.node.connect(context.destination);
+
   analyser.openSpectrum(document.getElementById("plot"));
   analyser.openVariation(document.getElementById("diff"));
   analyser.openNoise(document.getElementById("noise"));
-  let frequency = document.getElementById("frequency").value;
-  oscillator = new Oscillator(context, frequency);
-  oscillator.node.connect(analyser.node);
+
   oscillator.start();
 }
 
