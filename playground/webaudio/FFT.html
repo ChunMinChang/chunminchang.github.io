@@ -106,9 +106,21 @@ AudioAnalyser.prototype = {
   },
 
   /**
+   * Stop drawing of and remove the canvas from the DOM.
+   */
+  removeCanvas: function(cvs) {
+    if (!cvs || !cvs.parentElement) {
+      return;
+    }
+
+    cvs.stopDrawing = true;
+    cvs.parentElement.removeChild(cvs);
+  },
+
+  /**
    * Append a canvas to the DOM where the frequency data are drawn.
    */
-   openSpectrum: function(content) {
+  openSpectrum: function(content) {
     let cvs = this.fftCanvas = document.createElement("canvas");
     content.insertBefore(cvs, content.children[0]);
 
@@ -138,21 +150,16 @@ AudioAnalyser.prototype = {
   },
 
   /**
-   * Stop drawing of and remove the canvas from the DOM.
+   * Stop drawing frequency data.
    */
-   closeSpectrum: function() {
-    if (!this.fftCanvas || !this.fftCanvas.parentElement) {
-      return;
-    }
-
-    this.fftCanvas.stopDrawing = true;
-    this.fftCanvas.parentElement.removeChild(this.fftCanvas);
+  closeSpectrum: function() {
+    this.removeCanvas(this.fftCanvas);
   },
 
   /**
    * Append a canvas to the DOM where the variation of frequency data are drawn.
    */
-   openVariation: function(content) {
+  openVariation: function(content) {
     let cvs = this.variationCanvas = document.createElement("canvas");
     content.appendChild(cvs);
 
@@ -187,21 +194,16 @@ AudioAnalyser.prototype = {
   },
 
   /**
-   * Stop drawing of and remove the canvas from the DOM.
+   * Stop drawing the variation of frequency data.
    */
-   closeVariation: function() {
-    if (!this.variationCanvas || !this.variationCanvas.parentElement) {
-      return;
-    }
-
-    this.variationCanvas.stopDrawing = true;
-    this.variationCanvas.parentElement.removeChild(this.variationCanvas);
+  closeVariation: function() {
+    this.removeCanvas(this.variationCanvas);
   },
 
   /**
    * Append a canvas to the DOM where the noise of frequency data are drawn.
    */
-   openNoise: function(content) {
+  openNoise: function(content) {
     let cvs = this.noiseCanvas = document.createElement("canvas");
     content.appendChild(cvs);
 
@@ -237,15 +239,10 @@ AudioAnalyser.prototype = {
   },
 
   /**
-   * Stop drawing of and remove the canvas from the DOM.
+   * Stop drawing the noise of frequency data.
    */
-   closeNoise: function() {
-    if (!this.noiseCanvas || !this.noiseCanvas.parentElement) {
-      return;
-    }
-
-    this.noiseCanvas.stopDrawing = true;
-    this.noiseCanvas.parentElement.removeChild(this.noiseCanvas);
+  closeNoise: function() {
+    this.removeCanvas(this.noiseCanvas);
   },
 };
 
