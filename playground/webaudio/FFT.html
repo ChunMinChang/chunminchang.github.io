@@ -85,6 +85,27 @@ AudioAnalyser.prototype = {
    },
 
   /**
+   * Return the FFT bin index for a given frequency.
+   *
+   * @param {double} frequency
+   *        The frequency for whicht to return the bin number.
+   * @returns {integer} the index of the bin in the FFT array.
+   */
+  binIndexForFrequency: function(frequency) {
+    return 1 + Math.round(frequency * this.analyser.fftSize / this.context.sampleRate);
+  },
+
+  /**
+   * Reverse operation, get the frequency for a bin index.
+   *
+   * @param {integer} index an index in an FFT array
+   * @returns {double} the frequency for this bin
+   */
+  frequencyForBinIndex: function(index) {
+    return (index - 1) * this.context.sampleRate / this.analyser.fftSize;
+  },
+
+  /**
    * Append a canvas to the DOM where the frequency data are drawn.
    */
    openSpectrum: function(content) {
@@ -104,6 +125,9 @@ AudioAnalyser.prototype = {
       c.clearRect(0, 0, cvs.width, cvs.height);
       let array = self.frequencyData;
       for (let i = 0; i < array.length; ++i) {
+        // if (array[i]) {
+        //   console.log(i + " (" + self.frequencyForBinIndex(i) + "hz): " + array[i]);
+        // }
         c.fillRect(i, (cvs.height - (array[i] / 2)), 1, cvs.height);
       }
       if (!cvs.stopDrawing) {
