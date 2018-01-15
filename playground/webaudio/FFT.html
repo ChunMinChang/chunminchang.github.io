@@ -185,7 +185,7 @@ AudioAnalyser.prototype = {
       if (lastArray.length) {
         for (let i = 0; i < array.length; ++i) {
           let diff = Math.abs(lastArray[i] - array[i]);
-          c.fillRect(i, cvs.height - 100 * diff, 1, cvs.height);
+          c.fillRect(i, cvs.height - 40 * diff, 1, cvs.height);
           // if (diff) {
           //   console.log(i + " - last: " + lastArray[i] + ", current: " + array[i]);
           // }
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function(evt) {
   <div id="fft"></div>
   <h2>Variation of FFT data</h2>
   <p>Compare the current data with last one at the same frequency.</p>
-  <p>The variation below is 100x of the original value.</p>
+  <p>The variation below is 40x of the original value.</p>
   <div id="change"></div>
   <h2>Noise</h2>
   <p>Show when the frequency data changes from 0 to non-0, or from non-0 to 0.</p>
