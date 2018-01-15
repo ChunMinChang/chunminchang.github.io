@@ -197,6 +197,56 @@ AudioAnalyser.prototype = {
     this.variationCanvas.stopDrawing = true;
     this.variationCanvas.parentElement.removeChild(this.variationCanvas);
   },
+
+  /**
+   * Append a canvas to the DOM where the noise of frequency data are drawn.
+   */
+   openNoise: function(content) {
+    let cvs = this.noiseCanvas = document.createElement("canvas");
+    content.appendChild(cvs);
+
+    // Easy: 1px per bin
+    cvs.width = this.analyser.frequencyBinCount;
+    cvs.height = 200;
+    cvs.style.border = "1px solid red";
+
+    let c = cvs.getContext('2d');
+    c.fillStyle = 'black';
+
+    let lastArray = [];
+    let self = this;
+    function render() {
+      c.clearRect(0, 0, cvs.width, cvs.height);
+      let array = self.frequencyData;
+      if (lastArray.length) {
+        for (let i = 0; i < array.length; ++i) {
+          let noise = ((array[i] == 0 && lastArray[i] != 0) ||
+                       (array[i] != 0 && lastArray[i] == 0)) ? 1 : 0;
+          c.fillRect(i, cvs.height - 100 * noise, 1, cvs.height);
+          // if (noise) {
+          //   console.log(i + " - last: " + lastArray[i] + ", current: " + array[i]);
+          // }
+        }
+      }
+      if (!cvs.stopDrawing) {
+        requestAnimationFrame(render);
+      }
+      lastArray = array.slice(0);
+    }
+    requestAnimationFrame(render);
+  },
+
+  /**
+   * Stop drawing of and remove the canvas from the DOM.
+   */
+   closeNoise: function() {
+    if (!this.noiseCanvas || !this.noiseCanvas.parentElement) {
+      return;
+    }
+
+    this.noiseCanvas.stopDrawing = true;
+    this.noiseCanvas.parentElement.removeChild(this.noiseCanvas);
+  },
 };
 
 // Create an audio context.
@@ -212,6 +262,7 @@ function start()
 {
   analyser.openSpectrum(document.getElementById("plot"));
   analyser.openVariation(document.getElementById("diff"));
+  analyser.openNoise(document.getElementById("noise"));
   let frequency = document.getElementById("frequency").value;
   oscillator = new Oscillator(context, frequency);
   oscillator.node.connect(analyser.node);
@@ -223,6 +274,7 @@ function stop()
   oscillator.stop();
   analyser.closeSpectrum();
   analyser.closeVariation();
+  analyser.closeNoise();
 }
 
 function toggleSwitch(evt)
@@ -256,5 +308,8 @@ document.addEventListener("DOMContentLoaded", function(evt) {
   <p>Comparing current data with last one at the same frequency.</p>
   <p>The data below is 100x of the variation.</p>
   <div id="diff"></div>
+  <h2>Noise</h2>
+  <p>Show when the frequency data changes from 0 to non-0, or from non-0 to 0.</p>
+  <div id="noise"></div>
 </body>
 </html>
