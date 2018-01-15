@@ -209,7 +209,7 @@ AudioAnalyser.prototype = {
   /**
    * Append a canvas to the DOM where the noise of frequency data are drawn.
    */
-  openNoise: function(content) {
+  openSuddenChange: function(content) {
     let cvs = this.noiseCanvas = document.createElement("canvas");
     content.appendChild(cvs);
 
@@ -228,10 +228,10 @@ AudioAnalyser.prototype = {
       let array = self.frequencyData;
       if (lastArray.length) {
         for (let i = 0; i < array.length; ++i) {
-          let noise = ((array[i] == 0 && lastArray[i] != 0) ||
+          let value = ((array[i] == 0 && lastArray[i] != 0) ||
                        (array[i] != 0 && lastArray[i] == 0)) ? 1 : 0;
-          c.fillRect(i, cvs.height - 100 * noise, 1, cvs.height);
-          // if (noise) {
+          c.fillRect(i, cvs.height - 100 * value, 1, cvs.height);
+          // if (value) {
           //   console.log(i + " - last: " + lastArray[i] + ", current: " + array[i]);
           // }
         }
@@ -247,7 +247,7 @@ AudioAnalyser.prototype = {
   /**
    * Stop drawing the noise of frequency data.
    */
-  closeNoise: function() {
+  closeSuddenChange: function() {
     this.removeCanvas(this.noiseCanvas);
   },
 };
@@ -267,7 +267,7 @@ AudioAnalyser.prototype = {
 // {
 //   analyser.openSpectrum(document.getElementById("fft"));
 //   analyser.openVariation(document.getElementById("change"));
-//   analyser.openNoise(document.getElementById("noise"));
+//   analyser.openSuddenChange(document.getElementById("sudden"));
 //   let frequency = document.getElementById("frequency").value;
 //   oscillator = new Oscillator(context, frequency);
 //   oscillator.node.connect(analyser.node);
@@ -295,7 +295,7 @@ function start()
 
   analyser.openSpectrum(document.getElementById("fft"));
   analyser.openVariation(document.getElementById("change"));
-  analyser.openNoise(document.getElementById("noise"));
+  analyser.openSuddenChange(document.getElementById("sudden"));
 
   oscillator.start();
 }
@@ -305,7 +305,7 @@ function stop()
   oscillator.stop();
   analyser.closeSpectrum();
   analyser.closeVariation();
-  analyser.closeNoise();
+  analyser.closeSuddenChange();
 }
 
 function toggleSwitch(evt)
@@ -340,8 +340,8 @@ document.addEventListener("DOMContentLoaded", function(evt) {
   <p>Compare the current data with last one at the same frequency.</p>
   <p>The variation below is 40x of the original value.</p>
   <div id="change"></div>
-  <h2>Noise</h2>
+  <h2>Sudden Variation</h2>
   <p>Show when the frequency data changes from 0 to non-0, or from non-0 to 0.</p>
-  <div id="noise"></div>
+  <div id="sudden"></div>
 </body>
 </html>
