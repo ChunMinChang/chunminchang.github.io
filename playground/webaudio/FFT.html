@@ -85,10 +85,10 @@ AudioAnalyser.prototype = {
    *
    * @returns {array} A Uint8Array containing the frequency domain data.
    */
-   get frequencyData() {
-     this.analyser.getByteFrequencyData(this.fftData);
-     return this.fftData;
-   },
+  get frequencyData() {
+    this.analyser.getByteFrequencyData(this.fftData);
+    return this.fftData;
+  },
 
   /**
    * Return the FFT bin index for a given frequency.
