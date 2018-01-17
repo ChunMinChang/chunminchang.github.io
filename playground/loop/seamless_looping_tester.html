@@ -47,8 +47,26 @@
 // it in fft.html
 // Thus, we set an acceptable tolerance for the variation of the FFT data
 // to check if there is a discontinuity while looping the sine wave.
-const TIMES = 3;      // The looping time for the test.
-const TOLERANCE = 5;  // A tolerance for the variation of FFT data.
+//
+//          peak
+//           v
+//           |
+//          |||    ^
+//         |||||   | tolerance
+//        |||||||  v
+//       |||||||||
+// ------+++++++++----------> Frequency
+//           ^
+//       |---|
+//         ^ |
+//     range |
+//           |
+//        Frequency of the sine wave
+const FREQUENCY = 3000; // The frequency of the sine wave.
+const RANGE = 8;        // A half of an acceptable width of the FFT pulse
+                        // whose peak is FREQUENCY.
+const TOLERANCE = 5;    // A tolerance for the variation of FFT data.
+const TIMES = 3;        // The looping time for the test.
 
 var audioElement = document.createElement("audio");
 // audioElement.src = "sine-440hz-1s.wav";
@@ -63,8 +81,8 @@ var context = new AudioContext();
 var analyser = new AudioAnalyser(context, audioElement.mozCaptureStream());
 analyser.node.connect(context.destination);
 // Create a noiseDetecor to check if the audio loops seamlessly.
-// var noiseDetector = new NoiseDetector(analyser, 500);
-var noiseDetector = new NoiseDetector(analyser, 500, TOLERANCE);
+// var seamlessSineDetector = new SeamlessSineDetector(analyser, 100);
+var seamlessSineDetector = new SeamlessSineDetector(analyser, 100, FREQUENCY, RANGE, TOLERANCE);
 
 // Numbers of the received events.
 var eventCount = {
@@ -93,12 +111,12 @@ function loopCounter(evt) {
   if (eventCount.seeked >= TIMES) {
     console.log("Cancel loop.");
     evt.target.loop = false;
-    noiseDetector.stop();
+    seamlessSineDetector.stop();
   }
 }
 
 // Event callback for timeupdate event. It will be removed after starting
-// the noiseDetector. The result of the FFT might be not stable at the very
+// the seamlessSineDetector. The result of the FFT might be not stable at the very
 // beginning, so we start checking it after the audio is played for a while.
 function waitToStartDetector(evt) {
   eventCounter(evt);
@@ -108,7 +126,7 @@ function waitToStartDetector(evt) {
   if (time < begin) {
     return;
   }
-  noiseDetector.start();
+  seamlessSineDetector.start();
   ae.removeEventListener(evt.type, waitToStartDetector, false);
 }
 
@@ -128,7 +146,7 @@ function terminator(evt) {
   if (eventCount.seeked != TIMES) {
     errMsg.push("The number of received seeked events must be same as looping-times.");
   }
-  if (noiseDetector.detected) {
+  if (!seamlessSineDetector.seamlessness) {
     errMsg.push("FFT Noise Detected. The looping is not seamless.");
   }
 
@@ -187,6 +205,7 @@ function closeDebugger()
 function start()
 {
   document.getElementById("run").disabled = true;
+  document.getElementById("run").innerHTML = "Testing"
   openDebugger();
   registerEventListeners(audioElement);
   audioElement.play();
