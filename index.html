@@ -1,0 +1,399 @@
+<!-- Bootstrap References:
+  1. https://www.w3schools.com/bootstrap4/bootstrap_scrollspy.asp
+    - Know what data-spy, data-target and data-offset are used for
+  2. https://getbootstrap.com/docs/4.1/getting-started/introduction/
+    - Know what js and css do we need to import
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>template</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- css settings
+  ========================================================================= -->
+  <!-- bootstrap css -->
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+  <!-- font awesome css -->
+  <link rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+        integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ"
+        crossorigin="anonymous">
+  <!-- custom css -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
+  <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#page-top">Name</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto"> <!-- mr/ml-auto: move items to left/right -->
+        <li class="nav-item">
+          <a class="nav-link" href="#about">About
+            <span class="sr-only">(current)</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#experience">Experience</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#works">Works</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#"
+             id="navbarDropdown" role="button" data-toggle="dropdown"
+             aria-haspopup="true" aria-expanded="false">
+            Others
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="#skills">Skills</a>
+            <a class="dropdown-item" href="#interest">Interest</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="">else</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- About -->
+  <section id="about" class="section">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <h1>About</h1>
+          <div class="content-text-cover">
+            <p>Describe yourself here</p>
+          </div>
+          <!-- contact bar -->
+          <ul class="list-inline icon-list-inline">
+            <!-- Mail -->
+            <li class="list-inline-item">
+              <!-- <i class="far fa-envelope-open fa-lg"></i> -->
+              <i class="fas fa-envelope-open"></i>
+            </li>
+            <!-- Github -->
+            <li class="list-inline-item ">
+              <i class="fab fa-github fa-lg"></i>
+            </li>
+            <!-- Linkedin -->
+            <li class="list-inline-item">
+              <i class="fab fa-linkedin fa-lg"></i>
+            </li>
+            <!-- Twitter -->
+            <li class="list-inline-item">
+              <i class="fab fa-twitter fa-lg"></i>
+            </li>
+            <!-- Resume -->
+            <li class="list-inline-item">
+              <!-- <i class="far fa-file fa-lg"></i> -->
+              <i class="fas fa-file"></i>
+              Resume
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Experience -->
+  <section id="experience" class="section">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <h1>Experience</h2>
+          <div class="content-text-cover">
+
+            <h2>Work Experience</h2>
+            <div class="row">
+              <div class="col-sm-12 mx-auto">Company, City, Country</div>
+              <div class="col-sm-12 mx-auto">
+                <div class="row">
+                  <div class="col-sm-6 mx-auto">Job title</div>
+                  <div class="col-sm-6 mx-auto">Period</div>
+                  <div class="col-sm-12 mx-auto">
+                    <ul>Project A
+                      <li>highlight 1: Describe something that are usually long ......</li>
+                      <li>highlight 2: Describe something that are usually long ......</li>
+                    </ul>
+                  </div>
+                  <div class="col-sm-12 mx-auto">
+                    <ul>Project B
+                      <li>highlight 1: Describe something that are usually long ......</li>
+                      <li>highlight 2: Describe something that are usually long ......</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h2>Education</h2>
+            <div class="row">
+              <div class="col-sm-12 mx-auto">University, City, Country</div>
+              <div class="col-sm-12 mx-auto">
+                <div class="row">
+                  <div class="col-sm-6 mx-auto">Degree in Field</div>
+                  <div class="col-sm-6 mx-auto">Period</div>
+                  <div class="col-sm-12 mx-auto">
+                    <ul>Achievement
+                      <li>highlight 1: Describe something that are usually long ......</li>
+                      <li>highlight 2: Describe something that are usually long ......</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- end of content-text-cover -->
+        </div><!-- end of col-lg-8 -->
+      </div><!-- end of row -->
+    </div><!-- end of container-fluid -->
+  </section>
+
+  <!-- Works -->
+  <section id="works" class="section">
+    <div class="container">
+      <h1>Works</h1>
+      <h2>Selected Portfolio</h2>
+      <p>Some general introduction here</p>
+
+      <!-- Nav tabs -->
+      <ul class="nav nav-pills" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="pill" role="tab" href="#2018">2018</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="pill" role="tab" href="#2017">2017</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="pill" role="tab" href="#2016">2016</a>
+        </li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <!-- Works in 2018 -->
+        <div class="tab-pane active container fade show" id="2018">
+          <div class="card-deck">
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=11" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 1</h4>
+                <p class="card-text">Some example text.</p>
+                <button type="button" class="btn btn-primary"
+                        data-toggle="modal" data-target="#work1">
+                  Read more
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=29" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 2</h4>
+                <p class="card-text">Some example text.</p>
+                <button type="button" class="btn btn-primary"
+                        data-toggle="modal" data-target="#work2">
+                  Read more
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=37" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 3</h4>
+                <p class="card-text">Some example text.</p>
+                <a href="#" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=43" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 4</h4>
+                <p class="card-text">Some example text.</p>
+                <a href="#" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Works in 2017 -->
+        <div class="tab-pane container fade" id="2017">
+          <div class="card-deck">
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=57" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 5</h4>
+                <p class="card-text">Some example text.</p>
+                <a href="#" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=83" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 6</h4>
+                <p class="card-text">Some example text.</p>
+                <a href="#" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=89" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 7</h4>
+                <p class="card-text">Some example text.</p>
+                <a href="#" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+
+            <div class="card">
+              <img class="card-img-top" src="https://picsum.photos/500/500/?image=93" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-title">Work 8</h4>
+                <p class="card-text">Some example text.</p>
+                <a href="#" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Works in 2016 -->
+        <div class="tab-pane container fade" id="2016">
+          <div class="row">
+            <div class="col-3">
+              <div class="card">
+                <img class="card-img-top" src="https://picsum.photos/500/500/?image=107" alt="Card image cap">
+                <div class="card-body">
+                  <h4 class="card-title">Work 9</h4>
+                  <p class="card-text">Some example text.</p>
+                  <a href="#" class="btn btn-primary">Read more</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-3">
+              <div class="card">
+                <img class="card-img-top" src="https://picsum.photos/500/500/?image=127" alt="Card image cap">
+                <div class="card-body">
+                  <h4 class="card-title">Work 10</h4>
+                  <p class="card-text">Some example text.</p>
+                  <a href="#" class="btn btn-primary">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modals for Works -->
+
+      <!-- Work 1 Modal -->
+      <div class="modal fade" id="work1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Work 1</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body">
+              Description of the work here
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- End of Work 1 Modal-->
+
+      <!-- Work 2 Modal -->
+      <div class="modal fade" id="work2">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Work 2</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body">
+              Description of the work here
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- End of Work 2 Modal-->
+
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section id="others" class="section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="row" id="skills">
+              <div class="col-sm-12"><h1>Skills</h1></div>
+              <div class="col-sm-12 content-text-cover">
+                <ul>Languages
+                  <li>English</li>
+                  <li>Mandarin</li>
+                  <li>...</li>
+                </ul>
+              </div>
+            </div>
+            <div class="row" id="interest">
+              <div class="col-sm-12"><h1>Interest</h1></div>
+              <div class="col-sm-12 content-text-cover">
+                  <ul>Sport
+                    <li>baseball</li>
+                    <li>basketball</li>
+                    <li>...</li>
+                  </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  <!-- javascript libraries
+  ========================================================================= -->
+  <!-- bootstrap js (including jQuery and Popper.js) -->
+  <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+          integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+          crossorigin="anonymous"></script> -->
+  <!-- The jquery slim version doesn't support $(...).animate(...).
+       Use min version instead. -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+          integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+          integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+          crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+          integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+          crossorigin="anonymous"></script>
+
+  <!-- Smooth scrolling animation -->
+  <script src="js/scrollspy.js"></script>
+</body>
+</html>
