@@ -81,6 +81,10 @@ nav .dropdown-menu {
   background: rgba(0, 0, 0, 0.5);
 }
 
+#works .card .card-footer {
+  border: 0px;
+}
+
 #works .modal {
   color: black;
 }
