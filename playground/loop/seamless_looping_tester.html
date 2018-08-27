@@ -1,0 +1,237 @@
+<html>
+<head>
+<title>Seamless Looping Tester</title>
+<script type="text/javascript" src="audio_analyser.js"></script>
+<script>
+// ============================================================================
+//   How this test works
+// ============================================================================
+// 1) Prepare a high-frequency sine wave
+// 2) Loop the sine wave by an audio element
+// 3) Capture the media stream from the playing audio element while looping
+// 4) Get the frequency-domain data of the captured stream by FFT
+// 5) Check if there is noise in the frequency-domain data
+//
+// Ideally, the frequency-domain data for a seamless sine wave should be:
+//
+//           |
+//           |
+//           |
+//           |
+// ----------+--------------> Frequency
+//           ^
+//        Frequency of the sine wave
+//
+// If there is discontinuity in the sine wave, it may look like:
+//
+//           |
+//           |       noise
+//           |       v
+//   | | | | | | | | |
+// --+-+-+-+-+-+-+-+-+------> Frequency
+//           ^
+//        Frequency of the sine wave
+//
+// However, in practice, our FFT is not perfect. The frequency-domain data for
+// a seamless sine wave will be:
+//
+//           |
+//          |||
+//         |||||
+//         |||||
+// --------+++++------------> Frequency
+//           ^
+//        Frequency of the sine wave
+//
+// The higher frequency is, the more stable of the FFT data is. You can check
+// it in fft.html
+// Thus, we set an acceptable tolerance for the variation of the FFT data
+// to check if there is a discontinuity while looping the sine wave.
+//
+//          peak
+//           v
+//           |
+//          |||    ^
+//         |||||   | tolerance
+//        |||||||  v
+//       |||||||||
+// ------+++++++++----------> Frequency
+//           ^
+//       |---|
+//         ^ |
+//     range |
+//           |
+//        Frequency of the sine wave
+const FREQUENCY = 3000; // The frequency of the sine wave.
+const RANGE = 8;        // A half of an acceptable width of the FFT pulse
+                        // whose peak is FREQUENCY.
+const TOLERANCE = 5;    // A tolerance for the variation of FFT data.
+const TIMES = 3;        // The looping time for the test.
+
+var audioElement = document.createElement("audio");
+// audioElement.src = "sine-440hz-1s.wav";
+audioElement.src = "sine-3000hz-1s.wav";
+audioElement.loop = true;
+
+console.assert(audioElement.loop == TIMES > 0, "The loop setting is different.");
+
+var context = new AudioContext();
+// Create an AudioAnalyser to get the FFT data of the audio stream.
+// The FFT data will be used to check if there is discontinuity while looping.
+var analyser = new AudioAnalyser(context, audioElement.mozCaptureStream());
+analyser.node.connect(context.destination);
+// Create a noiseDetecor to check if the audio loops seamlessly.
+// var seamlessSineDetector = new SeamlessSineDetector(analyser, 100);
+var seamlessSineDetector = new SeamlessSineDetector(analyser, 100, FREQUENCY, RANGE, TOLERANCE);
+
+// Numbers of the received events.
+var eventCount = {
+  play: 0,
+  seeking: 0,
+  seeked: 0,
+  timeupdate: 0,
+};
+
+// Get how much time has passed.
+function getTimePass(ae) {
+  return ae.duration * eventCount.seeked + ae.currentTime;
+}
+
+// Event callback for play and seeking event.
+function eventCounter(evt) {
+  ++eventCount[evt.type];
+  let ae = evt.target;
+  console.log(ae.currentTime + "(" + getTimePass(ae).toFixed(6) + ")\t" +
+              evt.type + ": " + eventCount[evt.type]);
+}
+
+// Event callback for seeked event.
+function loopCounter(evt) {
+  eventCounter(evt);
+  if (eventCount.seeked >= TIMES) {
+    console.log("Cancel loop.");
+    evt.target.loop = false;
+    seamlessSineDetector.stop();
+  }
+}
+
+// Event callback for timeupdate event. It will be removed after starting
+// the seamlessSineDetector. The result of the FFT might be not stable at the very
+// beginning, so we start checking it after the audio is played for a while.
+function waitToStartDetector(evt) {
+  eventCounter(evt);
+  let ae = evt.target;
+  let begin = ae.duration / 2;
+  let time = getTimePass(ae);
+  if (time < begin) {
+    return;
+  }
+  seamlessSineDetector.start();
+  ae.removeEventListener(evt.type, waitToStartDetector, false);
+}
+
+// Event callback for end event. It's the endpoint of the test.
+function terminator(evt) {
+  let ae = evt.target;
+  let errMsg = [];
+  if (ae.currentTime != ae.duration) {
+    errMsg.push("The end time should be same as the duration.");
+  }
+  if (eventCount.play != 1) {
+    errMsg.push("The number of received play event must be one.");
+  }
+  if (eventCount.seeking != TIMES) {
+    errMsg.push("The number of received seeking events must be same as looping-times.");
+  }
+  if (eventCount.seeked != TIMES) {
+    errMsg.push("The number of received seeked events must be same as looping-times.");
+  }
+  if (!seamlessSineDetector.seamlessness) {
+    errMsg.push("FFT Noise Detected. The looping is not seamless.");
+  }
+
+  context.close();
+  closeDebugger();
+  showResult(errMsg);
+}
+
+function showResult(errMsg)
+{
+  document.getElementById("run").style.color = "white";
+  document.getElementById("run").style.border = "none";
+  document.getElementById("run").style.backgroundColor = errMsg.length ? "red" : "green";
+  document.getElementById("run").innerHTML = errMsg.length ? "failed" : "pass";
+
+  errMsg.forEach(function(msg) {
+    let m = document.createTextNode(msg);
+    document.getElementById("result").appendChild(m);
+  });
+}
+
+// Register all the event callbacks.
+function registerEventListeners(audio) {
+  let listeners = {
+    play: eventCounter,
+    seeking: eventCounter,
+    seeked: loopCounter,
+    ended: terminator,
+    timeupdate: waitToStartDetector,
+  };
+
+  for (evt in listeners) {
+    audio.addEventListener(evt, listeners[evt], false);
+  }
+}
+
+function openDebugger()
+{
+  // Open a canvas to show the frequency-domain data.
+  analyser.openSpectrum(document.getElementById("fft"));
+  // Open a canvas to show the variation of frequency-domain data.
+  // The variation is |current fft value - previous fft value| at the same index.
+  analyser.openVariation(document.getElementById("variation"));
+  // Open a canvas to show the sudden change of frequency-domain data.
+  // Sudden change: data changes from 0 to non-0, or non-0 to 0.
+  analyser.openSuddenChange(document.getElementById("sudden"));
+}
+
+function closeDebugger()
+{
+  analyser.closeSpectrum();
+  analyser.closeVariation();
+  analyser.closeSuddenChange();
+}
+
+function start()
+{
+  document.getElementById("run").disabled = true;
+  document.getElementById("run").innerHTML = "Testing"
+  openDebugger();
+  registerEventListeners(audioElement);
+  audioElement.play();
+}
+
+document.addEventListener("DOMContentLoaded", function(evt) {
+  console.log("DOM Content has been loaded.");
+  document.getElementById("run").addEventListener("click", start, false);
+}, false);
+
+</script>
+</head>
+<body>
+  <H1>Seamless Looping Tester</H1>
+  <p>Loop a sine wave and check its frequency-domain data</p>
+  <button id="run" style="font-size:16px;">run</button>
+  <div id="result" style="font-size:16px; color:blue;"></div>
+  <h2>Fast Fourier transform(FFT)</h2>
+  <p>Show the frequency-domain data of the audio.</p>
+  <div id="fft"></div>
+  <h2>Variation of FFT data</h2>
+  <p>Compare the current data with last one at the same frequency.</p>
+  <p>The variation below is 40x of the original value.</p>
+  <div id="variation"></div>
+  <h2>Sudden Variation</h2>
+  <p>Show when the frequency data changes from 0 to non-0, or from non-0 to 0.</p>
+  <div id="sudden"></div>
+</body>
+</html>

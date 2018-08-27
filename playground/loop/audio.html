@@ -1,0 +1,174 @@
+<html>
+  <head>
+    <title>loop</title>
+    <script>
+      var SAMPLES = [
+        { id: 'beats', src: 'beats.wav' , name: 'Beats'},
+        { id: '100hz', src: '100Hz_44100Hz_16bit_05sec.wav', name: '100Hz Sine'},
+        { id: '250hz', src: '250Hz_44100Hz_16bit_05sec.wav', name: '250Hz Sine' },
+        { id: '440hz', src: '440Hz_44100Hz_16bit_05sec.wav', name: '440Hz Sine' },
+        { id: '1khz', src: '1kHz_44100Hz_16bit_05sec.wav', name: '1kHz Sine' },
+        { id: '10khz', src: '10kHz_44100Hz_16bit_05sec.wav', name: '10kHz Sine' },
+        { id: 'wpt-snd5-oga', src: 'sound_5.oga', name: 'Metronome(oga)' },
+        { id: 'wpt-snd5-mp3', src: 'sound_5.mp3', name: 'Metronome(mp3)' },
+        { id: 'small-shot-flac', src: 'small-shot.flac', name: 'small-shot(flac)' },
+        { id: 'small-shot-m4a', src: 'small-shot.m4a', name: 'small-shot(m4a)' },
+        { id: 'small-shot-mp3', src: 'small-shot.mp3', name: 'small-shot(mp3)' },
+        { id: 'small-shot-ogg', src: 'small-shot.ogg', name: 'small-shot(ogg)' },
+        { id: 'sine-440-10s', src: 'sine-440-10s.opus', name: 'sine-440-10s(opus)' },
+        { id: 'r11025', src: 'r11025_s16_c1-short.wav', name: 'r11025' },
+        { id: 'dc', src: 'dc.wav', name: 'dc' },
+
+      ];
+
+      var EVENTS = {
+        timeupdate: UpdatePosition,
+        seeking: CountEvent,
+        seeked: CountEvent,
+        ended: CountEvent,
+        loadeddata: CountEvent,
+        loadedmetadata: CountEvent,
+        loadstart: CountEvent
+      };
+
+      function GetAudio() {
+        return document.getElementById('playback');
+      }
+
+      function GetOptions() {
+        return document.getElementById('options');
+      }
+
+      function GetLog() {
+        return document.getElementById('logger');
+      }
+
+      function GetLoopButton() {
+        return document.getElementById('loop');
+      }
+
+      function GetLoopRecord() {
+        return document.getElementById('loopRecord');
+      }
+
+      function GetRate() {
+        return document.getElementById('rate');
+      }
+
+      function GetPlaybackRate() {
+        return Number(GetRate().value);
+      }
+
+      function SetSource(aSrc) {
+        GetAudio().src = aSrc;
+      }
+
+      function Pause() {
+        GetAudio().pause();
+      }
+
+      function Play() {
+        GetAudio().play();
+      }
+
+      function IsPlaying() {
+        return !GetAudio().paused;
+      }
+
+      function SwitchSourceAndPlay(aSrc) {
+        if (IsPlaying()) {
+          Pause();
+        }
+        SetSource(aSrc);
+        ResetLog();
+        Play();
+        SetPlaybackRate();
+      }
+
+      function ShowLoop() {
+        GetLoopButton().style.background = GetAudio().loop ? 'red' : 'black';
+      }
+
+      function ToggleLoop() {
+        GetAudio().loop = !GetAudio().loop;
+        ShowLoop();
+        GetLoopRecord().innerText = GetAudio().currentTime;
+      }
+
+      function ShowDefaultRate() {
+        GetRate().value = GetAudio().playbackRate;
+      }
+
+      function SetPlaybackRate() {
+        GetAudio().playbackRate = GetPlaybackRate();
+      }
+
+      function UpdatePosition(event) {
+        let pos = document.getElementById(event.type);
+        pos.innerText = GetAudio().currentTime;
+      }
+
+      function CountEvent(event) {
+        let count = document.getElementById(event.type);
+        count.innerText = Number(count.innerText) + 1;
+      }
+
+      function SetEventListeners() {
+        for (key in EVENTS) {
+          GetAudio().addEventListener(key, EVENTS[key], false);
+        }
+      }
+
+      function LoadSamples() {
+        for (let i = 0 ; i < SAMPLES.length ; ++i) {
+          let btn = document.createElement('button');
+          btn.id = SAMPLES[i].id;
+          btn.innerText = SAMPLES[i].name;
+          btn.addEventListener('click', function(e) {
+            SwitchSourceAndPlay(SAMPLES[i].src);
+          });
+          GetOptions().appendChild(btn);
+        }
+
+        for (key in EVENTS) {
+          let type = document.createTextNode(key + ': ');
+          GetLog().appendChild(type);
+          let count = document.createElement('p');
+          count.innerText = '0';
+          count.id = key;
+          count.style.display = 'inline';
+          GetLog().appendChild(count);
+          let br = document.createElement('br');
+          GetLog().appendChild(br);
+        }
+      }
+
+      function ResetLog() {
+        for (key in EVENTS) {
+          log = document.getElementById(key);
+          log.innerText = '0';
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        LoadSamples();
+        SetEventListeners();
+        ShowLoop();
+        ShowDefaultRate();
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Does audio playback loop seamlessly?</h1>
+    <div id='options'></div>
+    <div id='controlpanel'>
+      <button id='loop' style='color:white' onclick='ToggleLoop()'>Loop</button>
+      rate: <input id='rate' type='text'><button id='setRate' onclick='SetPlaybackRate()'>set</button>
+      Stop Loop at: <p id='loopRecord' style='display:inline'></p>
+    </div>
+    <div id='logger'>
+    </div>
+    <br />
+    <audio id='playback' loop controls></audio>
+  </body>
+</html>
