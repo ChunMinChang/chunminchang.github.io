@@ -64,6 +64,10 @@ nav .dropdown-menu {
   background-size: cover;
 }
 
+#experience a {
+  color: white;
+}
+
 #works {
   background-image: url("../images/backgrounds/work.jpg");
   background-size: cover;
