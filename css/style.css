@@ -52,6 +52,9 @@ nav .dropdown-menu {
   margin-left: 25px;
   margin-right: 25px;
 }
+#about .icon-list-inline li a {
+  color: white;
+}
 
 #experience {
   background-image: url("../images/backgrounds/experience.jpg");
