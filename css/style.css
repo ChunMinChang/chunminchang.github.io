@@ -38,7 +38,8 @@ nav .dropdown-menu {
 }
 
 #about {
-  background-color: #1E88E5;
+  background-image: url("../images/backgrounds/about.jpg");
+  background-size: cover;
 }
 
 #about .icon-list-inline {
@@ -53,11 +54,13 @@ nav .dropdown-menu {
 }
 
 #experience {
-  background-color: #673ab7;
+  background-image: url("../images/backgrounds/experience.jpg");
+  background-size: cover;
 }
 
 #works {
-  background-color: #ff9800;
+  background-image: url("../images/backgrounds/work.jpg");
+  background-size: cover;
 }
 
 #works .nav {
@@ -89,5 +92,6 @@ nav .dropdown-menu {
 }
 
 #others {
-  background-color: #009688;
+  background-image: url("../images/backgrounds/others.jpg");
+  background-size: cover;
 }
