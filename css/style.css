@@ -42,6 +42,10 @@ nav .dropdown-menu {
   background-size: cover;
 }
 
+#about h1 {
+  text-shadow: 1px 1px #dddddd;
+}
+
 #about .icon-list-inline {
   font-size: 20px;
   text-align: center;
