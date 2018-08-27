@@ -97,3 +97,7 @@ nav .dropdown-menu {
   background-image: url("../images/backgrounds/others.jpg");
   background-size: cover;
 }
+
+#notes a {
+  color: #eee109;
+}
