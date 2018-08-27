@@ -49,8 +49,7 @@ nav .dropdown-menu {
   margin-bottom: 20px;
 }
 #about .icon-list-inline li {
-  margin-left: 25px;
-  margin-right: 25px;
+  margin: 25px;
 }
 #about .icon-list-inline li a {
   color: white;
