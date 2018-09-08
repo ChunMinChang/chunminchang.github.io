@@ -1,49 +1,207 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset
       xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-      xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 <!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
 
+
 <url>
-  <loc>http://chunminchang.github.io/</loc>
-  <image:image>
-    <image:loc>http://chunminchang.github.io/images/logo.png</image:loc> 
-  </image:image>
-  <lastmod>2015-09-16T03:56:30+00:00</lastmod>
-  <changefreq>always</changefreq>
+  <loc>https://chunminchang.github.io/</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>http://chunminchang.github.io/works/ECT/</loc>
-  <lastmod>2015-09-16T03:56:30+00:00</lastmod>
-  <changefreq>always</changefreq>
+  <loc>https://chunminchang.github.io/playground/</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://chunminchang.github.io/talks/music/taiwan_voices_across_time/</loc>
-  <lastmod>2015-09-16T03:56:30+00:00</lastmod>
-  <changefreq>always</changefreq>
+  <loc>https://chunminchang.github.io/blog/</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://chunminchang.github.io/talks/music/taiwan_voices_across_time/intro/</loc>
-  <lastmod>2015-09-16T03:56:30+00:00</lastmod>
-  <changefreq>always</changefreq>
+  <loc>https://chunminchang.github.io/docs/resume.pdf</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://chunminchang.github.io/talks/music/taiwan_voices_across_time/grassroots/</loc>
-  <lastmod>2015-09-16T03:56:30+00:00</lastmod>
-  <changefreq>always</changefreq>
+  <loc>https://chunminchang.github.io/blog/post/audio-5-1</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://chunminchang.github.io/works/ECT/particle-filter-intro.pdf</loc>
-  <lastmod>2015-09-16T03:56:30+00:00</lastmod>
-  <changefreq>always</changefreq>
+  <loc>https://chunminchang.github.io/docs/particle-filter-intro.pdf</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/playground/loop/webaudio.html</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
   <priority>0.64</priority>
 </url>
+<url>
+  <loc>https://chunminchang.github.io/playground/loop/audio.html</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/playground/loop/video.html</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/playground/loop/seamless_looping_tester.html</loc>
+  <lastmod>2018-08-27T15:25:51+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/categories/index.html</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/a-room-without-windows</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/poor-students-are-missing-at-top-universities</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/audio-debugging-kit</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/running-average</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/estimation-of-mp3-duration</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/about/</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/tags/index.html</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/master-fibonacci</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/calculating-fibonacci-numbers-by-fast-doubling</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/matrix-difference-equation-for-fibonacci-sequence</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/exponentiation-by-squaring</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/merge-sort</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/bubble-sort</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/insertion-sort</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/selection-sort</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/lunar-new-year</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/development-notes-for-mozilla</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/adding-a-ipdl-into-pcontent</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/running-multiple-firefox-at-the-same-time</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/requiring-android-build-tools-for-fennec</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/the-misuse-of-refptr</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/refptr-v-s-shared-ptr</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/hash-table-v-s-mutable-array</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/pthread-mutex-with-different-types</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/how-to-simulate-a-c-class-in-c</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/how-to-avoid-duplicate-symbols-when-compiling</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/deadlock-when-using-audiounit</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://chunminchang.github.io/blog/post/closed-form-for-the-fibonacci-sequence</loc>
+  <lastmod>2018-09-08T16:28:12+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+
+
 </urlset>
