@@ -1,7 +1,3 @@
-# Personal website template
-
-This template is used to be a simple page with scrolling animation
-when moving from sections to sections.
-
-## TO-DO
-- [ ] Add a branch to make a resume template
+## TO-DOAdd a branch to make a resume template
+- [ ] Make seamless_looping_tester works on Chrome
+  - `audioElement.mozCaptureStream()` doesn't work on Chrome. Try ```audioElement.captureStream()``` maybe.
