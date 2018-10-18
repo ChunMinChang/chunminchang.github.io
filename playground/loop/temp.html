@@ -12,10 +12,9 @@ audio.controls = true;
 audio.loop = true;
 audio.seekedCount = 0;
 
-
 audio.addEventListener("playing", function (e) {
   console.log(audio.duration);
-  audio.currentTime = audio.duration - 1;
+  audio.currentTime = audio.duration - 2;
 });
 
 audio.addEventListener("seeked", function (e) {
