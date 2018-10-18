@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Test for seamless loop of HTMLMediaElements</title>
+</head>
+<body>
+<pre id="test">
+<script type="application/javascript">
+let audio = document.createElement("audio");
+audio.src = "http://www.hyperion-records.co.uk/audiotest/18%20MacCunn%20The%20Lay%20of%20the%20Last%20Minstrel%20-%20Part%202%20Final%20chorus%20O%20Caledonia!%20stern%20and%20wild.FLAC"
+audio.controls = true;
+audio.loop = true;
+audio.seekedCount = 0;
+
+
+audio.addEventListener("playing", function (e) {
+  console.log(audio.duration);
+  audio.currentTime = audio.duration - 1;
+});
+
+audio.addEventListener("seeked", function (e) {
+  e.target.seekedCount += 1;
+  console.log(e.target.currentTime);
+  if (e.target.seekedCount == 2) {
+    e.target.loop = false;
+  }
+});
+
+audio.addEventListener("ended", function (e) {
+  console.log("END!");
+  console.assert(!e.target.loop, "Shouldn't get ended event while looping.");
+});
+
+document.body.appendChild(audio);
+audio.play();
+</script>
+</pre>
+</body>
+</html>
