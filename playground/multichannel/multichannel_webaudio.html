@@ -1,0 +1,34 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>multi-channel tests</title>
+  <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+      // DOM fully loaded and parsed.
+      init();
+    });
+
+    function init() {
+      var btn = document.getElementById("play");
+      btn.addEventListener("click", start);
+    }
+
+    function start() {
+      var ac = new AudioContext;
+      var channels = ac.destination.maxChannelCount;
+      var merger = new ChannelMergerNode(ac, {numberOfInputs: channels});
+      merger.connect(ac.destination);
+      console.log("Play periodic waveform in " + channels + " channels.");
+      for (var i = 0; i < channels; i++) {
+        var osc = new OscillatorNode(ac);
+        osc.frequency.value = (i + 1) * 100;
+        osc.connect(merger, 0, i);
+        osc.start(0);
+      }
+    }
+  </script>
+</head>
+<body>
+  <button id="play">play</button>
+</body>
+</html>
