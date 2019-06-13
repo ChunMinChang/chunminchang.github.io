@@ -1,0 +1,28 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>BMO 1523920</title>
+  <script src="default_button.js"></script>
+  <script>
+    function runOnClick() {
+      let u = new SpeechSynthesisUtterance("hello world");
+      u.lang = "en-US";
+      // Add a timeout mechanism!
+      u.onend = (evt) => {
+        u.onend = (evt) => {
+          console.log("Finish test!");
+        }
+        speechSynthesis.speak(u);
+      }
+      speechSynthesis.speak(u);
+    }
+  </script>
+</head>
+
+<body>
+  <!-- Show the result here! -->
+  <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1523920" target="_blank">BMO 1523920</a>
+</body>
+
+</html>
