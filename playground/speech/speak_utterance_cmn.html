@@ -1,0 +1,22 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Test Template</title>
+  <script src="default_button.js"></script>
+  <script>
+    function runOnClick() {
+      let u = new SpeechSynthesisUtterance();
+      u.lang = "cmn";
+      u.text = "早安";
+      speechSynthesis.speak(u);
+    }
+  </script>
+</head>
+
+<body>
+  <!-- Show the result here! -->
+  <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1541330" target="_blank">BMO 1541330</a>
+</body>
+
+</html>
