@@ -1,0 +1,44 @@
+﻿<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>BMO 1545952</title>
+  <script src="default_button.js"></script>
+  <script>
+    function runOnClick() {
+      voices = [];
+
+      let utt1 = new SpeechSynthesisUtterance("Hello");
+      let utt2 = new SpeechSynthesisUtterance("World");
+
+      utt1.voice = speechSynthesis.getVoices()[0];
+      voices.push(utt1.voice);
+      speechSynthesis.speak(utt1);
+
+      utt1.addEventListener('end', (event) => {
+        utt2.voice = speechSynthesis.getVoices()[0];
+        voices.push(utt2.voice);
+        speechSynthesis.speak(utt2);
+      });
+
+      utt2.addEventListener('end', (event) => {
+        console.log(voices);
+        for (let i = 1 ; i < voices.length; ++i) {
+          console.assert(voices[i] == voices[i-1], "the voices are different.");
+        }
+      });
+    }
+
+    speechSynthesis.addEventListener('voiceschanged', function() {
+      let voices = speechSynthesis.getVoices();
+      console.log(voices);
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Show the result here! -->
+  <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1545952" target="_blank">BMO 1545952</a>
+</body>
+
+</html>
