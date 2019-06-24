@@ -15,13 +15,13 @@
       voices.push(utt1.voice);
       speechSynthesis.speak(utt1);
 
-      utt1.addEventListener('end', (event) => {
+      utt1.addEventListener("end", (event) => {
         utt2.voice = speechSynthesis.getVoices()[0];
         voices.push(utt2.voice);
         speechSynthesis.speak(utt2);
       });
 
-      utt2.addEventListener('end', (event) => {
+      utt2.addEventListener("end", (event) => {
         console.log(voices);
         for (let i = 1 ; i < voices.length; ++i) {
           console.assert(voices[i] == voices[i-1], "the voices are different.");
@@ -29,7 +29,7 @@
       });
     }
 
-    speechSynthesis.addEventListener('voiceschanged', function() {
+    speechSynthesis.addEventListener("voiceschanged", function() {
       let voices = speechSynthesis.getVoices();
       console.log(voices);
     });
