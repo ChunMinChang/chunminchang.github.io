@@ -2,6 +2,10 @@ body {
   position: relative;
 }
 
+.passcode {
+  display: none;
+}
+
 .section {
   padding-top: 100px;
   padding-bottom: 100px;
