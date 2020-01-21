@@ -60,6 +60,18 @@ window.addEventListener("DOMContentLoaded", () => {
     showDetails();
   });
   keyMatcher.init();
+
+  const limit = 7;
+  let clicks = 0;
+  let showWhenOverClicking = evt => {
+    console.log("Get " + evt.type);
+    clicks += 1;
+    if (clicks >= limit) {
+      showDetails();
+    }
+  };
+  document.addEventListener("mousedown", showWhenOverClicking);
+  document.addEventListener("touchstart", showWhenOverClicking);
 });
 
 function showDetails() {
