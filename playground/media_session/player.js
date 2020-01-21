@@ -185,6 +185,7 @@ let MediaSession = {
           ". Firefox doesn't support it.");
         continue;
       }
+      Logger.log("Set action handler for " + action);
       let handler = handlers[action];
       navigator.mediaSession.setActionHandler(action, handler);
     }
