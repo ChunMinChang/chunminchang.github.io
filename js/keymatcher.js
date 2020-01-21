@@ -57,11 +57,15 @@ function isEqualArray(x, y) {
 window.addEventListener("DOMContentLoaded", () => {
   const key = "resume";
   let keyMatcher = new KeyMatcher(key.split(""), () => {
-    console.log("show resume!");
-    let elements = document.getElementsByClassName("passcode");
-    for (let i = 0; i < elements.length; i++) {
-      elements[i].style.display = "block";
-    }
+    showDetails();
   });
   keyMatcher.init();
 });
+
+function showDetails() {
+  console.log("show resume!");
+  let elements = document.querySelectorAll(".passcode");
+  elements.forEach(element => {
+    element.classList.remove("passcode");
+  });
+}
