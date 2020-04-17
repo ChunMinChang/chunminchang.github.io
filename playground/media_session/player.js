@@ -178,13 +178,6 @@ let MediaSession = {
   },
   setHandlers: function (handlers) {
     for (let action in handlers) {
-      // Firefox doesn't support `seek*` for now.
-      if (navigator.userAgent.indexOf("Firefox") != -1 &&
-        action.indexOf("seek") != -1) {
-        Logger.log("Skip setting action handler for " + action +
-          ". Firefox doesn't support it.");
-        continue;
-      }
       Logger.log("Set action handler for " + action);
       let handler = handlers[action];
       navigator.mediaSession.setActionHandler(action, handler);
