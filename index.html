@@ -160,13 +160,16 @@
                 <div class="col-sm-12 mx-auto">
                   <ul>Firefox Media Playback
                     <li>
-                      <a target="_blank" href="https://github.com/ChunMinChang/cubeb-coreaudio-rs">
+                      <a target="_blank" href="https://chunminchang.github.io/blog/post/summary-of-cubeb-oxidation-on-mac-os">
                         Oxidize and refactor the Firefox audio library on MacOS from C/C++ into Rust
                       </a>
                       <ul>
-                        <li>Reduce 17% time to open multiple audio tracks simultaneously</li>
+                        <li>Solve 10+ data racing issues discovered by enlarging the test coverage (~80% lines coverage)</li>
+                        <li>Boost the performance to 35x faster when starting multiple streams simultaneously</li>
+                        <li>Hunt and fix 3 memory leaks</li>
                       </ul>
                     </li>
+                    <li>Introduce Media Session API into Firefox</li>
                   </ul>
                 </div>
               </div>
@@ -183,6 +186,11 @@
                     <li>
                       <a target="_blank" href="https://www.youtube.com/watch?v=6QIFC7WWkS0">
                         Reduce 9x of the delay time by redesigning looping mechanism (test within a 1-second looped audio track)
+                      </a>
+                    </li>
+                    <li>
+                      <a target="_blank" href="https://chunminchang.github.io/blog/post/audio-device-information-on-firefox">
+                        Create a daily-debugging tool to show audio device information (it's used every day!)
                       </a>
                     </li>
                     <li>
@@ -279,6 +287,20 @@
         <!-- Works in Mozilla -->
         <div class="tab-pane active container fade show" id="mozilla">
           <div class="card-deck">
+            <div class="card">
+              <img class="card-img-top" src="https://www.rust-lang.org/logos/rust-logo-blk.svg" alt="Card image cap">
+              <div class="card-body">
+                <h5 class="card-title">Cubeb Oxidation on Mac OSX</h5>
+                <p class="card-text">Oxidate Firefox Audio backend from C++ into Rust</p>
+              </div>
+              <div class="card-footer">
+                March, 2020
+              </div>
+              <div class="card-footer">
+                <a target="_blank" href="https://chunminchang.github.io/blog/post/summary-of-cubeb-oxidation-on-mac-os" class="btn btn-dark">More</a>
+              </div>
+            </div>
+
             <div class="card">
               <img class="card-img-top" src="images/works/audio-seamless-looping/audio-seamless-looping-square-optimize.gif" alt="Card image cap">
               <div class="card-body">
