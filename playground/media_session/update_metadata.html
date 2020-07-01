@@ -1,0 +1,56 @@
+<html>
+
+<head>
+  <title>media session</title>
+  <script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+      if (!('mediaSession' in navigator)) {
+        console.log("No media session.");
+        return;
+      }
+
+      let audio = document.querySelector('#audio');
+      audio.onplay = function () {
+        let meta1 = new MediaMetadata({
+          title: "title 1",
+          artist: "artist 1",
+          album: "album 1",
+          artwork: [{
+            src: 'https://picsum.photos/2000',
+            sizes: '2000x2000',
+            type: 'image/jpg'
+          }, {
+            src: 'https://www.rust-lang.org/logos/rust-logo-256x256-blk.png',
+            sizes: '256x256',
+            type: 'image/png'
+          },]
+        });
+
+        let meta2 = new MediaMetadata({
+          title: "title 2",
+          artist: "artist 2",
+          album: "album 2",
+          artwork: [{
+            src: 'https://www.rust-lang.org/logos/rust-logo-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }, {
+            src: 'https://picsum.photos/2000',
+            sizes: '2000x2000',
+            type: 'image/jpg'
+          },]
+        });
+
+        navigator.mediaSession.metadata = meta1;
+        
+        setTimeout(function () { navigator.mediaSession.metadata = meta2; }, 200);
+      };
+    });
+  </script>
+</head>
+
+<body>
+  <audio controls id="audio" src="https://storage.googleapis.com/media-session/sintel/snow-fight.mp3"></audio>
+</body>
+
+</html>
