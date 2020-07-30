@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="en">
+ 	<head>
+		<title>Video Test</title>
+
+ 		<meta charset="utf-8">
+
+		<script>
+			window.downloadVideo = (url, id) => {
+				fetch(url)
+				.then(response => response.blob())
+				.then(blob => URL.createObjectURL(blob))
+				.then(url => {
+					document.getElementById(id).src = url;
+				})
+			}
+		</script>
+
+		<style>
+			.example-container {
+				float: left;
+			}
+
+			.example-container + .example-container {
+				margin-left: 100px;
+			}
+
+			video {
+				max-height: 500px;
+			}
+
+			h3 {
+				display: inline-block;
+			}
+		</style>
+	</head>
+
+	<body>
+		<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1651992" target="_blank">Bug 1651992</a>
+		<div class="example-container">
+			<div>
+				<h3>
+					Normal URL as source:
+				</h3>
+			</div>
+
+			<video
+				controls
+				src="video.mp4"
+			>
+			</video>
+		</div>
+
+		<div class="example-container">
+			<div>
+				<h3>
+					Blob URL as source:
+				</h3>
+
+				<button
+					type="button"
+					onclick="downloadVideo('video.mp4', 'blob-video')"
+				>
+					Download
+				</button>
+			</div>
+
+			<video
+				controls
+				id="blob-video"
+			>
+			</video>
+		</div>
+	</body>
+</html>
