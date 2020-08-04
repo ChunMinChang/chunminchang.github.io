@@ -1,0 +1,91 @@
+<html>
+
+<head>
+  <title>media session</title>
+  <script>
+    const BASE_URL = 'https://storage.googleapis.com/media-session/';
+    const AUDIO_INFO = Object.freeze({
+      src: BASE_URL + 'sintel/snow-fight.mp3',
+      title: 'Snow Fight',
+      artist: 'Jan Morgenstern',
+      album: 'Sintel',
+      artwork: [{
+        src: BASE_URL + 'sintel/artwork-96.png',
+        sizes: '96x96',
+        type: 'image/png'
+      }]
+    });
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+      if (!('mediaSession' in navigator)) {
+        console.log('No media session.');
+        return;
+      }
+
+      loadAudio().then(setupMediaSession);
+    });
+
+    function loadAudio() {
+      return new Promise(resolve => {
+        let audio = document.getElementById('audio');
+        audio.src = AUDIO_INFO.src;
+        audio.onloadedmetadata(resolve(audio));
+      });
+    }
+
+    function setupMediaSession() {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: AUDIO_INFO.title,
+        artist: AUDIO_INFO.artist,
+        album: AUDIO_INFO.album,
+        artwork: AUDIO_INFO.artwork
+      });
+
+      let btn = createButton();
+      btn.onclick = () => {
+        console.log("--- Switch action handlers ---");
+        HandlerSwitcher.next();
+      };
+    }
+
+    function actionHandler(evt) {
+      console.log(evt);
+    }
+
+    let HandlerSwitcher = {
+      actions: ['play', 'pause', 'stop', 'previoustrack', 'nexttrack'],
+      set: 0,
+      next: function () {
+        let num = this.actions.length;
+        for (let i = 0; i < num; ++i) {
+          let mask = 1 << i;
+          let action = this.actions[i]
+          if (this.set & mask) {
+            console.log('Set handler for ' + action);
+            navigator.mediaSession.setActionHandler(action, actionHandler);
+          } else {
+            console.log('Clear handler for ' + action);
+            navigator.mediaSession.setActionHandler(action, null);
+          }
+        }
+        let bound = (1 << num);
+        this.set = (this.set + 1) % bound;
+      },
+    };
+
+
+
+    function createButton() {
+      let btn = document.createElement("button");
+      btn.innerHTML = "update action handler";
+      document.body.appendChild(btn);
+      return btn;
+    }
+  </script>
+</head>
+
+<body>
+  <audio id='audio' controls></audio>
+</body>
+
+</html>
