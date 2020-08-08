@@ -1,0 +1,35 @@
+<html>
+
+<head>
+  <title>media session</title>
+  <script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+      if (!('mediaSession' in navigator)) {
+        console.log("No media session.");
+        return;
+      }
+
+      let audio = document.querySelector('#audio');
+      audio.onplay = function () {
+        let metadata = new MediaMetadata({
+          title: "The Rabit's Revenge",
+          artist: "TzChien慈謙",
+          album: "Life as People",
+          artwork: [{
+            src: 'https://i.ytimg.com/vi/HMtTpfQOzQo/hqdefault.jpg?sqp=-oaymwEZCNACELwBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLC96kzy2Y9rE8nqklwUYxCEhhCAQw',
+            sizes: '320x180',
+            type: 'image/webp'
+          }]
+        });
+
+        navigator.mediaSession.metadata = metadata;
+      };
+    });
+  </script>
+</head>
+
+<body>
+  <audio controls id="audio" src="https://storage.googleapis.com/media-session/sintel/snow-fight.mp3"></audio>
+</body>
+
+</html>
