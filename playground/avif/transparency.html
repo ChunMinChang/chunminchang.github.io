@@ -1,0 +1,96 @@
+<html>
+
+<head>AVIF transparency (alpha plane)</head>
+<script>
+  const BASE_URL = "https://raw.githubusercontent.com/link-u/avif-sample-images/master/";
+  const SOURCES = [
+    "plum-blossom-large.profile0.10bpc.yuv420.alpha-full.avif",
+    "plum-blossom-large.profile0.10bpc.yuv420.alpha-full.monochrome.avif",
+    "plum-blossom-large.profile0.10bpc.yuv420.alpha-limited.avif",
+    "plum-blossom-large.profile0.10bpc.yuv420.alpha-limited.monochrome.avif",
+    "plum-blossom-large.profile0.8bpc.yuv420.alpha-full.avif",
+    "plum-blossom-large.profile0.8bpc.yuv420.alpha-full.monochrome.avif",
+    "plum-blossom-large.profile0.8bpc.yuv420.alpha-limited.avif",
+    "plum-blossom-large.profile0.8bpc.yuv420.alpha-limited.monochrome.avif",
+    // // plum-blossom-large.profile1.10bpc.yuv444.alpha-full.avif
+    // // plum-blossom-large.profile1.10bpc.yuv444.alpha-limited.avif
+    // // plum-blossom-large.profile1.8bpc.yuv444.alpha-full.avif
+    // // plum-blossom-large.profile1.8bpc.yuv444.alpha-limited.avif
+    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-full.avif
+    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-full.monochrome.avif
+    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-limited.avif
+    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-limited.monochrome.avif
+    "plum-blossom-large.profile2.12bpc.yuv420.alpha-full.avif",
+    "plum-blossom-large.profile2.12bpc.yuv420.alpha-full.monochrome.avif",
+    "plum-blossom-large.profile2.12bpc.yuv420.alpha-limited.avif",
+    "plum-blossom-large.profile2.12bpc.yuv420.alpha-limited.monochrome.avif",
+    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-full.avif
+    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-full.monochrome.avif
+    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-limited.avif
+    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-limited.monochrome.avif
+    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-full.avif
+    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-full.monochrome.avif
+    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-limited.avif
+    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-limited.monochrome.avif
+    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-full.avif
+    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-full.monochrome.avif
+    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-limited.avif
+    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-limited.monochrome.avif
+    "plum-blossom-small.profile0.10bpc.yuv420.alpha-full.avif",
+    "plum-blossom-small.profile0.10bpc.yuv420.alpha-full.monochrome.avif",
+    "plum-blossom-small.profile0.10bpc.yuv420.alpha-limited.avif",
+    "plum-blossom-small.profile0.10bpc.yuv420.alpha-limited.monochrome.avif",
+    "plum-blossom-small.profile0.8bpc.yuv420.alpha-full.avif",
+    "plum-blossom-small.profile0.8bpc.yuv420.alpha-full.monochrome.avif",
+    "plum-blossom-small.profile0.8bpc.yuv420.alpha-limited.avif",
+    "plum-blossom-small.profile0.8bpc.yuv420.alpha-limited.monochrome.avif",
+    // // plum-blossom-small.profile1.10bpc.yuv444.alpha-full.avif
+    // // plum-blossom-small.profile1.10bpc.yuv444.alpha-limited.avif
+    // // plum-blossom-small.profile1.8bpc.yuv444.alpha-full.avif
+    // // plum-blossom-small.profile1.8bpc.yuv444.alpha-limited.avif
+    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-full.avif
+    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-full.monochrome.avif
+    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-limited.avif
+    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-limited.monochrome.avif
+    "plum-blossom-small.profile2.12bpc.yuv420.alpha-full.avif",
+    "plum-blossom-small.profile2.12bpc.yuv420.alpha-full.monochrome.avif",
+    "plum-blossom-small.profile2.12bpc.yuv420.alpha-limited.avif",
+    "plum-blossom-small.profile2.12bpc.yuv420.alpha-limited.monochrome.avif",
+    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-full.avif
+    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-full.monochrome.avif
+    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-limited.avif
+    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-limited.monochrome.avif
+    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-full.avif
+    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-full.monochrome.avif
+    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-limited.avif
+    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-limited.monochrome.avif
+    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-full.avif
+    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-full.monochrome.avif
+    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-limited.avif
+    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-limited.monochrome.avif
+  ];
+  var IMG;
+  var idx = 0;
+
+  window.addEventListener("DOMContentLoaded", (event) => {
+    // Create image
+    IMG = document.createElement("IMG");
+    IMG.alt = "avif image";
+    IMG.src = BASE_URL + SOURCES[idx];
+    document.body.appendChild(IMG);
+
+    // Setup listener
+    IMG.addEventListener("click", (event) => {
+      idx = (idx + 1) % SOURCES.length;
+      IMG.src = BASE_URL + SOURCES[idx];
+      console.log("Switch img src to: " + SOURCES[idx]);
+    });
+  });
+
+</script>
+
+<body>
+  <h1>AVIF transparency (alpha plane)</h1>
+</body>
+
+</html>
