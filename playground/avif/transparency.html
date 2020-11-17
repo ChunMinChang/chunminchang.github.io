@@ -1,12 +1,19 @@
 <html>
 
-<head>AVIF transparency (alpha plane)</head>
+<head>
+  <title>AVIF transparency (alpha plane)</title>
+  <style>
+    body {
+      background-color:green;
+    }
+  </style>
+</head>
 <script>
   const SOURCES = [
+    // From https://jakearchibald.com/2020/avif-has-landed/
+    "car-good-dfe22c28.avif",
     // From https://github.com/AOMediaCodec/av1-avif/blob/master/testFiles/Microsoft/bbb_alpha_inverted.avif
     "bbb_alpha_inverted.avif",
-    // From https://jakearchibald.com/2020/avif-has-landed/
-    "car-good-dfe22c28.avif"
   ];
   var IMG;
   var idx = 0;
@@ -17,6 +24,7 @@
     IMG.alt = "avif image";
     IMG.src = SOURCES[idx];
     document.body.appendChild(IMG);
+    IMG.style.width = "80%";
 
     // Setup listener
     IMG.addEventListener("click", (event) => {
@@ -25,7 +33,6 @@
       console.log("Switch img src to: " + SOURCES[idx]);
     });
   });
-
 </script>
 
 <body>
