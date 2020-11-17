@@ -2,72 +2,11 @@
 
 <head>AVIF transparency (alpha plane)</head>
 <script>
-  const BASE_URL = "https://raw.githubusercontent.com/link-u/avif-sample-images/master/";
   const SOURCES = [
-    "plum-blossom-large.profile0.10bpc.yuv420.alpha-full.avif",
-    "plum-blossom-large.profile0.10bpc.yuv420.alpha-full.monochrome.avif",
-    "plum-blossom-large.profile0.10bpc.yuv420.alpha-limited.avif",
-    "plum-blossom-large.profile0.10bpc.yuv420.alpha-limited.monochrome.avif",
-    "plum-blossom-large.profile0.8bpc.yuv420.alpha-full.avif",
-    "plum-blossom-large.profile0.8bpc.yuv420.alpha-full.monochrome.avif",
-    "plum-blossom-large.profile0.8bpc.yuv420.alpha-limited.avif",
-    "plum-blossom-large.profile0.8bpc.yuv420.alpha-limited.monochrome.avif",
-    // // plum-blossom-large.profile1.10bpc.yuv444.alpha-full.avif
-    // // plum-blossom-large.profile1.10bpc.yuv444.alpha-limited.avif
-    // // plum-blossom-large.profile1.8bpc.yuv444.alpha-full.avif
-    // // plum-blossom-large.profile1.8bpc.yuv444.alpha-limited.avif
-    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-full.avif
-    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-full.monochrome.avif
-    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-limited.avif
-    // // plum-blossom-large.profile2.10bpc.yuv422.alpha-limited.monochrome.avif
-    "plum-blossom-large.profile2.12bpc.yuv420.alpha-full.avif",
-    "plum-blossom-large.profile2.12bpc.yuv420.alpha-full.monochrome.avif",
-    "plum-blossom-large.profile2.12bpc.yuv420.alpha-limited.avif",
-    "plum-blossom-large.profile2.12bpc.yuv420.alpha-limited.monochrome.avif",
-    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-full.avif
-    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-full.monochrome.avif
-    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-limited.avif
-    // // plum-blossom-large.profile2.12bpc.yuv422.alpha-limited.monochrome.avif
-    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-full.avif
-    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-full.monochrome.avif
-    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-limited.avif
-    // // plum-blossom-large.profile2.12bpc.yuv444.alpha-limited.monochrome.avif
-    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-full.avif
-    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-full.monochrome.avif
-    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-limited.avif
-    // // plum-blossom-large.profile2.8bpc.yuv422.alpha-limited.monochrome.avif
-    "plum-blossom-small.profile0.10bpc.yuv420.alpha-full.avif",
-    "plum-blossom-small.profile0.10bpc.yuv420.alpha-full.monochrome.avif",
-    "plum-blossom-small.profile0.10bpc.yuv420.alpha-limited.avif",
-    "plum-blossom-small.profile0.10bpc.yuv420.alpha-limited.monochrome.avif",
-    "plum-blossom-small.profile0.8bpc.yuv420.alpha-full.avif",
-    "plum-blossom-small.profile0.8bpc.yuv420.alpha-full.monochrome.avif",
-    "plum-blossom-small.profile0.8bpc.yuv420.alpha-limited.avif",
-    "plum-blossom-small.profile0.8bpc.yuv420.alpha-limited.monochrome.avif",
-    // // plum-blossom-small.profile1.10bpc.yuv444.alpha-full.avif
-    // // plum-blossom-small.profile1.10bpc.yuv444.alpha-limited.avif
-    // // plum-blossom-small.profile1.8bpc.yuv444.alpha-full.avif
-    // // plum-blossom-small.profile1.8bpc.yuv444.alpha-limited.avif
-    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-full.avif
-    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-full.monochrome.avif
-    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-limited.avif
-    // // plum-blossom-small.profile2.10bpc.yuv422.alpha-limited.monochrome.avif
-    "plum-blossom-small.profile2.12bpc.yuv420.alpha-full.avif",
-    "plum-blossom-small.profile2.12bpc.yuv420.alpha-full.monochrome.avif",
-    "plum-blossom-small.profile2.12bpc.yuv420.alpha-limited.avif",
-    "plum-blossom-small.profile2.12bpc.yuv420.alpha-limited.monochrome.avif",
-    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-full.avif
-    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-full.monochrome.avif
-    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-limited.avif
-    // // plum-blossom-small.profile2.12bpc.yuv422.alpha-limited.monochrome.avif
-    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-full.avif
-    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-full.monochrome.avif
-    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-limited.avif
-    // // plum-blossom-small.profile2.12bpc.yuv444.alpha-limited.monochrome.avif
-    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-full.avif
-    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-full.monochrome.avif
-    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-limited.avif
-    // // plum-blossom-small.profile2.8bpc.yuv422.alpha-limited.monochrome.avif
+    // From https://github.com/AOMediaCodec/av1-avif/blob/master/testFiles/Microsoft/bbb_alpha_inverted.avif
+    "bbb_alpha_inverted.avif",
+    // From https://jakearchibald.com/2020/avif-has-landed/
+    "car-good-dfe22c28.avif"
   ];
   var IMG;
   var idx = 0;
@@ -76,13 +15,13 @@
     // Create image
     IMG = document.createElement("IMG");
     IMG.alt = "avif image";
-    IMG.src = BASE_URL + SOURCES[idx];
+    IMG.src = SOURCES[idx];
     document.body.appendChild(IMG);
 
     // Setup listener
     IMG.addEventListener("click", (event) => {
       idx = (idx + 1) % SOURCES.length;
-      IMG.src = BASE_URL + SOURCES[idx];
+      IMG.src = SOURCES[idx];
       console.log("Switch img src to: " + SOURCES[idx]);
     });
   });
