@@ -4,16 +4,19 @@
   <title>AVIF transparency (alpha plane)</title>
   <style>
     body {
-      background-color:green;
+      background-color: green;
     }
   </style>
 </head>
 <script>
   const SOURCES = [
-    // From https://jakearchibald.com/2020/avif-has-landed/
+    // I420) From https://jakearchibald.com/2020/avif-has-landed/
     "car-good-dfe22c28.avif",
-    // From https://github.com/AOMediaCodec/av1-avif/blob/master/testFiles/Microsoft/bbb_alpha_inverted.avif
+    // I420) From https://github.com/AOMediaCodec/av1-avif/blob/master/testFiles/Microsoft/bbb_alpha_inverted.avif
     "bbb_alpha_inverted.avif",
+    // I444) From https://bugzilla.mozilla.org/show_bug.cgi?id=1654462
+    // From https://bug1654462.bmoattachments.org/attachment.cgi?id=9165284
+    "dst_lossless.avif"
   ];
   var IMG;
   var idx = 0;
