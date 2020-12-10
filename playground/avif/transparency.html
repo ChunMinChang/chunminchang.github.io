@@ -9,37 +9,68 @@
   </style>
 </head>
 <script>
-  const SOURCES = [
-    // I420) From https://jakearchibald.com/2020/avif-has-landed/
-    "car-good-dfe22c28.avif",
-    // I420) From https://github.com/AOMediaCodec/av1-avif/blob/master/testFiles/Microsoft/bbb_alpha_inverted.avif
-    "bbb_alpha_inverted.avif",
-    // I444) From https://bugzilla.mozilla.org/show_bug.cgi?id=1654462
-    // From https://bug1654462.bmoattachments.org/attachment.cgi?id=9165284
-    "dst_lossless.avif"
+  const SOURCES = [{
+      // I420) From https://jakearchibald.com/2020/avif-has-landed/
+      src: "car-good-dfe22c28.avif",
+      layout: "I420",
+      colorspace: "BT709",
+    },
+    {
+      // I420) From https://github.com/AOMediaCodec/av1-avif/blob/master/testFiles/Microsoft/bbb_alpha_inverted.avif
+      src: "bbb_alpha_inverted.avif",
+      layout: "I420",
+      colorspace: "BT709",
+    },
+    {
+      // I444) From https://bugzilla.mozilla.org/show_bug.cgi?id=1654462
+      // From https://bug1654462.bmoattachments.org/attachment.cgi?id=9165284
+      src: "dst_lossless.avif",
+      layout: "I444",
+      colorspace: "Identity",
+    },
+    {
+      // Converted from https://bug1654462.bmoattachments.org/attachment.cgi?id=9165285
+      // by https://github.com/kornelski/cavif-rs with manually adding "mif1"
+      src: "rainbow-mif1.avif",
+      layout: "I444",
+      colorspace: "BT709",
+    }
   ];
-  var IMG;
-  var idx = 0;
+
+  var sourceIdx = 0;
+
+  function loadImage(source) {
+    console.log("Load image - src: " + source.src +
+      ", layout: " + source.layout +
+      ", colorspace: " + source.colorspace);
+    let image = document.getElementById("test-image");
+    image.src = source.src;
+    document.getElementById("layout").innerText = source.layout;
+    document.getElementById("colorspace").innerText = source.colorspace;
+  }
 
   window.addEventListener("DOMContentLoaded", (event) => {
-    // Create image
-    IMG = document.createElement("IMG");
-    IMG.alt = "avif image";
-    IMG.src = SOURCES[idx];
-    document.body.appendChild(IMG);
-    IMG.style.width = "80%";
+    // Init an image
+    loadImage(SOURCES[sourceIdx]);
 
     // Setup listener
-    IMG.addEventListener("click", (event) => {
-      idx = (idx + 1) % SOURCES.length;
-      IMG.src = SOURCES[idx];
-      console.log("Switch img src to: " + SOURCES[idx]);
+    let image = document.getElementById("test-image");
+    image.addEventListener("click", (event) => {
+      sourceIdx = (sourceIdx + 1) % SOURCES.length;
+      loadImage(SOURCES[sourceIdx]);
     });
   });
 </script>
 
 <body>
   <h1>AVIF transparency (alpha plane)</h1>
+  <div>
+    <p><span>layout: </span><span id="layout"></span></p>
+    <p><span>color space: </span><span id="colorspace"></span></p>
+    <div id="avid-image-container">
+      <img id="test-image" alt="avif-test-image" style="height: 100%; width: auto" />
+    </div>
+  </div>
 </body>
 
 </html>
