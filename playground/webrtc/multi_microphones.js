@@ -18,10 +18,12 @@ async function OpenMediaStream() {
   console.assert(inputSourses.value, "audio device must be set!");
   const deviceId = inputSourses.value;
   const constraints = {
-    audio: {deviceId: {exact: deviceId}},
+    audio: { deviceId: { exact: deviceId } },
   };
   console.log("Open stream by", constraints);
-  let stream = await navigator.mediaDevices.getUserMedia(constraints).catch(handleError);
+  let stream = await navigator.mediaDevices
+    .getUserMedia(constraints)
+    .catch(handleError);
   console.log("Got stream", stream);
 
   let devices = "";
@@ -37,7 +39,9 @@ async function OpenMediaStream() {
 }
 
 async function loadDevices() {
-  let devices = await navigator.mediaDevices.enumerateDevices().catch(handleError);
+  let devices = await navigator.mediaDevices
+    .enumerateDevices()
+    .catch(handleError);
   loadInputSources(devices);
   updateCachedDevices(devices);
 }
@@ -54,7 +58,7 @@ function addDeviceStream(deviceId, stream) {
   }
   console.assert(!deviceStreams[deviceId].hasOwnProperty(stream.id));
   deviceStreams[deviceId][stream.id] = stream;
-  console.log("Device - Streams",deviceStreams);
+  console.log("Device - Streams", deviceStreams);
 }
 
 function removeDeviceStream(deviceId, stream) {
@@ -62,10 +66,11 @@ function removeDeviceStream(deviceId, stream) {
   console.assert(deviceStreams.hasOwnProperty(deviceId));
   console.assert(deviceStreams[deviceId].hasOwnProperty(stream.id));
   delete deviceStreams[deviceId][stream.id];
-  if (Object.keys(deviceStreams[deviceId]).length === 0 && deviceStreams[deviceId].constructor === Object) {
+  if (Object.keys(deviceStreams[deviceId]).length === 0 &&
+    deviceStreams[deviceId].constructor === Object) {
     delete deviceStreams[deviceId];
   }
-  console.log("Device - Streams",deviceStreams);
+  console.log("Device - Streams", deviceStreams);
 }
 
 function addStreamAudio(deviceId, stream) {
@@ -133,9 +138,9 @@ function updateCachedDevices(infos) {
   deviceInfos = {};
   infos.forEach((info) => {
     deviceInfos[info.deviceId] = {
-      "kind": info.kind,
-      "label": info.label,
-      "groupId": info.groupId
+      kind: info.kind,
+      label: info.label,
+      groupId: info.groupId,
     };
   });
 }
@@ -146,7 +151,7 @@ function loadInputSources(devices) {
     console.log("Device:", device);
     // Skip non-audioinput device
     if (device.kind === "audioinput") {
-      putToInputSources(device)
+      putToInputSources(device);
     }
   });
 }
