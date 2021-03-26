@@ -44,11 +44,11 @@ async function loadDevices() {
 
 function addStream(deviceId, stream) {
   console.log("Create MediaStream " + stream.id + " for device " + deviceId);
-  updateDeviceStreams(deviceId, stream);
+  addDeviceStream(deviceId, stream);
   addStreamAudio(deviceId, stream);
 }
 
-function updateDeviceStreams(deviceId, stream) {
+function addDeviceStream(deviceId, stream) {
   if (!deviceStreams.hasOwnProperty(deviceId)) {
     deviceStreams[deviceId] = [];
   }
