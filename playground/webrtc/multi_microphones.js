@@ -1,8 +1,8 @@
 const inputSourses = document.querySelector("select#inputsources");
 const openButton = document.querySelector("button#openinput");
 const audioContainer = document.querySelector("div#inputaudios");
-var deviceStreams = {};
-var deviceInfos = {}; // cached MediaDeviceInfo data
+var deviceStreams = {}; // Track the MediaStream we created
+var deviceInfos = {}; // Cache the MediaDeviceInfo data
 
 init();
 
@@ -43,16 +43,28 @@ async function loadDevices() {
 }
 
 function addStream(deviceId, stream) {
-  console.log("Create MediaStream " + stream.id + " for device " + deviceId);
   addDeviceStream(deviceId, stream);
   addStreamAudio(deviceId, stream);
 }
 
 function addDeviceStream(deviceId, stream) {
+  console.log("Add MediaStream " + stream.id + " for device " + deviceId);
   if (!deviceStreams.hasOwnProperty(deviceId)) {
-    deviceStreams[deviceId] = [];
+    deviceStreams[deviceId] = {};
   }
-  deviceStreams[deviceId].push(stream);
+  console.assert(!deviceStreams[deviceId].hasOwnProperty(stream.id));
+  deviceStreams[deviceId][stream.id] = stream;
+  console.log("Device - Streams",deviceStreams);
+}
+
+function removeDeviceStream(deviceId, stream) {
+  console.log("Remove MediaStream " + stream.id + " for device " + deviceId);
+  console.assert(deviceStreams.hasOwnProperty(deviceId));
+  console.assert(deviceStreams[deviceId].hasOwnProperty(stream.id));
+  delete deviceStreams[deviceId][stream.id];
+  if (Object.keys(deviceStreams[deviceId]).length === 0 && deviceStreams[deviceId].constructor === Object) {
+    delete deviceStreams[deviceId];
+  }
   console.log("Device - Streams",deviceStreams);
 }
 
@@ -65,7 +77,8 @@ function addStreamAudio(deviceId, stream) {
   const elementId = deviceId + "|" + stream.id;
 
   const label = document.createElement("label");
-  label.innerText = `${deviceInfos[deviceId].label} ${deviceStreams[deviceId].length}`;
+  const streamNumber = Object.keys(deviceStreams[deviceId]).length;
+  label.innerText = `${deviceInfos[deviceId].label} #${streamNumber}`;
   label.for = elementId;
 
   const audioElement = document.createElement("audio");
@@ -73,8 +86,20 @@ function addStreamAudio(deviceId, stream) {
   audioElement.srcObject = stream;
   audioElement.controls = true;
 
+  const closeButton = document.createElement("button");
+  closeButton.innerText = "Close " + label.innerText;
+  closeButton.id = "close-" + elementId;
+  closeButton.onclick = (event) => {
+    removeDeviceStream(deviceId, stream);
+    label.remove();
+    audioElement.remove();
+    closeButton.remove();
+    div.remove();
+  };
+
   div.appendChild(label);
   div.appendChild(audioElement);
+  div.appendChild(closeButton);
   container.appendChild(div);
 }
 
@@ -98,7 +123,7 @@ async function updateInputSourcesIfNeeded() {
 function getStreamCount() {
   let streams = 0;
   for (const deviceId in deviceStreams) {
-    streams += deviceStreams[deviceId].length;
+    streams += Object.keys(deviceStreams[deviceId]).length;
   }
   return streams;
 }
