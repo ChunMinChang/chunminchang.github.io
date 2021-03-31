@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>getUserMedia two audio input</title>
+  </head>
+
+  <body>
+    <h1>Open two microphones</h1>
+    <div>
+      <button id="open">Open two input devices</button>
+      <div id="inputaudios"></div>
+      <div id="log"></div>
+    </div>
+    <!-- run script after the DOMContent is loaded -->
+    <script>
+      const log = document.querySelector("div#log");
+      const button = document.querySelector("button#open");
+      button.onclick = async function () {
+        await open();
+      };
+
+      async function open() {
+        let devices = await navigator.mediaDevices
+          .enumerateDevices()
+          .catch(handleError);
+        let constraints = [];
+        devices.forEach((device) => {
+          // Skip non-audioinput device
+          if (device.kind === "audioinput") {
+            constraints.push({
+              audio: { deviceId: { exact: device.deviceId } },
+            });
+          }
+        });
+
+        if (constraints.length < 2) {
+          addLog("Need at least 2 audio devices!");
+          return;
+        }
+
+        const container = document.querySelector("div#inputaudios");
+        for (let c of constraints) {
+          let stream = await navigator.mediaDevices
+            .getUserMedia(c)
+            .catch(handleError);
+          const deviceId = c.audio.deviceId.exact;
+          addLog(
+            "MediaStream: " +
+              stream.id +
+              " for device: " +
+              deviceId +
+              " is created"
+          );
+          const audioElement = document.createElement("audio");
+          audioElement.id = deviceId + "|" + stream.id;
+          audioElement.srcObject = stream;
+          audioElement.controls = true;
+          audioElement.autoplay = true;
+          container.appendChild(audioElement);
+        }
+      }
+
+      function addLog(message) {
+        log.innerHTML += "<p>" + message + "</p>";
+      }
+
+      function handleError(error) {
+        const errorMessage = error.message + " " + error.name;
+        console.log(errorMessage);
+        addLog(errorMessage);
+      }
+    </script>
+  </body>
+</html>
