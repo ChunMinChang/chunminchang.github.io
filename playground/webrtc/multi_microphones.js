@@ -100,6 +100,9 @@ function addStreamAudio(deviceId, stream) {
     audioElement.remove();
     closeButton.remove();
     div.remove();
+
+    let tracks = stream.getAudioTracks();
+    tracks.forEach(track => track.stop());
   };
 
   div.appendChild(label);
