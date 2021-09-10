@@ -84,10 +84,20 @@ function addStreamAudio(deviceId, stream) {
 
   const elementId = deviceId + "|" + stream.id;
 
-  const label = document.createElement("label");
+  const label = document.createElement("p");
   const streamNumber = Object.keys(deviceStreams[deviceId]).length;
-  label.innerText = `${deviceInfos[deviceId].label} #${streamNumber}`;
+  label.innerText = `Stream: ${deviceInfos[deviceId].label} #${streamNumber}`;
   label.for = elementId;
+
+  const info = document.createElement("div");
+  let audiotracks = stream.getAudioTracks();
+  for (let i = 0; i < audiotracks.length; ++i) {
+    let track = audiotracks[i];
+    const trackInfo = document.createElement("p");
+    trackInfo.innerHTML = `track ${i + 1}: ${track.label}, channels: ${track.getSettings().channelCount}`;
+    trackInfo.style = "margin-left: 40px;";
+    info.appendChild(trackInfo);
+  }
 
   const audioElement = document.createElement("audio");
   audioElement.id = elementId;
@@ -107,10 +117,12 @@ function addStreamAudio(deviceId, stream) {
     let tracks = stream.getAudioTracks();
     tracks.forEach(track => track.stop());
   };
+  closeButton.style = "margin-left: 20px;";
 
   div.appendChild(label);
   div.appendChild(audioElement);
   div.appendChild(closeButton);
+  div.appendChild(info);
   container.appendChild(div);
 }
 
