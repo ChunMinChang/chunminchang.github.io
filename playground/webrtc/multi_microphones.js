@@ -8,18 +8,21 @@ init();
 
 async function init() {
   await loadDevices();
-  await OpenMediaStream();
+  await OpenMediaStream(false);
   openButton.onclick = (event) => {
-    OpenMediaStream();
+    OpenMediaStream(true);
   };
 }
 
-async function OpenMediaStream() {
+async function OpenMediaStream(exact) {
   console.assert(inputSourses.value, "audio device must be set!");
   const deviceId = inputSourses.value;
-  const constraints = {
-    audio: { deviceId: { exact: deviceId } },
-  };
+  let constraints;
+  if (exact) {
+    constraints = { audio: { deviceId: { exact: deviceId } } };
+  } else {
+    constraints = { audio: true };
+  }
   console.log("Open stream by", constraints);
   let stream = await navigator.mediaDevices
     .getUserMedia(constraints)
