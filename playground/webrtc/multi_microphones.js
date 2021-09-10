@@ -1,6 +1,7 @@
 const inputSourses = document.querySelector("select#inputsources");
 const openButton = document.querySelector("button#openinput");
 const audioContainer = document.querySelector("div#inputaudios");
+const audioProcessing = document.querySelector("input#processing");
 var deviceStreams = {}; // Track the MediaStream we created
 var deviceInfos = {}; // Cache the MediaDeviceInfo data
 
@@ -14,15 +15,27 @@ async function init() {
   };
 }
 
-async function OpenMediaStream(exact) {
+async function OpenMediaStream(exactDevice) {
   console.assert(inputSourses.value, "audio device must be set!");
   const deviceId = inputSourses.value;
+
   let constraints;
-  if (exact) {
+  if (exactDevice) {
     constraints = { audio: { deviceId: { exact: deviceId } } };
   } else {
     constraints = { audio: true };
   }
+
+  if (!audioProcessing.checked) {
+    constraints.audio = Object.assign(
+      {},
+      { autoGainControl: false },
+      { echoCancellation: false },
+      { noiseSuppression: false },
+      constraints.audio
+    );
+  }
+
   console.log("Open stream by", constraints);
   let stream = await navigator.mediaDevices
     .getUserMedia(constraints)
