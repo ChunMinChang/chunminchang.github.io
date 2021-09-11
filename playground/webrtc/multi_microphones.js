@@ -107,7 +107,11 @@ function addStreamAudio(deviceId, stream) {
   for (let i = 0; i < audiotracks.length; ++i) {
     let track = audiotracks[i];
     const trackInfo = document.createElement("p");
-    trackInfo.innerHTML = `track ${i + 1}: ${track.label}, channels: ${track.getSettings().channelCount}`;
+    trackInfo.innerHTML = `track ${i + 1}: ${track.label},
+      channels: ${track.getSettings().channelCount},
+      autoGainControl: ${track.getSettings().autoGainControl},
+      echoCancellation: ${track.getSettings().echoCancellation},
+      noiseSuppression: ${track.getSettings().noiseSuppression}`;
     trackInfo.style = "margin-left: 40px;";
     info.appendChild(trackInfo);
   }
