@@ -2,6 +2,7 @@ const inputSourses = document.querySelector("select#inputsources");
 const openButton = document.querySelector("button#openinput");
 const audioContainer = document.querySelector("div#inputaudios");
 const audioProcessing = document.querySelector("input#processing");
+const channelCount = document.querySelector("input#channelCount");
 var deviceStreams = {}; // Track the MediaStream we created
 var deviceInfos = {}; // Cache the MediaDeviceInfo data
 
@@ -35,6 +36,12 @@ async function OpenMediaStream(exactDevice) {
       constraints.audio
     );
   }
+
+  constraints.audio = Object.assign(
+    {},
+    { channelCount: channelCount.value },
+    constraints.audio
+  );
 
   console.log("Open stream by", constraints);
   let stream = await navigator.mediaDevices
@@ -106,12 +113,7 @@ function addStreamAudio(deviceId, stream) {
   let audiotracks = stream.getAudioTracks();
   for (let i = 0; i < audiotracks.length; ++i) {
     let track = audiotracks[i];
-    const trackInfo = document.createElement("p");
-    trackInfo.innerHTML = `track ${i + 1}: ${track.label},
-      channels: ${track.getSettings().channelCount},
-      autoGainControl: ${track.getSettings().autoGainControl},
-      echoCancellation: ${track.getSettings().echoCancellation},
-      noiseSuppression: ${track.getSettings().noiseSuppression}`;
+    let trackInfo = createTrackInfo(audiotracks[i], i + 1);
     trackInfo.style = "margin-left: 40px;";
     info.appendChild(trackInfo);
   }
@@ -141,6 +143,46 @@ function addStreamAudio(deviceId, stream) {
   div.appendChild(closeButton);
   div.appendChild(info);
   container.appendChild(div);
+}
+
+function createTrackInfo(track, number) {
+  const info = document.createElement("div");
+
+  const label = document.createElement("label");
+  label.innerHTML = `track ${number}: ${track.label}`;
+
+  const audioSettings = document.createElement("p");
+  audioSettings.innerHTML =
+    `autoGainControl: ${track.getSettings().autoGainControl},
+     echoCancellation: ${track.getSettings().echoCancellation},
+     noiseSuppression: ${track.getSettings().noiseSuppression}`;
+
+  const channelsLabel = document.createElement("label");
+  channelsLabel.innerHTML = "channelCount: ";
+  const channels = document.createElement("input");
+  channels.id = track.id;
+  channels.name = track.label;
+  channels.type = "number";
+  channels.min = 0;
+  channels.value = `${track.getSettings().channelCount}`;
+
+  const channelsButton = document.createElement("button");
+  channelsButton.innerHTML = "Update";
+  channelsButton.onclick = (event) => {
+    let newChannels = channels.value;
+    let newConstraints = Object.assign(
+      track.getSettings(), { channelCount: newChannels });
+    console.log(newConstraints);
+    track.applyConstraints(newConstraints);
+  };
+
+  info.appendChild(label);
+  info.appendChild(audioSettings);
+  info.appendChild(channelsLabel);
+  info.appendChild(channels);
+  info.appendChild(channelsButton);
+
+  return info;
 }
 
 function getDeviceAudioContainer(deviceId) {
