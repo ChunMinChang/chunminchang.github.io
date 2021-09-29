@@ -126,27 +126,31 @@ function createTrackInfo(track, number) {
 
   const channelsLabel = document.createElement("label");
   channelsLabel.innerHTML = "channelCount: ";
-  const channels = document.createElement("input");
-  channels.id = track.id;
-  channels.name = track.label;
-  channels.type = "number";
-  channels.min = 0;
-  channels.value = `${track.getSettings().channelCount}`;
+
+  const channelPicker = document.createElement("input");
+  channelPicker.id = track.id;
+  channelPicker.name = track.label;
+  channelPicker.type = "number";
+  channelPicker.min = 0;
+  channelPicker.value = `${track.getSettings().channelCount}`;
 
   const channelsButton = document.createElement("button");
   channelsButton.innerHTML = "Update";
   channelsButton.onclick = (event) => {
-    let newChannels = channels.value;
+    let newChannels = channelPicker.value;
     let newConstraints = Object.assign(
       track.getSettings(), { channelCount: newChannels });
-    console.log(newConstraints);
-    track.applyConstraints(newConstraints);
+    track.applyConstraints(newConstraints).then(() => {
+      channelPicker.value = `${track.getSettings().channelCount}`;
+      console.log("channel count - expect " + newChannels +
+        ", get " + channelPicker.value);
+    }).catch(handleError);
   };
 
   info.appendChild(label);
   info.appendChild(audioSettings);
   info.appendChild(channelsLabel);
-  info.appendChild(channels);
+  info.appendChild(channelPicker);
   info.appendChild(channelsButton);
 
   return info;
