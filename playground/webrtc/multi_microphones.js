@@ -115,14 +115,47 @@ function addStreamAudio(stream) {
 function createTrackInfo(track, number) {
   const info = document.createElement("div");
 
-  const label = document.createElement("label");
-  label.innerHTML = `track ${number}: ${track.label}`;
+  const trackLabel = document.createElement("p");
+  trackLabel.innerHTML = `track ${number}: ${track.label}`;
 
-  const audioSettings = document.createElement("p");
-  audioSettings.innerHTML =
-    `autoGainControl: ${track.getSettings().autoGainControl},
-     echoCancellation: ${track.getSettings().echoCancellation},
-     noiseSuppression: ${track.getSettings().noiseSuppression}`;
+  const autoGainControl = document.createElement("input");
+  autoGainControl.type = "checkbox";
+  autoGainControl.checked = track.getSettings().autoGainControl;
+  autoGainControl.onclick = (event) => {
+    let newConstraints = track.getSettings();
+    newConstraints['autoGainControl'] = autoGainControl.checked;
+    track.applyConstraints(newConstraints).then(() => {
+      autoGainControl.checked = track.getSettings().autoGainControl;
+    }).catch(handleError);
+  };
+  const autoGainControlLabel = document.createElement("label");
+  autoGainControlLabel.innerText = "automatic gain control (AGC)";
+
+  const echoCancellation = document.createElement("input");
+  echoCancellation.type = "checkbox";
+  echoCancellation.checked = track.getSettings().echoCancellation;
+  echoCancellation.onclick = (event) => {
+    let newConstraints = track.getSettings();
+    newConstraints['echoCancellation'] = echoCancellation.checked;
+    track.applyConstraints(newConstraints).then(() => {
+      echoCancellation.checked = track.getSettings().echoCancellation;
+    }).catch(handleError);
+  };
+  const echoCancellationLabel = document.createElement("label");
+  echoCancellationLabel.innerText = "Acoustic Echo Cancellation (AEC)";
+
+  const noiseSuppression = document.createElement("input");
+  noiseSuppression.type = "checkbox";
+  noiseSuppression.checked = track.getSettings().echoCancellation;
+  noiseSuppression.onclick = (event) => {
+    let newConstraints = track.getSettings();
+    newConstraints['noiseSuppression'] = noiseSuppression.checked;
+    track.applyConstraints(newConstraints).then(() => {
+      noiseSuppression.checked = track.getSettings().noiseSuppression;
+    }).catch(handleError);
+  };
+  const noiseSuppressionLabel = document.createElement("label");
+  noiseSuppressionLabel.innerText = "Noise Suppression";
 
   const channelsLabel = document.createElement("label");
   channelsLabel.innerHTML = "channelCount: ";
@@ -147,8 +180,19 @@ function createTrackInfo(track, number) {
     }).catch(handleError);
   };
 
-  info.appendChild(label);
-  info.appendChild(audioSettings);
+  info.appendChild(trackLabel);
+
+  info.appendChild(autoGainControl);
+  info.appendChild(autoGainControlLabel);
+
+  info.appendChild(echoCancellation);
+  info.appendChild(echoCancellationLabel);
+
+  info.appendChild(noiseSuppression);
+  info.appendChild(noiseSuppressionLabel);
+
+  info.appendChild(document.createElement("br"));
+
   info.appendChild(channelsLabel);
   info.appendChild(channelPicker);
   info.appendChild(channelsButton);
