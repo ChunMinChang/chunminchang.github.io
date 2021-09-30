@@ -146,7 +146,6 @@ function createTrackInfo(track, number) {
   channelsLabel.innerHTML = "channelCount: ";
 
   const channelPicker = document.createElement("input");
-  channelPicker.id = track.id;
   channelPicker.name = track.label;
   channelPicker.type = "number";
   channelPicker.min = 0;
