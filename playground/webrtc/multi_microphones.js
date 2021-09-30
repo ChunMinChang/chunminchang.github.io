@@ -113,47 +113,34 @@ function addStreamAudio(stream) {
 }
 
 function createTrackInfo(track, number) {
+  function createTrackSettingBox(track, attribute) {
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = track.getSettings()[attribute];
+    box.onclick = (event) => {
+      let constraints = track.getSettings();
+      constraints[attribute] = box.checked;
+      track.applyConstraints(constraints).then(() => {
+        box.checked = track.getSettings()[attribute];
+      }).catch(handleError);
+    };
+    return box;
+  }
+  
   const info = document.createElement("div");
 
   const trackLabel = document.createElement("p");
   trackLabel.innerHTML = `track ${number}: ${track.label}`;
 
-  const autoGainControl = document.createElement("input");
-  autoGainControl.type = "checkbox";
-  autoGainControl.checked = track.getSettings().autoGainControl;
-  autoGainControl.onclick = (event) => {
-    let newConstraints = track.getSettings();
-    newConstraints['autoGainControl'] = autoGainControl.checked;
-    track.applyConstraints(newConstraints).then(() => {
-      autoGainControl.checked = track.getSettings().autoGainControl;
-    }).catch(handleError);
-  };
+  const autoGainControl = createTrackSettingBox(track, "autoGainControl");
   const autoGainControlLabel = document.createElement("label");
   autoGainControlLabel.innerText = "automatic gain control (AGC)";
 
-  const echoCancellation = document.createElement("input");
-  echoCancellation.type = "checkbox";
-  echoCancellation.checked = track.getSettings().echoCancellation;
-  echoCancellation.onclick = (event) => {
-    let newConstraints = track.getSettings();
-    newConstraints['echoCancellation'] = echoCancellation.checked;
-    track.applyConstraints(newConstraints).then(() => {
-      echoCancellation.checked = track.getSettings().echoCancellation;
-    }).catch(handleError);
-  };
+  const echoCancellation = createTrackSettingBox(track, "echoCancellation");
   const echoCancellationLabel = document.createElement("label");
   echoCancellationLabel.innerText = "Acoustic Echo Cancellation (AEC)";
 
-  const noiseSuppression = document.createElement("input");
-  noiseSuppression.type = "checkbox";
-  noiseSuppression.checked = track.getSettings().echoCancellation;
-  noiseSuppression.onclick = (event) => {
-    let newConstraints = track.getSettings();
-    newConstraints['noiseSuppression'] = noiseSuppression.checked;
-    track.applyConstraints(newConstraints).then(() => {
-      noiseSuppression.checked = track.getSettings().noiseSuppression;
-    }).catch(handleError);
-  };
+  const noiseSuppression = createTrackSettingBox(track, "noiseSuppression");
   const noiseSuppressionLabel = document.createElement("label");
   noiseSuppressionLabel.innerText = "Noise Suppression";
 
