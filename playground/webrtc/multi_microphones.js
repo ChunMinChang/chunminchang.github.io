@@ -1,7 +1,7 @@
-const inputSourses = document.querySelector("select#inputsources");
-const openButton = document.querySelector("button#openinput");
-const audioContainer = document.querySelector("div#inputaudios");
-const channelCount = document.querySelector("input#channelCount");
+const INPUT_SOURCES = document.querySelector("select#input-sources");
+const OPEN_BUTTON = document.querySelector("button#open-input");
+const AUDIO_CONTAINER = document.querySelector("div#input-audios");
+const CHANNEL_COUNT = document.querySelector("input#channel-count");
 const AGC = document.querySelector("input#AGC");
 const EC = document.querySelector("input#EC");
 const NS = document.querySelector("input#NS");
@@ -9,13 +9,12 @@ const NS = document.querySelector("input#NS");
 init();
 
 async function init() {
-  inputSourses.disabled = true;
+  INPUT_SOURCES.disabled = true;
 
-  openButton.onclick = (event) => {
-    if (inputSourses.disabled) {
+  OPEN_BUTTON.onclick = (event) => {
+    if (INPUT_SOURCES.disabled) {
       OpenMediaStream(false);
-      firstClick = false;
-      inputSourses.disabled = false;
+      INPUT_SOURCES.disabled = false;
       return;
     }
     OpenMediaStream(true);
@@ -25,8 +24,8 @@ async function init() {
 async function OpenMediaStream(exactDevice) {
   const constraints = { audio: true };
   if (exactDevice) {
-    console.assert(inputSourses.value, "audio device must be set!");
-    constraints.audio = { deviceId: { exact: inputSourses.value } };
+    console.assert(INPUT_SOURCES.value, "audio device must be set!");
+    constraints.audio = { deviceId: { exact: INPUT_SOURCES.value } };
   }
 
   constraints.audio = Object.assign(
@@ -39,7 +38,7 @@ async function OpenMediaStream(exactDevice) {
 
   constraints.audio = Object.assign(
     {},
-    { channelCount: channelCount.value },
+    { channelCount: CHANNEL_COUNT.value },
     constraints.audio
   );
 
@@ -56,7 +55,7 @@ async function OpenMediaStream(exactDevice) {
   console.log("stream runs on: " + devices);
 
   // Update the selection list if it's empty
-  if (inputSourses.options.length == 0) {
+  if (INPUT_SOURCES.options.length == 0) {
     await loadDevices();
   }
 
@@ -113,7 +112,7 @@ function addStreamAudio(stream) {
   div.appendChild(closeButton);
   div.appendChild(info);
   container.appendChild(div);
-  audioContainer.appendChild(container);
+  AUDIO_CONTAINER.appendChild(container);
 }
 
 function createTrackInfo(track, number) {
@@ -158,7 +157,7 @@ function createTrackInfo(track, number) {
   channelPicker.value = `${track.getSettings().channelCount}`;
 
   const channelsButton = document.createElement("button");
-  channelsButton.innerHTML = "Update";
+  channelsButton.innerHTML = "Set channel count";
   channelsButton.onclick = (event) => {
     let newChannels = channelPicker.value;
     let newConstraints = Object.assign(
@@ -209,16 +208,16 @@ function loadInputSources(devices) {
 }
 
 function clearInputSources() {
-  while (inputSourses.firstChild) {
-    inputSourses.removeChild(inputSourses.firstChild);
+  while (INPUT_SOURCES.firstChild) {
+    INPUT_SOURCES.removeChild(INPUT_SOURCES.firstChild);
   }
 }
 
 function putToInputSources(device) {
   const option = document.createElement("option");
   option.value = device.deviceId;
-  option.text = device.label || `audio input ${inputSourses.length + 1}`;
-  inputSourses.appendChild(option);
+  option.text = device.label || `audio input ${INPUT_SOURCES.length + 1}`;
+  INPUT_SOURCES.appendChild(option);
 }
 
 function handleError(error) {
