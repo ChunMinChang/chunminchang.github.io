@@ -9,17 +9,23 @@ const NS = document.querySelector("input#NS");
 init();
 
 async function init() {
-  await loadDevices();
-  await OpenMediaStream(false);
+  inputSourses.disabled = true;
+
   openButton.onclick = (event) => {
+    if (inputSourses.disabled) {
+      OpenMediaStream(false);
+      firstClick = false;
+      inputSourses.disabled = false;
+      return;
+    }
     OpenMediaStream(true);
   };
 }
 
 async function OpenMediaStream(exactDevice) {
-  console.assert(inputSourses.value, "audio device must be set!");
   const constraints = { audio: true };
   if (exactDevice) {
+    console.assert(inputSourses.value, "audio device must be set!");
     constraints.audio = { deviceId: { exact: inputSourses.value } };
   }
 
@@ -49,8 +55,8 @@ async function OpenMediaStream(exactDevice) {
   });
   console.log("stream runs on: " + devices);
 
-  // Update the selection list if this is the first stream
-  if (audioContainer.childElementCount == 0) {
+  // Update the selection list if it's empty
+  if (inputSourses.options.length == 0) {
     await loadDevices();
   }
 
@@ -124,7 +130,7 @@ function createTrackInfo(track, number) {
     };
     return box;
   }
-  
+
   const info = document.createElement("div");
 
   const trackLabel = document.createElement("p");
