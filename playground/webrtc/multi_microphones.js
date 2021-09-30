@@ -1,8 +1,10 @@
 const inputSourses = document.querySelector("select#inputsources");
 const openButton = document.querySelector("button#openinput");
 const audioContainer = document.querySelector("div#inputaudios");
-const audioProcessing = document.querySelector("input#processing");
 const channelCount = document.querySelector("input#channelCount");
+const AGC = document.querySelector("input#AGC");
+const EC = document.querySelector("input#EC");
+const NS = document.querySelector("input#NS");
 
 init();
 
@@ -16,22 +18,18 @@ async function init() {
 
 async function OpenMediaStream(exactDevice) {
   console.assert(inputSourses.value, "audio device must be set!");
-  let constraints;
+  const constraints = { audio: true };
   if (exactDevice) {
-    constraints = { audio: { deviceId: { exact: inputSourses.value } } };
-  } else {
-    constraints = { audio: true };
+    constraints.audio = { deviceId: { exact: inputSourses.value } };
   }
 
-  if (!audioProcessing.checked) {
-    constraints.audio = Object.assign(
-      {},
-      { autoGainControl: false },
-      { echoCancellation: false },
-      { noiseSuppression: false },
-      constraints.audio
-    );
-  }
+  constraints.audio = Object.assign(
+    {},
+    { autoGainControl: AGC.checked },
+    { echoCancellation: EC.checked },
+    { noiseSuppression: NS.checked },
+    constraints.audio
+  );
 
   constraints.audio = Object.assign(
     {},

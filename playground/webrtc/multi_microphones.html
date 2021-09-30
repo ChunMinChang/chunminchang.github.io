@@ -7,10 +7,13 @@
 <body>
   <h1>Multiple audio input example</h1>
   <div>
+    <input type="checkbox" id="AGC" checked="true"><label>Automatic Gain Control</label>
+    <input type="checkbox" id="EC" checked="true"><label>Echo Cancellation</label>
+    <input type="checkbox" id="NS" checked="true"><label>Noise Suppression</label>
+    <br />
     <label for="inputsources">Audio input source: </label><select id="inputsources"></select>
     <label for="channelCount-lable">channelCount: </label><input type="number" id="channelCount" value="1" min="0">
     <button id="openinput">Open an input device</button>
-    <input type="checkbox" id="processing" checked="true"><label for="processing-lable">audio processing</label>
     <div id="inputaudios"></div>
   </div>
   <!-- run script after the DOMContent is loaded -->
