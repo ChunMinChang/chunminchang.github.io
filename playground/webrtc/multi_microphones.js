@@ -134,11 +134,11 @@ function createTrackInfo(track, number) {
 
   const autoGainControl = createTrackSettingBox(track, "autoGainControl");
   const autoGainControlLabel = document.createElement("label");
-  autoGainControlLabel.innerText = "automatic gain control (AGC)";
+  autoGainControlLabel.innerText = "Automatic Gain Control";
 
   const echoCancellation = createTrackSettingBox(track, "echoCancellation");
   const echoCancellationLabel = document.createElement("label");
-  echoCancellationLabel.innerText = "Acoustic Echo Cancellation (AEC)";
+  echoCancellationLabel.innerText = "Echo Cancellation"
 
   const noiseSuppression = createTrackSettingBox(track, "noiseSuppression");
   const noiseSuppressionLabel = document.createElement("label");
