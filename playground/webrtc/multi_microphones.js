@@ -159,8 +159,6 @@ function createTrackInfo(track, number) {
       track.getSettings(), { channelCount: newChannels });
     track.applyConstraints(newConstraints).then(() => {
       channelPicker.value = `${track.getSettings().channelCount}`;
-      console.log("channel count - expect " + newChannels +
-        ", get " + channelPicker.value);
     }).catch(handleError);
   };
 
