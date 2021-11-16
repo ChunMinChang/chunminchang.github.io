@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>getUserMedia two audio input</title>
+  </head>
+
+  <body>
+    <h1>Open two microphones</h1>
+    <div>
+      <button id="run">Run Test</button>
+      <div id="inputaudios"></div>
+      <div id="log"></div>
+    </div>
+    <!-- run script after the DOMContent is loaded -->
+    <script>
+      const audioContainer = document.querySelector("div#inputaudios");
+      const log = document.querySelector("div#log");
+      const button = document.querySelector("button#run");
+      button.onclick = async function () {
+        await runTest();
+      };
+
+      async function runTest() {
+        // Open a 2-channel stream in non-passthrough mode
+        let constraints = {
+          audio: {
+            autoGainControl: true,
+            echoCancellation: true,
+            noiseSuppression: true,
+            channelCount: 2,
+          },
+        };
+
+        console.log("Open stream by", constraints);
+        let stream = await navigator.mediaDevices
+          .getUserMedia(constraints)
+          .catch(handleError);
+
+        console.assert(stream.getAudioTracks().length == 1);
+        console.log(
+          stream.getAudioTracks()[0].getSettings().channelCount +
+            "-channel stream runs on " +
+            stream.getAudioTracks()[0].label
+        );
+
+        let diff = getDifferentConstraints(
+          stream.getAudioTracks()[0],
+          constraints
+        );
+        if (diff.length > 0) {
+          for (const p of diff) {
+            addLog(
+              p +
+                " doesn't match. Expect " +
+                constraints.audio[p] +
+                ", but got " +
+                stream.getAudioTracks()[0].getSettings()[p]
+            );
+          }
+          stream.getAudioTracks()[0].stop();
+          return;
+        }
+
+        let audioElement = createStreamAudio(stream);
+
+        // Play 2-channel audio in non-passthrough mode
+        await audioElement.play();
+
+        // Switch from 2-channel driver to 1-channel driver, within non-passthrough mode
+        let newConstraints = Object.assign(
+          stream.getAudioTracks()[0].getSettings(),
+          { channelCount: 1 }
+        );
+        await stream
+          .getAudioTracks()[0]
+          .applyConstraints(newConstraints)
+          .catch(handleError);
+        console.log(
+          stream.getAudioTracks()[0].getSettings().channelCount +
+            "-channel stream runs on " +
+            stream.getAudioTracks()[0].label
+        );
+
+        diff = getDifferentConstraints(
+          stream.getAudioTracks()[0],
+          newConstraints
+        );
+        if (diff.length > 0) {
+          for (const p of diff) {
+            addLog(
+              p +
+                " doesn't match. Expect " +
+                constraints.audio[p] +
+                ", but got " +
+                stream.getAudioTracks()[0].getSettings()[p]
+            );
+          }
+          stream.getAudioTracks()[0].stop();
+          await audioElement.pause();
+          return;
+        }
+
+        // Now the 1-channel audio plays in non-passthrough mode
+
+        // TODO:
+        // Switch from 1-channel driver to 2-channel driver, from non-passthrough mode to pass-through mode
+        // Now the 2-channel audio plays in passthrough mode
+        // Switch from 2-channel driver to 1-channel driver, within passthrough mode
+      }
+
+      function getDifferentConstraints(track, constraints) {
+        let differences = [];
+        for (const property in constraints.audio) {
+          if (constraints.audio[property] != track.getSettings()[property]) {
+            differences.push(property);
+          }
+        }
+        return differences;
+      }
+
+      function createStreamAudio(stream) {
+        const container = document.createElement("div");
+
+        const audioElement = document.createElement("audio");
+        audioElement.srcObject = stream;
+        audioElement.controls = true;
+
+        container.appendChild(audioElement);
+        audioContainer.appendChild(container);
+
+        return audioElement;
+      }
+
+      function addLog(message) {
+        log.innerHTML += "<p>" + message + "</p>";
+      }
+
+      function handleError(error) {
+        const errorMessage = error.message + " " + error.name;
+        console.log(errorMessage);
+        addLog(errorMessage);
+      }
+    </script>
+  </body>
+</html>
