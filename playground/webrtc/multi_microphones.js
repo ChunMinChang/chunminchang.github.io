@@ -103,7 +103,7 @@ function addStreamAudio(stream) {
     div.remove();
 
     let tracks = stream.getAudioTracks();
-    tracks.forEach(track => track.stop());
+    tracks.forEach((track) => track.stop());
   };
   closeButton.style = "margin-left: 20px;";
 
@@ -123,9 +123,12 @@ function createTrackInfo(track, number) {
     box.onclick = (event) => {
       let constraints = track.getSettings();
       constraints[attribute] = box.checked;
-      track.applyConstraints(constraints).then(() => {
-        box.checked = track.getSettings()[attribute];
-      }).catch(handleError);
+      track
+        .applyConstraints(constraints)
+        .then(() => {
+          box.checked = track.getSettings()[attribute];
+        })
+        .catch(handleError);
     };
     return box;
   }
@@ -141,7 +144,7 @@ function createTrackInfo(track, number) {
 
   const echoCancellation = createTrackSettingBox(track, "echoCancellation");
   const echoCancellationLabel = document.createElement("label");
-  echoCancellationLabel.innerText = "Echo Cancellation"
+  echoCancellationLabel.innerText = "Echo Cancellation";
 
   const noiseSuppression = createTrackSettingBox(track, "noiseSuppression");
   const noiseSuppressionLabel = document.createElement("label");
@@ -160,11 +163,15 @@ function createTrackInfo(track, number) {
   channelsButton.innerHTML = "Set channel count";
   channelsButton.onclick = (event) => {
     let newChannels = channelPicker.value;
-    let newConstraints = Object.assign(
-      track.getSettings(), { channelCount: newChannels });
-    track.applyConstraints(newConstraints).then(() => {
-      channelPicker.value = `${track.getSettings().channelCount}`;
-    }).catch(handleError);
+    let newConstraints = Object.assign(track.getSettings(), {
+      channelCount: newChannels,
+    });
+    track
+      .applyConstraints(newConstraints)
+      .then(() => {
+        channelPicker.value = `${track.getSettings().channelCount}`;
+      })
+      .catch(handleError);
   };
 
   info.appendChild(trackLabel);
