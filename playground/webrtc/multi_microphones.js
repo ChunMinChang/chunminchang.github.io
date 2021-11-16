@@ -59,7 +59,7 @@ async function OpenMediaStream(exactDevice) {
     await loadDevices();
   }
 
-  addStreamAudio(stream)
+  addStreamAudio(stream);
 }
 
 async function loadDevices() {
