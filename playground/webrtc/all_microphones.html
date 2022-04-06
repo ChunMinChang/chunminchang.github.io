@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Open multiple microphones via getUserMedia</title>
+  </head>
+
+  <body>
+    <h1>Open multiple microphones</h1>
+    <div>
+      <button id="run">Run tests</button>
+      <div id="log"></div>
+    </div>
+    <!-- run script after the DOMContent is loaded -->
+    <script>
+      const log = document.querySelector("div#log");
+      const button = document.querySelector("button#run");
+
+      button.onclick = async function () {
+        await run();
+      };
+
+      async function run() {
+        try {
+          let devices = await navigator.mediaDevices.enumerateDevices();
+          // Create constraints
+          let constraints = [];
+          devices.forEach((device) => {
+            if (device.kind === "audioinput") {
+              constraints.push({
+                audio: { deviceId: { exact: device.deviceId } },
+              });
+            }
+          });
+          if (constraints.length >= 2) {
+            // Create constraints
+            let constraints = [];
+            devices.forEach((device) => {
+              if (device.kind === "audioinput") {
+                constraints.push({
+                  audio: { deviceId: { exact: device.deviceId } },
+                });
+              }
+            });
+            // Open microphones by the constraints
+            let mediaStreams = [];
+            for (let c of constraints) {
+              let stream = await navigator.mediaDevices.getUserMedia(c);
+              logMsg(
+                "MediaStream: " +
+                  stream.id +
+                  " for device: " +
+                  c.audio.deviceId.exact +
+                  " is created"
+              );
+              mediaStreams.push(stream);
+            }
+            // Close microphones
+            for (let stream of mediaStreams) {
+              for (let track of stream.getTracks()) {
+                track.stop();
+              }
+              logMsg("Stop all tracks in MediaStream: " + stream.id);
+            }
+            mediaStreams = [];
+          } else {
+            logMsg("Need at least 2 audio devices!");
+          }
+        } catch (e) {
+          ok(false, e.name + ": " + e.message);
+        }
+      }
+
+      function logMsg(message) {
+        log.innerHTML += "<p>" + message + "</p>";
+      }
+    </script>
+  </body>
+</html>
