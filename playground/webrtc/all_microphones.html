@@ -21,43 +21,45 @@
       };
 
       async function run() {
-        try {
-          let devices = await navigator.mediaDevices.enumerateDevices();
-          // Create constraints
-          let constraints = [];
-          devices.forEach((device) => {
-            if (device.kind === "audioinput") {
-              constraints.push({
-                audio: { deviceId: { exact: device.deviceId } },
-              });
-            }
-          });
-          if (constraints.length >= 2) {
-            // Open microphones by the constraints
-            let mediaStreams = [];
-            for (let c of constraints) {
-              let stream = await navigator.mediaDevices.getUserMedia(c);
-              logMsg(
-                "MediaStream: " +
-                  stream.id +
-                  " for device: " +
-                  c.audio.deviceId.exact +
-                  " is created"
-              );
-              mediaStreams.push(stream);
-            }
-            // Close microphones
-            for (let stream of mediaStreams) {
-              for (let track of stream.getTracks()) {
-                logMsg("Stopping " +track.label);
-                track.stop();
-              }
-              logMsg("Stop all tracks in MediaStream: " + stream.id);
-            }
-            mediaStreams = [];
-          } else {
-            logMsg("Need at least 2 audio devices!");
+        let devices = await navigator.mediaDevices.enumerateDevices();
+        // Create constraints
+        let constraints = [];
+        devices.forEach((device) => {
+          if (device.kind === "audioinput") {
+            constraints.push({
+              audio: { deviceId: { exact: device.deviceId } },
+            });
           }
+        });
+
+        if (constraints.length < 2) {
+          logMsg("Need at least 2 audio devices!");
+          return;
+        }
+
+        try {
+          // Open microphones by the constraints
+          let mediaStreams = [];
+          for (let c of constraints) {
+            let stream = await navigator.mediaDevices.getUserMedia(c);
+            logMsg(
+              "MediaStream: " +
+                stream.id +
+                " for device: " +
+                c.audio.deviceId.exact +
+                " is created"
+            );
+            mediaStreams.push(stream);
+          }
+          // Close microphones
+          for (let stream of mediaStreams) {
+            for (let track of stream.getTracks()) {
+              logMsg("Stopping " + track.label);
+              track.stop();
+            }
+            logMsg("Stop all tracks in MediaStream: " + stream.id);
+          }
+          mediaStreams = [];
         } catch (e) {
           logMsg(e.name + ": " + e.message);
         }
