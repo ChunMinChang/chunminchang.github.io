@@ -33,15 +33,6 @@
             }
           });
           if (constraints.length >= 2) {
-            // Create constraints
-            let constraints = [];
-            devices.forEach((device) => {
-              if (device.kind === "audioinput") {
-                constraints.push({
-                  audio: { deviceId: { exact: device.deviceId } },
-                });
-              }
-            });
             // Open microphones by the constraints
             let mediaStreams = [];
             for (let c of constraints) {
