@@ -49,6 +49,7 @@
             // Close microphones
             for (let stream of mediaStreams) {
               for (let track of stream.getTracks()) {
+                logMsg("Stopping " +track.label);
                 track.stop();
               }
               logMsg("Stop all tracks in MediaStream: " + stream.id);
@@ -58,7 +59,7 @@
             logMsg("Need at least 2 audio devices!");
           }
         } catch (e) {
-          ok(false, e.name + ": " + e.message);
+          logMsg(e.name + ": " + e.message);
         }
       }
 
