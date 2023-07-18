@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebCodec MP4 decode sample</title>
+</head>
+<body>
+  <p>
+    This demo is a modification of <a href="https://w3c.github.io/webcodecs/samples/video-decode-display/">video-decode-display</a>.
+  </p>
+
+  <p>
+    Renderer:
+    <label for="renderer_2d">
+      <input id="renderer_2d" type="radio" name="renderer" value="2d" checked> 2D
+    </label>
+  </p>
+
+  <p>
+    Video Codec:
+    <label for="video_codec_h264">
+      <input id="video_codec_h264" type="radio" name="video_codec" value="avc" checked> H.264
+    </label>
+    <label for="video_codec_vp8">
+      <input id="video_codec_vp8" type="radio" name="video_codec" value="vp8"> VP8
+    </label>
+    <label for="video_codec_vp9">
+      <input id="video_codec_vp9" type="radio" name="video_codec" value="vp9"> VP9
+    </label>
+    <label for="video_codec_av1">
+      <input id="video_codec_av1" type="radio" name="video_codec" value="av1"> AV1
+    </label>
+  </p>
+
+  <p>
+    <button id="start">Start</button>
+  </p>
+
+  <canvas></canvas>
+
+  <p>
+    Processing:
+    <label for="processing_none">
+      <input id="processing_none" type="radio" name="processing" value="none" checked disabled> None (Original)
+    </label>
+    <label for="processing_grayscale">
+      <input id="processing_grayscale" type="radio" name="processing" value="grayscale" disabled> Grayscale
+    </label>
+    <label for="processing_inverted">
+      <input id="processing_inverted" type="radio" name="processing" value="inverted" disabled> Inverted
+    </label>
+    <label for="processing_sepia">
+      <input id="processing_sepia" type="radio" name="processing" value="sepia" disabled> Sepia
+    </label>
+  </p>
+
+  <table cellspacing="8" id="status">
+    <tr><th align="right">Fetch</th><td id="fetch">Not started</td></tr>
+    <tr><th align="right">Demux</th><td id="demux">Not started</td></tr>
+    <tr><th align="right">Decode</th><td id="decode">Not started</td></tr>
+    <tr><th align="right">Render</th><td id="render">Not started</td></tr>
+  </table>
+
+  <script type="module">
+    // Play button.
+    const startButton = document.querySelector("#start");
+    startButton.addEventListener("click", () => {
+      document.querySelectorAll("input[name=\"renderer\"]").forEach(input => input.disabled = true);
+      document.querySelectorAll("input[name=\"video_codec\"]").forEach(input => input.disabled = true);
+      startButton.disabled = true;
+      start();
+    }, {once: true});
+
+    // Status UI.
+    const status = {
+      fetch: document.querySelector("#fetch"),
+      demux: document.querySelector("#demux"),
+      decode: document.querySelector("#decode"),
+      render: document.querySelector("#render"),
+    };
+
+    function setStatus(message) {
+      for (const key in message.data) {
+        status[key].innerText = message.data[key];
+      }
+    }
+
+    // Worker setup.
+    function start() {
+      const videoCodec = document.querySelector("input[name=\"video_codec\"]:checked").value;
+      const dataUri = `../data/bbb_video_${videoCodec}_frag.mp4`;
+      const rendererName = document.querySelector("input[name=\"renderer\"]:checked").value;
+      const canvas = document.querySelector("canvas").transferControlToOffscreen();
+      const worker = new Worker("./worker.js");
+      worker.addEventListener("message", setStatus);
+      worker.postMessage({start: {dataUri, rendererName, canvas}}, [canvas]);
+
+      document.querySelectorAll("input[name=\"processing\"]").forEach(input => {
+        input.disabled = false;
+        input.addEventListener("change", evt => {
+          worker.postMessage({processing: evt.target.value});
+        });
+      });
+    }
+  </script>
+</body>
+</html>
+
