@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <title>isConfigSupported</title>
+    <script>
+      const videoEncoderConfigs = [
+        { codec: "av01.0.04M.08" },
+        { codec: "vp8" },
+        { codec: "vp09.00.10.08" },
+        { codec: "avc1.42001E", avc: { format: "avc" } },
+        { codec: "avc1.42001E", avc: { format: "annexb" } },
+      ];
+      videoEncoderConfigs.forEach((config) => {
+        config.width = 640;
+        config.height = 480;
+        config.displayWidth = 800;
+        config.displayHeight = 600;
+      });
+
+      const videoDecoderConfigs = [
+        { codec: "av01.0.04M.08" },
+        { codec: "vp8" },
+        { codec: "vp09.00.10.08" },
+        { codec: "avc1.64000b" },
+      ];
+      videoDecoderConfigs.forEach((config) => {
+        config.codedWidth = 320;
+        config.codedHeight = 240;
+        config.visibleRect = {x: 0, y: 0, width: 320, height: 240};
+        config.displayWidth = 320;
+        config.displayHeight = 240;
+      });
+
+      function getIsConfigSupported(type) {
+        switch(type) {
+          case "VideoEncoder":
+            return VideoEncoder.isConfigSupported;
+          case "VideoDecoder":
+            return VideoDecoder.isConfigSupported;
+          default:
+            break;
+        }
+        return undefined;
+      }
+
+      function printLog(type, msg) {
+        const para = document.createElement("p");
+        const text = document.createTextNode(msg);
+        para.appendChild(text);
+        document.getElementById(type).appendChild(para);
+      }
+
+      function checkSupport(type, configs) {
+        const isConfigSupported = getIsConfigSupported(type);
+
+        configs.forEach((config) => {
+          let msg = config.codec;
+          if (config.avc) {
+            msg += ", " + config.avc.format;
+          }
+
+          (async () => {
+            const result = await isConfigSupported(config);
+            msg += ": " + result.supported;
+            printLog(type, msg);
+          })();
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        checkSupport("VideoEncoder", videoEncoderConfigs);
+        checkSupport("VideoDecoder", videoDecoderConfigs);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>isConfigSupported</h1>
+    <h2>VideoEncoder</h2>
+    <div id="VideoEncoder"></div>
+    <h2>VideoDecoder</h2>
+    <div id="VideoDecoder"></div>
+  </body>
+</html>
