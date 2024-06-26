@@ -31,16 +31,14 @@
       function showColorInfo(color) {
         const info = document.getElementById("colorinfo");
 
-        const code = info.querySelector("p[name='code']");
-        code.innerText = "code: " + color;
-
         const [r, g, b] = hexToRGB(color.substring(1));
-        const rgb = info.querySelector("p[name='rgb']");
-        rgb.innerText = "R: " + r + ", G: " + g + ", B:" + b;
+        const rgbyuv = info.querySelector("p[name='rgb-yuv']");
+        rgbyuv.innerText =
+          color + ": (R, G, B) = (" + r + ", " + g + ", " + b + ")";
 
         const [y, u, v] = rgb2yuv(r, g, b);
-        const yuv = info.querySelector("p[name='yuv']");
-        yuv.innerText = "converted Y: " + y + ", U: " + u + ", V:" + v;
+        rgbyuv.innerText +=
+          " ---> (Y, U, V) = (" + y + ", " + u + ", " + v + ")";
       }
 
       function updateColor(event) {
@@ -285,9 +283,7 @@
       </select>
       <button id="draw">Draw</button>
       <div id="colorinfo">
-        <p name="code"></p>
-        <p name="rgb"></p>
-        <p name="yuv"></p>
+        <p name="rgb-yuv"></p>
         <p>Y = 0.299 * R + 0.587 * G + 0.114 * B</p>
         <p>U = -0.169 * R - 0.331 * G + 0.5 * B + 128</p>
         <p>V = 0.5 * R - 0.419 * G - 0.081 * B + 128</p>
