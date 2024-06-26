@@ -1,0 +1,278 @@
+<html>
+  <head>
+    <title>VideoFrame copyTo RGB</title>
+    <script>
+      const WIDTH = 20;
+      const HEIGHT = 20;
+      var color = "#ff0000";
+
+      function hexToRGB(hex) {
+        // const r = parseInt(hex.substring(0, 2), 16);
+        // const g = parseInt(hex.substring(2, 4), 16);
+        // const b = parseInt(hex.substring(4, 6), 16);
+        const bits = parseInt(hex, 16);
+        const r = (bits >> 16) & 0xff;
+        const g = (bits >> 8) & 0xff;
+        const b = bits & 0xff;
+        return [r, g, b];
+      }
+
+      function rgb2yuv(r, g, b) {
+        let y = r * 0.299 + g * 0.587 + b * 0.114;
+        let u = r * -0.168736 + g * -0.331264 + b * 0.5 + 128;
+        let v = r * 0.5 + g * -0.418688 + b * -0.081312 + 128;
+
+        y = Math.round(y);
+        u = Math.round(u);
+        v = Math.round(v);
+        return [y, u, v];
+      }
+
+      function showColorInfo(color) {
+        const info = document.getElementById("colorinfo");
+
+        const code = info.querySelector("p[name='code']");
+        code.innerText = "code: " + color;
+
+        const [r, g, b] = hexToRGB(color.substring(1));
+        const rgb = info.querySelector("p[name='rgb']");
+        rgb.innerText = "R: " + r + ", G: " + g + ", B:" + b;
+
+        const [y, u, v] = rgb2yuv(r, g, b);
+        const yuv = info.querySelector("p[name='yuv']");
+        yuv.innerText = "Y: " + y + ", U: " + u + ", V:" + v;
+      }
+
+      function updateColor(event) {
+        color = event.target.value;
+        showColorInfo(color);
+      }
+
+      function getTestResultElements(element) {
+        const canvas = element.querySelector("canvas");
+        const bytes = element.querySelector("textarea[name='bytes']");
+        return [canvas, bytes];
+      }
+
+      function resetTestElements(element) {
+        const [canvas, bytes] = getTestResultElements(element);
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        bytes.value = "";
+      }
+
+      function fillStandardCanvas(element, color) {
+        const [canvas, bytes] = getTestResultElements(element);
+        const ctx = canvas.getContext("2d");
+        // Fill whole canvas.
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Show the RGB data retrieved from canvas.
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = new Uint8Array(imageData.data.buffer);
+        bytes.value = data;
+      }
+
+      function drawVideoFrame(
+        element,
+        color,
+        format,
+        colorSpace,
+        buffer,
+        width,
+        height
+      ) {
+        const init = {
+          format: format,
+          timestamp: 0,
+          codedWidth: width,
+          codedHeight: height,
+          colorSpace: colorSpace,
+        };
+        const frame = new VideoFrame(buffer, init);
+
+        const [canvas, bytes] = getTestResultElements(element);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(
+          frame,
+          0,
+          0,
+          frame.codedWidth,
+          frame.codedHeight,
+          0,
+          0,
+          frame.codedWidth,
+          frame.codedHeight
+        );
+
+        // Show the RGB data retrieved from canvas.
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = new Uint8Array(imageData.data.buffer);
+        bytes.value = data;
+      }
+
+      function drawRGBXFrame(element, color, colorSpace) {
+        const [r, g, b] = hexToRGB(color.substring(1));
+        const size = WIDTH * HEIGHT * 4;
+        const buffer = new Uint8Array(size);
+        for (let i = 0; i < size; i += 4) {
+          buffer.fill(r, i, i + 1);
+          buffer.fill(g, i + 1, i + 2);
+          buffer.fill(b, i + 2, i + 3);
+        }
+
+        drawVideoFrame(
+          element,
+          color,
+          "RGBX",
+          colorSpace,
+          buffer,
+          WIDTH,
+          HEIGHT
+        );
+      }
+
+      function drawI420Frame(element, color, colorSpace) {
+        const [r, g, b] = hexToRGB(color.substring(1));
+        const [y, u, v] = rgb2yuv(r, g, b);
+
+        const ySize = WIDTH * HEIGHT;
+        const uSize = ((WIDTH / 2) * HEIGHT) / 2;
+        const vSize = ((WIDTH / 2) * HEIGHT) / 2;
+
+        const buffer = new Uint8Array(ySize + uSize + vSize);
+        buffer.fill(y, 0, ySize);
+        buffer.fill(u, ySize, ySize + uSize);
+        buffer.fill(v, ySize + uSize, ySize + uSize + vSize);
+
+        drawVideoFrame(
+          element,
+          color,
+          "I420",
+          colorSpace,
+          buffer,
+          WIDTH,
+          HEIGHT
+        );
+      }
+
+      function drawVideoFrames(color) {
+        const colorspace = {
+          bt709: {
+            matrix: "bt709",
+            primaries: "bt709",
+            transfer: "bt709",
+            fullRange: false,
+          },
+          smpte170m: {
+            matrix: "smpte170m",
+            primaries: "smpte170m",
+            transfer: "smpte170m",
+            fullRange: false,
+          },
+        };
+        const set = [
+          {
+            id: "videoframe-RGBX-BT709",
+            format: "RGBX",
+            colorspace: colorspace.bt709,
+          },
+          {
+            id: "videoframe-RGBX-SMPTE170M",
+            format: "RGBX",
+            colorspace: colorspace.smpte170m,
+          },
+          {
+            id: "videoframe-I420-BT709",
+            format: "I420",
+            colorspace: colorspace.bt709,
+          },
+          {
+            id: "videoframe-I420-SMPTE170M",
+            format: "I420",
+            colorspace: colorspace.smpte170m,
+          },
+        ];
+        for (const s of set) {
+          const element = document.getElementById(s.id);
+          if (s.format == "I420") {
+            drawI420Frame(element, color, s.colorspace);
+          } else if (s.format == "RGBX") {
+            drawRGBXFrame(element, color, s.colorspace);
+          }
+        }
+      }
+
+      function runTest(event) {
+        fillStandardCanvas(document.getElementById("standard"), color);
+        drawVideoFrames(color);
+      }
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        // Initialize color picker.
+        const colorPicker = document.getElementById("colorPicker");
+        colorPicker.addEventListener("input", updateColor, false);
+        colorPicker.addEventListener("change", updateColor, false);
+        colorPicker.value = color;
+        showColorInfo(color);
+
+        // Initialize button.
+        const button = document.getElementById("draw");
+        button.addEventListener("click", runTest);
+
+        // Initialize canvas and debug info.
+        const canvasDivs = document.body.getElementsByClassName("canvas");
+        for (const c of canvasDivs) {
+          resetTestElements(document.getElementById(c.id));
+        }
+      });
+    </script>
+
+    <body>
+      <h1>VideoFrame copyTo RGB</h1>
+      <p>Pick a color, then click Draw!</p>
+      <label>Color Picker</label>
+      <input type="color" id="colorPicker" />
+      <button id="draw">Draw</button>
+      <div id="colorinfo">
+        <p name="code"></p>
+        <p name="rgb"></p>
+        <p name="yuv"></p>
+        <p>Y = 0.299 * R + 0.587 * G + 0.114 * B</p>
+        <p>U = -0.169 * R - 0.331 * G + 0.5 * B + 128</p>
+        <p>V = 0.5 * R - 0.419 * G - 0.081 * B + 128</p>
+      </div>
+      <p>The canvas size is 20 x 20</p>
+
+      <div class="canvas" id="standard">
+        <h2>fillRect</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-RGBX-BT709">
+        <h2>drawImage with VideoFrame RGBX BT709</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-RGBX-SMPTE170M">
+        <h2>drawImage with VideoFrame RGBX SMPTE170M</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-I420-BT709">
+        <h2>drawImage with VideoFrame I420 BT709</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-I420-SMPTE170M">
+        <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea>
+      </div>
+    </body>
+  </head>
+</html>
