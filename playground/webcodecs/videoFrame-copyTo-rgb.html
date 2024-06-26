@@ -4,7 +4,7 @@
     <script>
       const WIDTH = 20;
       const HEIGHT = 20;
-      var color = "#ff0000";
+      var color;
 
       function hexToRGB(hex) {
         // const r = parseInt(hex.substring(0, 2), 16);
@@ -40,7 +40,7 @@
 
         const [y, u, v] = rgb2yuv(r, g, b);
         const yuv = info.querySelector("p[name='yuv']");
-        yuv.innerText = "Y: " + y + ", U: " + u + ", V:" + v;
+        yuv.innerText = "converted Y: " + y + ", U: " + u + ", V:" + v;
       }
 
       function updateColor(event) {
@@ -51,18 +51,22 @@
       function getTestResultElements(element) {
         const canvas = element.querySelector("canvas");
         const bytes = element.querySelector("textarea[name='bytes']");
-        return [canvas, bytes];
+        const copyTo = element.querySelector("textarea[name='copyTo']");
+        return [canvas, bytes, copyTo];
       }
 
       function resetTestElements(element) {
-        const [canvas, bytes] = getTestResultElements(element);
+        const [canvas, bytes, copyTo] = getTestResultElements(element);
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
         bytes.value = "";
+        if (copyTo) {
+          copyTo.value = "";
+        }
       }
 
       function fillStandardCanvas(element, color) {
-        const [canvas, bytes] = getTestResultElements(element);
+        const [canvas, bytes, _] = getTestResultElements(element);
         const ctx = canvas.getContext("2d");
         // Fill whole canvas.
         ctx.fillStyle = color;
@@ -91,8 +95,38 @@
         };
         const frame = new VideoFrame(buffer, init);
 
-        const [canvas, bytes] = getTestResultElements(element);
-        const ctx = canvas.getContext("2d");
+        const ctxColorSpace =
+          document.getElementById("copyTo-colorspace").value;
+        const [canvas, bytes, copyTo] = getTestResultElements(element);
+        const ctx = canvas.getContext("2d", {
+          colorSpace: ctxColorSpace,
+          willReadFrequently: true,
+        });
+
+        // Get VideoFrame pixels via copyTo()
+        const options = {
+          rect: { x: 0, y: 0, width: width, height: height },
+          format: document.getElementById("copyTo-format").value,
+          colorSpace: ctxColorSpace,
+        };
+        const copytoImageData = ctx.createImageData(width, height);
+        const copytoBuf = copytoImageData.data.buffer;
+
+        frame
+          .copyTo(copytoBuf, options)
+          .then((layout) => {
+            const copytoData = new Uint8Array(copytoBuf);
+            copyTo.value = copytoData;
+          })
+          .catch((error) => {
+            const logs = document.getElementById("errorlog");
+            const para = document.createElement("p");
+            const msg = document.createTextNode(error);
+            para.appendChild(msg);
+            logs.appendChild(para);
+          });
+
+        // Get the RGB data retrieved from canvas drawn by the given VideoFrame.
         ctx.drawImage(
           frame,
           0,
@@ -105,10 +139,13 @@
           frame.codedHeight
         );
 
-        // Show the RGB data retrieved from canvas.
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height, {
+          colorSpace: ctxColorSpace,
+        });
         const data = new Uint8Array(imageData.data.buffer);
         bytes.value = data;
+
+        frame.close();
       }
 
       function drawRGBXFrame(element, color, colorSpace) {
@@ -210,6 +247,7 @@
 
       document.addEventListener("DOMContentLoaded", (event) => {
         // Initialize color picker.
+        color = "#ff0000";
         const colorPicker = document.getElementById("colorPicker");
         colorPicker.addEventListener("input", updateColor, false);
         colorPicker.addEventListener("change", updateColor, false);
@@ -230,9 +268,21 @@
 
     <body>
       <h1>VideoFrame copyTo RGB</h1>
-      <p>Pick a color, then click Draw!</p>
+      <p>Pick color and format, then click Draw</p>
       <label>Color Picker</label>
       <input type="color" id="colorPicker" />
+      <label>copyTo format</label>
+      <select id="copyTo-format">
+        <option value="RGBA">RGBA</option>
+        <option value="RGBX">RGBX</option>
+        <option value="BGRA">BGRA</option>
+        <option value="BGRX">BGRX</option>
+      </select>
+      <label>copyTo colorspace</label>
+      <select id="copyTo-colorspace">
+        <option value="srgb">srgb</option>
+        <option value="display-p3" disabled>display-p3</option>
+      </select>
       <button id="draw">Draw</button>
       <div id="colorinfo">
         <p name="code"></p>
@@ -243,6 +293,7 @@
         <p>V = 0.5 * R - 0.419 * G - 0.081 * B + 128</p>
       </div>
       <p>The canvas size is 20 x 20</p>
+      <div id="errorlog"></div>
 
       <div class="canvas" id="standard">
         <h2>fillRect</h2>
@@ -253,25 +304,29 @@
       <div class="canvas" id="videoframe-RGBX-BT709">
         <h2>drawImage with VideoFrame RGBX BT709</h2>
         <canvas></canvas>
-        bytes: <textarea name="bytes" readonly></textarea>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBX-SMPTE170M">
         <h2>drawImage with VideoFrame RGBX SMPTE170M</h2>
         <canvas></canvas>
-        bytes: <textarea name="bytes" readonly></textarea>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420-BT709">
         <h2>drawImage with VideoFrame I420 BT709</h2>
         <canvas></canvas>
-        bytes: <textarea name="bytes" readonly></textarea>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420-SMPTE170M">
         <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
         <canvas></canvas>
-        bytes: <textarea name="bytes" readonly></textarea>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
       </div>
     </body>
   </head>
