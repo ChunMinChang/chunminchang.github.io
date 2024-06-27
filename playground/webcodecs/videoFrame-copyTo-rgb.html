@@ -1,10 +1,21 @@
 <html>
   <head>
     <title>VideoFrame copyTo RGB</title>
+    <style>
+      .box {
+        float: left;
+        margin-right: 10px;
+        height: 30px;
+        width: 30px;
+        border: 1px solid black;
+        clear: both;
+      }
+    </style>
     <script>
       const WIDTH = 20;
       const HEIGHT = 20;
       var color;
+      var alpha;
 
       function hexToRGB(hex) {
         // const r = parseInt(hex.substring(0, 2), 16);
@@ -28,7 +39,7 @@
         return [y, u, v];
       }
 
-      function showColorInfo(color) {
+      function showColorInfo(color, alpha) {
         const info = document.getElementById("colorinfo");
 
         const [r, g, b] = hexToRGB(color.substring(1));
@@ -38,12 +49,22 @@
 
         const [y, u, v] = rgb2yuv(r, g, b);
         rgbyuv.innerText +=
-          " ---> (Y, U, V) = (" + y + ", " + u + ", " + v + ")";
+          " ---> (Y, U, V) = (" + y + ", " + u + ", " + v + "), A: " + alpha;
+
+        const sample = info.querySelector("div[name='color-sample']");
+        const alphaValue = alpha / 255;
+        sample.style.backgroundColor =
+          "rgba(" + [r, g, b, alphaValue].join(",") + ")";
       }
 
       function updateColor(event) {
         color = event.target.value;
-        showColorInfo(color);
+        showColorInfo(color, alpha);
+      }
+
+      function updateAlpha(event) {
+        alpha = event.target.value;
+        showColorInfo(color, alpha);
       }
 
       function getTestResultElements(element) {
@@ -146,7 +167,9 @@
         frame.close();
       }
 
-      function drawRGBXFrame(element, color, colorSpace) {
+      function drawRGBXFrame(element, color, format, colorSpace) {
+        const hasAlpha = format.includes("A");
+
         const [r, g, b] = hexToRGB(color.substring(1));
         const size = WIDTH * HEIGHT * 4;
         const buffer = new Uint8Array(size);
@@ -154,12 +177,15 @@
           buffer.fill(r, i, i + 1);
           buffer.fill(g, i + 1, i + 2);
           buffer.fill(b, i + 2, i + 3);
+          if (hasAlpha) {
+            buffer.fill(alpha, i + 3, i + 4);
+          }
         }
 
         drawVideoFrame(
           element,
           color,
-          "RGBX",
+          format,
           colorSpace,
           buffer,
           WIDTH,
@@ -167,23 +193,35 @@
         );
       }
 
-      function drawI420Frame(element, color, colorSpace) {
+      function drawI420Frame(element, color, format, colorSpace) {
         const [r, g, b] = hexToRGB(color.substring(1));
         const [y, u, v] = rgb2yuv(r, g, b);
+
+        const hasAlpha = format.includes("A");
 
         const ySize = WIDTH * HEIGHT;
         const uSize = ((WIDTH / 2) * HEIGHT) / 2;
         const vSize = ((WIDTH / 2) * HEIGHT) / 2;
+        const aSize = ySize;
 
-        const buffer = new Uint8Array(ySize + uSize + vSize);
+        const buffer = new Uint8Array(
+          ySize + uSize + vSize + (hasAlpha ? aSize : 0)
+        );
         buffer.fill(y, 0, ySize);
         buffer.fill(u, ySize, ySize + uSize);
         buffer.fill(v, ySize + uSize, ySize + uSize + vSize);
+        if (hasAlpha) {
+          buffer.fill(
+            alpha,
+            ySize + uSize + vSize,
+            ySize + uSize + vSize + aSize
+          );
+        }
 
         drawVideoFrame(
           element,
           color,
-          "I420",
+          format,
           colorSpace,
           buffer,
           WIDTH,
@@ -218,6 +256,16 @@
             colorspace: colorspace.smpte170m,
           },
           {
+            id: "videoframe-RGBA-BT709",
+            format: "RGBA",
+            colorspace: colorspace.bt709,
+          },
+          {
+            id: "videoframe-RGBA-SMPTE170M",
+            format: "RGBA",
+            colorspace: colorspace.smpte170m,
+          },
+          {
             id: "videoframe-I420-BT709",
             format: "I420",
             colorspace: colorspace.bt709,
@@ -227,13 +275,23 @@
             format: "I420",
             colorspace: colorspace.smpte170m,
           },
+          {
+            id: "videoframe-I420A-BT709",
+            format: "I420A",
+            colorspace: colorspace.bt709,
+          },
+          {
+            id: "videoframe-I420A-SMPTE170M",
+            format: "I420A",
+            colorspace: colorspace.smpte170m,
+          },
         ];
         for (const s of set) {
           const element = document.getElementById(s.id);
-          if (s.format == "I420") {
-            drawI420Frame(element, color, s.colorspace);
-          } else if (s.format == "RGBX") {
-            drawRGBXFrame(element, color, s.colorspace);
+          if (s.format.includes("I420")) {
+            drawI420Frame(element, color, s.format, s.colorspace);
+          } else if (s.format.includes("RGB")) {
+            drawRGBXFrame(element, color, s.format, s.colorspace);
           }
         }
       }
@@ -250,7 +308,15 @@
         colorPicker.addEventListener("input", updateColor, false);
         colorPicker.addEventListener("change", updateColor, false);
         colorPicker.value = color;
-        showColorInfo(color);
+
+        // Initialize alpha picker.
+        alpha = "128";
+        const alphaPicker = document.getElementById("alphaPicker");
+        alphaPicker.addEventListener("input", updateAlpha, false);
+        alphaPicker.addEventListener("change", updateAlpha, false);
+        alphaPicker.value = alpha;
+
+        showColorInfo(color, alpha);
 
         // Initialize button.
         const button = document.getElementById("draw");
@@ -269,6 +335,9 @@
       <p>Pick color and format, then click Draw</p>
       <label>Color Picker</label>
       <input type="color" id="colorPicker" />
+      <label>alpha</label>
+      <input type="range" id="alphaPicker" min="0" max="255" />
+      <br />
       <label>copyTo format</label>
       <select id="copyTo-format">
         <option value="RGBA">RGBA</option>
@@ -283,6 +352,7 @@
       </select>
       <button id="draw">Draw</button>
       <div id="colorinfo">
+        <div name="color-sample" class="box"></div>
         <p name="rgb-yuv"></p>
         <p>Y = 0.299 * R + 0.587 * G + 0.114 * B</p>
         <p>U = -0.169 * R - 0.331 * G + 0.5 * B + 128</p>
@@ -311,6 +381,20 @@
         <textarea name="copyTo" readonly></textarea>
       </div>
 
+      <div class="canvas" id="videoframe-RGBA-BT709">
+        <h2>drawImage with VideoFrame RGBA BT709</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-RGBA-SMPTE170M">
+        <h2>drawImage with VideoFrame RGBA SMPTE170M</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
+      </div>
+
       <div class="canvas" id="videoframe-I420-BT709">
         <h2>drawImage with VideoFrame I420 BT709</h2>
         <canvas></canvas>
@@ -320,6 +404,20 @@
 
       <div class="canvas" id="videoframe-I420-SMPTE170M">
         <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-I420A-BT709">
+        <h2>drawImage with VideoFrame I420A BT709</h2>
+        <canvas></canvas>
+        bytes: <textarea name="bytes" readonly></textarea> copyTo:
+        <textarea name="copyTo" readonly></textarea>
+      </div>
+
+      <div class="canvas" id="videoframe-I420A-SMPTE170M">
+        <h2>drawImage with VideoFrame I420A SMPTE170M</h2>
         <canvas></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
