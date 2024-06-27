@@ -332,7 +332,10 @@
 
     <body>
       <h1>VideoFrame copyTo RGB</h1>
-      <p>Pick color and format, then click Draw</p>
+      <p>
+        Pick color and format, colorspace for VideoFrame.copyTo option, then
+        click Draw
+      </p>
       <label>Color Picker</label>
       <input type="color" id="colorPicker" />
       <label>alpha</label>
@@ -358,7 +361,11 @@
         <p>U = -0.169 * R - 0.331 * G + 0.5 * B + 128</p>
         <p>V = 0.5 * R - 0.419 * G - 0.081 * B + 128</p>
       </div>
-      <p>The canvas size is 20 x 20</p>
+      <p>
+        The canvas size is 20 x 20. The "bytes" below are read from RGBA buffer
+        returned by canvas's getImageData, while "copyTo" is from VideoFrame's
+        copyTo method.
+      </p>
       <div id="errorlog"></div>
 
       <div class="canvas" id="standard">
