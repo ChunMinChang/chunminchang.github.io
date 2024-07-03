@@ -68,7 +68,9 @@
       }
 
       function getTestResultElements(element) {
-        const canvas = element.querySelector("canvas");
+        const canvas = element.querySelector(
+          "canvas[title='original_videoframe']"
+        );
         const bytes = element.querySelector("textarea[name='bytes']");
         const copyTo = element.querySelector("textarea[name='copyTo']");
         return [canvas, bytes, copyTo];
@@ -370,62 +372,62 @@
 
       <div class="canvas" id="standard">
         <h2>fillRect</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBX-BT709">
         <h2>drawImage with VideoFrame RGBX BT709</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBX-SMPTE170M">
         <h2>drawImage with VideoFrame RGBX SMPTE170M</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBA-BT709">
         <h2>drawImage with VideoFrame RGBA BT709</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBA-SMPTE170M">
         <h2>drawImage with VideoFrame RGBA SMPTE170M</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420-BT709">
         <h2>drawImage with VideoFrame I420 BT709</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420-SMPTE170M">
         <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420A-BT709">
         <h2>drawImage with VideoFrame I420A BT709</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420A-SMPTE170M">
         <h2>drawImage with VideoFrame I420A SMPTE170M</h2>
-        <canvas></canvas>
+        <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <textarea name="copyTo" readonly></textarea>
       </div>
