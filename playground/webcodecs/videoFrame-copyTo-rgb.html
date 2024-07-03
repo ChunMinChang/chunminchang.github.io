@@ -73,21 +73,30 @@
         );
         const bytes = element.querySelector("textarea[name='bytes']");
         const copyTo = element.querySelector("textarea[name='copyTo']");
-        return [canvas, bytes, copyTo];
+        const copyToCanvas = element.querySelector(
+          "canvas[title='copyTo_videoframe']"
+        );
+        return [canvas, bytes, copyTo, copyToCanvas];
       }
 
       function resetTestElements(element) {
-        const [canvas, bytes, copyTo] = getTestResultElements(element);
+        const [canvas, bytes, copyTo, copyToCanvas] =
+          getTestResultElements(element);
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
         bytes.value = "";
         if (copyTo) {
           copyTo.value = "";
         }
+        if (copyToCanvas) {
+          copyToCanvas.width = WIDTH;
+          copyToCanvas.height = HEIGHT;
+        }
       }
 
       function fillStandardCanvas(element, color) {
-        const [canvas, bytes, _] = getTestResultElements(element);
+        const [canvas, bytes, _copyTo, _copyToCanvas] =
+          getTestResultElements(element);
         const ctx = canvas.getContext("2d");
         // Fill whole canvas.
         ctx.fillStyle = color;
@@ -118,7 +127,8 @@
 
         const ctxColorSpace =
           document.getElementById("copyTo-colorspace").value;
-        const [canvas, bytes, copyTo] = getTestResultElements(element);
+        const [canvas, bytes, copyTo, copyCanvas] =
+          getTestResultElements(element);
         const ctx = canvas.getContext("2d", {
           colorSpace: ctxColorSpace,
           willReadFrequently: true,
@@ -138,6 +148,18 @@
           .then((layout) => {
             const copytoData = new Uint8Array(copytoBuf);
             copyTo.value = copytoData;
+
+            const imgData = new ImageData(
+              new Uint8ClampedArray(copytoBuf),
+              options.rect.width,
+              options.rect.height
+            );
+            const copyToCtx = copyCanvas.getContext("2d", {
+              // colorSpace: ctxColorSpace,
+              willReadFrequently: true,
+            });
+            copyToCtx.clearRect(0, 0, canvas.width, canvas.height);
+            copyToCtx.putImageData(imgData, 0, 0);
           })
           .catch((error) => {
             const logs = document.getElementById("errorlog");
@@ -148,6 +170,7 @@
           });
 
         // Get the RGB data retrieved from canvas drawn by the given VideoFrame.
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(
           frame,
           0,
@@ -380,56 +403,64 @@
         <h2>drawImage with VideoFrame RGBX BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-RGBX-SMPTE170M">
         <h2>drawImage with VideoFrame RGBX SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-RGBA-BT709">
         <h2>drawImage with VideoFrame RGBA BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-RGBA-SMPTE170M">
         <h2>drawImage with VideoFrame RGBA SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-I420-BT709">
         <h2>drawImage with VideoFrame I420 BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-I420-SMPTE170M">
         <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-I420A-BT709">
         <h2>drawImage with VideoFrame I420A BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
 
       <div class="canvas" id="videoframe-I420A-SMPTE170M">
         <h2>drawImage with VideoFrame I420A SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea>
+        <textarea name="copyTo" readonly></textarea> copyTo:
+        <canvas title="copyTo_videoframe"></canvas>
       </div>
     </body>
   </head>
