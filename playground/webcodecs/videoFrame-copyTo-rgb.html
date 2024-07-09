@@ -69,6 +69,36 @@
         showColorInfo(color, alpha);
       }
 
+      function getVideoFrameColorSpace() {
+        const colorSpace = {};
+
+        const primaries = document.getElementById(
+          "videoframe-colorspace-primaries"
+        ).value;
+        if (primaries != "null") {
+          colorSpace.primaries = primaries;
+        }
+        const transfer = document.getElementById(
+          "videoframe-colorspace-transfer"
+        ).value;
+        if (transfer != "null") {
+          colorSpace.transfer = transfer;
+        }
+        const matrix = document.getElementById(
+          "videoframe-colorspace-matrix"
+        ).value;
+        if (matrix != "null") {
+          colorSpace.matrix = matrix;
+        }
+        const fullRange = document.getElementById(
+          "videoframe-colorspace-fullRange"
+        ).value;
+        if (fullRange != "null") {
+          colorSpace.fullRange = fullRange === "true";
+        }
+        return colorSpace;
+      }
+
       function getTestResultElements(element) {
         const canvas = element.querySelector(
           "canvas[title='original_videoframe']"
@@ -257,68 +287,32 @@
       }
 
       function drawVideoFrames(color) {
-        const colorspace = {
-          bt709: {
-            matrix: "bt709",
-            primaries: "bt709",
-            transfer: "bt709",
-            fullRange: false,
-          },
-          smpte170m: {
-            matrix: "smpte170m",
-            primaries: "smpte170m",
-            transfer: "smpte170m",
-            fullRange: false,
-          },
-        };
+        getVideoFrameColorSpace();
+        const colorspace = getVideoFrameColorSpace();
         const set = [
           {
-            id: "videoframe-RGBX-BT709",
+            id: "videoframe-RGBX",
             format: "RGBX",
-            colorspace: colorspace.bt709,
           },
           {
-            id: "videoframe-RGBX-SMPTE170M",
-            format: "RGBX",
-            colorspace: colorspace.smpte170m,
-          },
-          {
-            id: "videoframe-RGBA-BT709",
+            id: "videoframe-RGBA",
             format: "RGBA",
-            colorspace: colorspace.bt709,
           },
           {
-            id: "videoframe-RGBA-SMPTE170M",
-            format: "RGBA",
-            colorspace: colorspace.smpte170m,
-          },
-          {
-            id: "videoframe-I420-BT709",
+            id: "videoframe-I420",
             format: "I420",
-            colorspace: colorspace.bt709,
           },
           {
-            id: "videoframe-I420-SMPTE170M",
-            format: "I420",
-            colorspace: colorspace.smpte170m,
-          },
-          {
-            id: "videoframe-I420A-BT709",
+            id: "videoframe-I420A",
             format: "I420A",
-            colorspace: colorspace.bt709,
-          },
-          {
-            id: "videoframe-I420A-SMPTE170M",
-            format: "I420A",
-            colorspace: colorspace.smpte170m,
           },
         ];
         for (const s of set) {
           const element = document.getElementById(s.id);
           if (s.format.includes("I420")) {
-            drawI420Frame(element, color, s.format, s.colorspace);
+            drawI420Frame(element, color, s.format, colorspace);
           } else if (s.format.includes("RGB")) {
-            drawRGBXFrame(element, color, s.format, s.colorspace);
+            drawRGBXFrame(element, color, s.format, colorspace);
           }
         }
       }
@@ -360,8 +354,8 @@
     <body>
       <h1>VideoFrame copyTo RGB</h1>
       <p>
-        Pick color and format, colorspace for VideoFrame.copyTo option, then
-        click Draw
+        Pick color, alpha value, VideoFrame's colorSpace, and its copyTo
+        options, then click <b>Draw</b>
       </p>
       <label>Color Picker</label>
       <input type="color" id="colorPicker" />
@@ -388,6 +382,42 @@
         <option value="srgb">srgb</option>
         <option value="display-p3">display-p3</option>
       </select>
+      <h3>VideoFrame color space</h3>
+      <label>primaries</label>
+      <select id="videoframe-colorspace-primaries">
+        <option value="null">null</option>
+        <option value="bt709">bt709</option>
+        <option value="bt470bg">bt470bg</option>
+        <option value="smpte170m">smpte170m</option>
+        <option value="bt2020">bt2020</option>
+        <option value="smpte432">smpte432</option>
+      </select>
+      <label>transfer</label>
+      <select id="videoframe-colorspace-transfer">
+        <option value="null">null</option>
+        <option value="bt709">bt709</option>
+        <option value="smpte170m">smpte170m</option>
+        <option value="iec61966-2-1">iec61966-2-1</option>
+        <option value="linear">linear</option>
+        <option value="pq">pq</option>
+        <option value="hlg">hlg</option>
+      </select>
+      <label>matrix</label>
+      <select id="videoframe-colorspace-matrix">
+        <option value="null">null</option>
+        <option value="rgb">rgb</option>
+        <option value="bt709">bt709</option>
+        <option value="bt470bg">bt470bg</option>
+        <option value="smpte170m">smpte170m</option>
+        <option value="bt2020-ncl">bt2020-ncl</option>
+      </select>
+      <label>fullRange</label>
+      <select id="videoframe-colorspace-fullRange">
+        <option value="null">null</option>
+        <option value="true">true</option>
+        <option value="false">false</option>
+      </select>
+      <h3>Note</h3>
       <p>
         The canvas size is 20 x 20. The "bytes" below is RGBA buffer data from
         canvas's getImageData, while "copyTo" data is from VideoFrame's copyTo
@@ -401,64 +431,32 @@
         bytes: <textarea name="bytes" readonly></textarea>
       </div>
 
-      <div class="canvas" id="videoframe-RGBX-BT709">
-        <h2>drawImage with VideoFrame RGBX BT709</h2>
+      <div class="canvas" id="videoframe-RGBX">
+        <h2>drawImage with VideoFrame RGBX</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
         <textarea name="copyTo" readonly></textarea>
       </div>
 
-      <div class="canvas" id="videoframe-RGBX-SMPTE170M">
-        <h2>drawImage with VideoFrame RGBX SMPTE170M</h2>
+      <div class="canvas" id="videoframe-RGBA">
+        <h2>drawImage with VideoFrame RGBA</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
         <textarea name="copyTo" readonly></textarea>
       </div>
 
-      <div class="canvas" id="videoframe-RGBA-BT709">
-        <h2>drawImage with VideoFrame RGBA BT709</h2>
+      <div class="canvas" id="videoframe-I420">
+        <h2>drawImage with VideoFrame I420</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
         <textarea name="copyTo" readonly></textarea>
       </div>
 
-      <div class="canvas" id="videoframe-RGBA-SMPTE170M">
-        <h2>drawImage with VideoFrame RGBA SMPTE170M</h2>
-        <canvas title="original_videoframe"></canvas>
-        bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <canvas title="copyTo_videoframe" class="border"></canvas>
-        <textarea name="copyTo" readonly></textarea>
-      </div>
-
-      <div class="canvas" id="videoframe-I420-BT709">
-        <h2>drawImage with VideoFrame I420 BT709</h2>
-        <canvas title="original_videoframe"></canvas>
-        bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <canvas title="copyTo_videoframe" class="border"></canvas>
-        <textarea name="copyTo" readonly></textarea>
-      </div>
-
-      <div class="canvas" id="videoframe-I420-SMPTE170M">
-        <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
-        <canvas title="original_videoframe"></canvas>
-        bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <canvas title="copyTo_videoframe" class="border"></canvas>
-        <textarea name="copyTo" readonly></textarea>
-      </div>
-
-      <div class="canvas" id="videoframe-I420A-BT709">
-        <h2>drawImage with VideoFrame I420A BT709</h2>
-        <canvas title="original_videoframe"></canvas>
-        bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <canvas title="copyTo_videoframe" class="border"></canvas>
-        <textarea name="copyTo" readonly></textarea>
-      </div>
-
-      <div class="canvas" id="videoframe-I420A-SMPTE170M">
-        <h2>drawImage with VideoFrame I420A SMPTE170M</h2>
+      <div class="canvas" id="videoframe-I420A">
+        <h2>drawImage with VideoFrame I420A</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
