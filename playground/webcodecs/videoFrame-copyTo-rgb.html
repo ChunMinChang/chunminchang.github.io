@@ -139,6 +139,22 @@
         bytes.value = data;
       }
 
+      function createImageData(buffer, format, width, height) {
+        const data = new Uint8ClampedArray(buffer);
+        if (format.startsWith("BGR")) {
+          // Swap B and R data to repack it into RGB* format.
+          for (let i = 0; i < data.byteLength; i += 4) {
+            // let temp = data[i];
+            // data[i] = data[i + 2];
+            // data[i + 2] = temp;
+            data[i] ^= data[i + 2];
+            data[i + 2] ^= data[i];
+            data[i] ^= data[i + 2];
+          }
+        }
+        return new ImageData(data, width, height);
+      }
+
       function drawVideoFrame(
         element,
         color,
@@ -181,8 +197,9 @@
             const copytoData = new Uint8Array(copytoBuf);
             copyTo.value = copytoData;
 
-            const imgData = new ImageData(
-              new Uint8ClampedArray(copytoBuf),
+            const imgData = createImageData(
+              copytoBuf,
+              options.format,
               options.rect.width,
               options.rect.height
             );
