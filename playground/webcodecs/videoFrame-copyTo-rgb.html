@@ -367,19 +367,6 @@
       <input type="color" id="colorPicker" />
       <label>alpha</label>
       <input type="range" id="alphaPicker" min="0" max="255" />
-      <br />
-      <label>copyTo format</label>
-      <select id="copyTo-format">
-        <option value="RGBA">RGBA</option>
-        <option value="RGBX">RGBX</option>
-        <option value="BGRA">BGRA</option>
-        <option value="BGRX">BGRX</option>
-      </select>
-      <label>copyTo colorspace</label>
-      <select id="copyTo-colorspace">
-        <option value="srgb">srgb</option>
-        <option value="display-p3">display-p3</option>
-      </select>
       <button id="draw">Draw</button>
       <div id="colorinfo">
         <div name="color-sample" class="box"></div>
@@ -388,6 +375,19 @@
         <p>U = -0.169 * R - 0.331 * G + 0.5 * B + 128</p>
         <p>V = 0.5 * R - 0.419 * G - 0.081 * B + 128</p>
       </div>
+      <h3>copyTo</h3>
+      <label>format</label>
+      <select id="copyTo-format">
+        <option value="RGBA">RGBA</option>
+        <option value="RGBX">RGBX</option>
+        <option value="BGRA">BGRA</option>
+        <option value="BGRX">BGRX</option>
+      </select>
+      <label>colorspace</label>
+      <select id="copyTo-colorspace">
+        <option value="srgb">srgb</option>
+        <option value="display-p3">display-p3</option>
+      </select>
       <p>
         The canvas size is 20 x 20. The "bytes" below are read from RGBA buffer
         returned by canvas's getImageData, while "copyTo" is from VideoFrame's
@@ -405,64 +405,64 @@
         <h2>drawImage with VideoFrame RGBX BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBX-SMPTE170M">
         <h2>drawImage with VideoFrame RGBX SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBA-BT709">
         <h2>drawImage with VideoFrame RGBA BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-RGBA-SMPTE170M">
         <h2>drawImage with VideoFrame RGBA SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420-BT709">
         <h2>drawImage with VideoFrame I420 BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420-SMPTE170M">
         <h2>drawImage with VideoFrame I420 SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420A-BT709">
         <h2>drawImage with VideoFrame I420A BT709</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
 
       <div class="canvas" id="videoframe-I420A-SMPTE170M">
         <h2>drawImage with VideoFrame I420A SMPTE170M</h2>
         <canvas title="original_videoframe"></canvas>
         bytes: <textarea name="bytes" readonly></textarea> copyTo:
-        <textarea name="copyTo" readonly></textarea> copyTo:
         <canvas title="copyTo_videoframe" class="border"></canvas>
+        <textarea name="copyTo" readonly></textarea>
       </div>
     </body>
   </head>
