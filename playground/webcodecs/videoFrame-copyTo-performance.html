@@ -1,0 +1,429 @@
+<html>
+  <head>
+    <title>VideoFrame copyTo RGB</title>
+    <style>
+      .box {
+        float: left;
+        margin-right: 10px;
+        height: 30px;
+        width: 30px;
+        clear: both;
+      }
+    </style>
+    <!-- Load plotly.js into the DOM -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script>
+      var color;
+      var alpha;
+
+      function hexToRGB(hex) {
+        const bits = parseInt(hex, 16);
+        const r = (bits >> 16) & 0xff;
+        const g = (bits >> 8) & 0xff;
+        const b = bits & 0xff;
+        return [r, g, b];
+      }
+
+      function rgb2yuv(r, g, b) {
+        let y = r * 0.299 + g * 0.587 + b * 0.114;
+        let u = r * -0.168736 + g * -0.331264 + b * 0.5 + 128;
+        let v = r * 0.5 + g * -0.418688 + b * -0.081312 + 128;
+
+        y = Math.round(y);
+        u = Math.round(u);
+        v = Math.round(v);
+        return [y, u, v];
+      }
+
+      function showColorInfo(color, alpha) {
+        const info = document.getElementById("colorinfo");
+
+        const [r, g, b] = hexToRGB(color.substring(1));
+        const rgbyuv = info.querySelector("p[name='rgb-yuv']");
+        rgbyuv.innerText =
+          color + ": (R, G, B) = (" + r + ", " + g + ", " + b + ")";
+
+        const [y, u, v] = rgb2yuv(r, g, b);
+        rgbyuv.innerText +=
+          " ---> (Y, U, V) = (" + y + ", " + u + ", " + v + "), A: " + alpha;
+
+        const sample = info.querySelector("div[name='color-sample']");
+        const alphaValue = alpha / 255;
+        sample.style.backgroundColor =
+          "rgba(" + [r, g, b, alphaValue].join(",") + ")";
+      }
+
+      function updateColor(event) {
+        color = event.target.value;
+        showColorInfo(color, alpha);
+      }
+
+      function updateAlpha(event) {
+        alpha = event.target.value;
+        showColorInfo(color, alpha);
+      }
+
+      function updateCopyToOptionsEnabled(event) {
+        const copyToFormat = document.getElementById("copyTo-format");
+        const copyToColorSpace = document.getElementById("copyTo-colorSpace");
+
+        const enabled = event.target.checked;
+        copyToFormat.disabled = !enabled;
+        copyToColorSpace.disabled = !enabled;
+      }
+
+      function getVideoFrameColorSpace() {
+        const colorSpace = {};
+
+        const primaries = document.getElementById(
+          "videoframe-colorspace-primaries"
+        ).value;
+        if (primaries != "null") {
+          colorSpace.primaries = primaries;
+        }
+        const transfer = document.getElementById(
+          "videoframe-colorspace-transfer"
+        ).value;
+        if (transfer != "null") {
+          colorSpace.transfer = transfer;
+        }
+        const matrix = document.getElementById(
+          "videoframe-colorspace-matrix"
+        ).value;
+        if (matrix != "null") {
+          colorSpace.matrix = matrix;
+        }
+        const fullRange = document.getElementById(
+          "videoframe-colorspace-fullRange"
+        ).value;
+        if (fullRange != "null") {
+          colorSpace.fullRange = fullRange === "true";
+        }
+        return colorSpace;
+      }
+
+      async function drawVideoFrame(
+        element,
+        color,
+        format,
+        colorSpace,
+        buffer,
+        width,
+        height,
+        rounds
+      ) {
+        const init = {
+          format: format,
+          timestamp: 0,
+          codedWidth: width,
+          codedHeight: height,
+          colorSpace: colorSpace,
+        };
+        const frame = new VideoFrame(buffer, init);
+
+        const options = {
+          rect: { x: 0, y: 0, width: width, height: height },
+        };
+
+        const copyToFormat = document.getElementById("copyTo-format");
+        if (!copyToFormat.disabled) {
+          options.format = copyToFormat.value;
+        }
+
+        const copyToColorSpace = document.getElementById("copyTo-colorSpace");
+        if (!copyToColorSpace.disabled) {
+          options.colorSpace = copyToColorSpace.value;
+        }
+
+        const copyToBufferSize = frame.allocationSize(options);
+        const copyToBuffer = new Uint8Array(copyToBufferSize);
+        const times = [];
+        for (let i = 0; i < rounds; ++i) {
+          const start = performance.now();
+          await frame.copyTo(copyToBuffer, options);
+          const end = performance.now();
+          times.push(end - start);
+        }
+
+        frame.close();
+        return times;
+      }
+
+      async function drawRGBXFrame(
+        element,
+        color,
+        format,
+        colorSpace,
+        width,
+        height,
+        rounds
+      ) {
+        const hasAlpha = format.includes("A");
+
+        const [r, g, b] = hexToRGB(color.substring(1));
+        const size = width * height * 4;
+        const buffer = new Uint8Array(size);
+        for (let i = 0; i < size; i += 4) {
+          buffer.fill(r, i, i + 1);
+          buffer.fill(g, i + 1, i + 2);
+          buffer.fill(b, i + 2, i + 3);
+          if (hasAlpha) {
+            buffer.fill(alpha, i + 3, i + 4);
+          }
+        }
+
+        return drawVideoFrame(
+          element,
+          color,
+          format,
+          colorSpace,
+          buffer,
+          width,
+          height,
+          rounds
+        );
+      }
+
+      function ceilingOfHalf(value) {
+        return (value + 1) / 2;
+      }
+
+      async function drawI420Frame(
+        element,
+        color,
+        format,
+        colorSpace,
+        width,
+        height,
+        rounds
+      ) {
+        const [r, g, b] = hexToRGB(color.substring(1));
+        const [y, u, v] = rgb2yuv(r, g, b);
+
+        const hasAlpha = format.includes("A");
+
+        const ySize = width * height;
+        const uSize = ceilingOfHalf(width) * ceilingOfHalf(height);
+        const vSize = uSize;
+        const aSize = ySize;
+
+        const buffer = new Uint8Array(
+          ySize + uSize + vSize + (hasAlpha ? aSize : 0)
+        );
+        buffer.fill(y, 0, ySize);
+        buffer.fill(u, ySize, ySize + uSize);
+        buffer.fill(v, ySize + uSize, ySize + uSize + vSize);
+        if (hasAlpha) {
+          buffer.fill(
+            alpha,
+            ySize + uSize + vSize,
+            ySize + uSize + vSize + aSize
+          );
+        }
+
+        return drawVideoFrame(
+          element,
+          color,
+          format,
+          colorSpace,
+          buffer,
+          width,
+          height,
+          rounds
+        );
+      }
+
+      async function drawVideoFrames(color) {
+        const rounds = document.getElementById("testRounds").value;
+        const width = document.getElementById("frameWidth").value;
+        const height = document.getElementById("frameHeight").value;
+        const colorSpace = getVideoFrameColorSpace();
+        const set = [
+          {
+            id: "videoframe-RGBX",
+            format: "RGBX",
+          },
+          {
+            id: "videoframe-RGBA",
+            format: "RGBA",
+          },
+          {
+            id: "videoframe-I420",
+            format: "I420",
+          },
+          {
+            id: "videoframe-I420A",
+            format: "I420A",
+          },
+        ];
+        const results = [];
+        for (const s of set) {
+          let times;
+          const element = document.getElementById(s.id);
+          if (s.format.includes("I420")) {
+            times = await drawI420Frame(
+              element,
+              color,
+              s.format,
+              colorSpace,
+              width,
+              height,
+              rounds
+            );
+          } else if (s.format.includes("RGB")) {
+            times = await drawRGBXFrame(
+              element,
+              color,
+              s.format,
+              colorSpace,
+              width,
+              height,
+              rounds
+            );
+          }
+          results.push({ format: s.format, times: times });
+        }
+        return results;
+      }
+
+      function showResult(result) {
+        console.log(result);
+        const data = result.map((r) => ({
+          type: "box",
+          name: `${r.format}`,
+          y: r.times,
+          boxpoints: "all",
+        }));
+        const layout = {
+          title: "copyTo Performance (ms)",
+          xaxis: { title: "VideoFrame format" },
+          yaxis: { title: "milliseconds" },
+        };
+        Plotly.newPlot("performance-chart", data, layout);
+      }
+
+      async function runTest(event) {
+        const result = await drawVideoFrames(color);
+        showResult(result);
+      }
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        // Initialize color picker.
+        color = "#ff0000";
+        const colorPicker = document.getElementById("colorPicker");
+        colorPicker.addEventListener("input", updateColor, false);
+        colorPicker.addEventListener("change", updateColor, false);
+        colorPicker.value = color;
+
+        // Initialize alpha picker.
+        alpha = "128";
+        const alphaPicker = document.getElementById("alphaPicker");
+        alphaPicker.addEventListener("input", updateAlpha, false);
+        alphaPicker.addEventListener("change", updateAlpha, false);
+        alphaPicker.value = alpha;
+
+        showColorInfo(color, alpha);
+
+        // Initialize copyTo options enabler
+        const copyToOptionsEnabler = document.getElementById(
+          "copyTo-options-enabled"
+        );
+        copyToOptionsEnabler.addEventListener(
+          "input",
+          updateCopyToOptionsEnabled,
+          false
+        );
+        copyToOptionsEnabler.addEventListener(
+          "change",
+          updateCopyToOptionsEnabled,
+          false
+        );
+        copyToOptionsEnabler.checked = true;
+
+        // Initialize button.
+        const button = document.getElementById("run");
+        button.addEventListener("click", runTest);
+      });
+    </script>
+
+    <body>
+      <h1>VideoFrame copyTo performance</h1>
+      <label>VideoFrame width</label>
+      <input type="number" id="frameWidth" min="1280" max="3840" value="1920" />
+      <label>height</label>
+      <input type="number" id="frameHeight" min="720" max="2160" value="1080" />
+      <label>Test rounds per frame</label>
+      <input type="number" id="testRounds" min="10" max="100" value="10" />
+      <p>
+        Pick color, alpha value, VideoFrame's colorSpace, and its copyTo
+        options, then click <b>Run</b>
+      </p>
+      <label>VideoFrame Color Picker</label>
+      <input type="color" id="colorPicker" />
+      <label>alpha</label>
+      <input type="range" id="alphaPicker" min="0" max="255" />
+      <button id="run">Run</button>
+      <div id="colorinfo">
+        <div name="color-sample" class="box"></div>
+        <p name="rgb-yuv"></p>
+      </div>
+      <h3>copyTo options</h3>
+      <label>set options</label>
+      <input type="checkbox" id="copyTo-options-enabled" />
+      <label>format</label>
+      <select id="copyTo-format">
+        <option value="RGBA">RGBA</option>
+        <option value="RGBX">RGBX</option>
+        <option value="BGRA">BGRA</option>
+        <option value="BGRX">BGRX</option>
+      </select>
+      <label>colorspace</label>
+      <select id="copyTo-colorSpace">
+        <option value="srgb">srgb</option>
+        <option value="display-p3">display-p3</option>
+      </select>
+      <p>
+        Click <a href="videoFrame-copyTo-rgb.html" target="_blank">here</a> to
+        check yuv-to-rgb conversion results if needed.
+      </p>
+      <h3>VideoFrame color space</h3>
+      <label>primaries</label>
+      <select id="videoframe-colorspace-primaries">
+        <option value="null">null</option>
+        <option value="bt709">bt709</option>
+        <option value="bt470bg">bt470bg</option>
+        <option value="smpte170m">smpte170m</option>
+        <option value="bt2020">bt2020</option>
+        <option value="smpte432">smpte432</option>
+      </select>
+      <label>transfer</label>
+      <select id="videoframe-colorspace-transfer">
+        <option value="null">null</option>
+        <option value="bt709">bt709</option>
+        <option value="smpte170m">smpte170m</option>
+        <option value="iec61966-2-1">iec61966-2-1</option>
+        <option value="linear">linear</option>
+        <option value="pq">pq</option>
+        <option value="hlg">hlg</option>
+      </select>
+      <label>matrix</label>
+      <select id="videoframe-colorspace-matrix">
+        <option value="null">null</option>
+        <option value="rgb">rgb</option>
+        <option value="bt709">bt709</option>
+        <option value="bt470bg">bt470bg</option>
+        <option value="smpte170m">smpte170m</option>
+        <option value="bt2020-ncl">bt2020-ncl</option>
+      </select>
+      <label>fullRange</label>
+      <select id="videoframe-colorspace-fullRange">
+        <option value="null">null</option>
+        <option value="true">true</option>
+        <option value="false">false</option>
+      </select>
+      <h3>Performance</h3>
+      <div id="performance-chart"></div>
+      <div id="errorlog"></div>
+    </body>
+  </head>
+</html>
