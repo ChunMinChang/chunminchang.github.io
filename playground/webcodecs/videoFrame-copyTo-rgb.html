@@ -241,11 +241,18 @@
         frame.close();
       }
 
-      function drawRGBXFrame(element, color, format, colorSpace) {
+      function drawRGBXFrame(
+        element,
+        color,
+        format,
+        width,
+        height,
+        colorSpace
+      ) {
         const hasAlpha = format.includes("A");
 
         const [r, g, b] = hexToRGB(color.substring(1));
-        const size = WIDTH * HEIGHT * 4;
+        const size = width * height * 4;
         const buffer = new Uint8Array(size);
         for (let i = 0; i < size; i += 4) {
           buffer.fill(r, i, i + 1);
@@ -262,20 +269,31 @@
           format,
           colorSpace,
           buffer,
-          WIDTH,
-          HEIGHT
+          width,
+          height
         );
       }
 
-      function drawI420Frame(element, color, format, colorSpace) {
+      function ceilingOfHalf(value) {
+        return (value + 1) / 2;
+      }
+
+      function drawI420Frame(
+        element,
+        color,
+        format,
+        width,
+        height,
+        colorSpace
+      ) {
         const [r, g, b] = hexToRGB(color.substring(1));
         const [y, u, v] = rgb2yuv(r, g, b);
 
         const hasAlpha = format.includes("A");
 
-        const ySize = WIDTH * HEIGHT;
-        const uSize = ((WIDTH / 2) * HEIGHT) / 2;
-        const vSize = ((WIDTH / 2) * HEIGHT) / 2;
+        const ySize = width * height;
+        const uSize = ceilingOfHalf(width) * ceilingOfHalf(height);
+        const vSize = uSize;
         const aSize = ySize;
 
         const buffer = new Uint8Array(
@@ -298,8 +316,8 @@
           format,
           colorSpace,
           buffer,
-          WIDTH,
-          HEIGHT
+          width,
+          height
         );
       }
 
@@ -327,9 +345,9 @@
         for (const s of set) {
           const element = document.getElementById(s.id);
           if (s.format.includes("I420")) {
-            drawI420Frame(element, color, s.format, colorspace);
+            drawI420Frame(element, color, s.format, WIDTH, HEIGHT, colorspace);
           } else if (s.format.includes("RGB")) {
-            drawRGBXFrame(element, color, s.format, colorspace);
+            drawRGBXFrame(element, color, s.format, WIDTH, HEIGHT, colorspace);
           }
         }
       }
