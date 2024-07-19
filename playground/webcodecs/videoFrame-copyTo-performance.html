@@ -102,6 +102,37 @@
         return colorSpace;
       }
 
+      function logError(error) {
+        const container = document.getElementById("errorlog");
+        if (container.style.display == "none") {
+          container.style.display = "block";
+        }
+
+        const area = container.querySelector("textarea[name='logs']");
+        let msg = "";
+        if (area.value != "") {
+          msg = "\n";
+        }
+        msg += error.name + ": " + error.message;
+
+        if (area.cols < msg.length) {
+          area.cols = msg.length;
+        }
+        area.value += msg;
+      }
+
+      function clearLogs() {
+        console.log("clear");
+        const container = document.getElementById("errorlog");
+        container.style.display = "none";
+        console.log(container);
+
+        const area = container.querySelector("textarea[name='logs']");
+        area.value = "";
+        area.rows = 0;
+        area.cols = 0;
+      }
+
       async function drawVideoFrame(
         element,
         color,
@@ -139,10 +170,15 @@
         const copyToBuffer = new Uint8Array(copyToBufferSize);
         const times = [];
         for (let i = 0; i < rounds; ++i) {
-          const start = performance.now();
-          await frame.copyTo(copyToBuffer, options);
-          const end = performance.now();
-          times.push(end - start);
+          try {
+            const start = performance.now();
+            await frame.copyTo(copyToBuffer, options);
+            const end = performance.now();
+            times.push(end - start);
+          } catch (error) {
+            logError(error);
+            break;
+          }
         }
 
         frame.close();
@@ -303,6 +339,7 @@
       }
 
       async function runTest(event) {
+        clearLogs();
         const result = await drawVideoFrames(color);
         showResult(result);
       }
@@ -343,6 +380,8 @@
         // Initialize button.
         const button = document.getElementById("run");
         button.addEventListener("click", runTest);
+
+        clearLogs();
       });
     </script>
 
@@ -358,6 +397,10 @@
         Pick color, alpha value, VideoFrame's colorSpace, and its copyTo
         options, then click <b>Run</b>
       </p>
+      <div id="errorlog">
+        <h3>Error logs</h3>
+        <textarea name="logs" rows="0" cols="0" readonly></textarea>
+      </div>
       <label>VideoFrame Color Picker</label>
       <input type="color" id="colorPicker" />
       <label>alpha</label>
@@ -423,7 +466,6 @@
       </select>
       <h3>Performance</h3>
       <div id="performance-chart"></div>
-      <div id="errorlog"></div>
     </body>
   </head>
 </html>
