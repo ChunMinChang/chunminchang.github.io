@@ -86,21 +86,27 @@
         ctx.fillRect(offsetX, offsetY, cellSize.width, cellSize.height);
       }
 
-      function delay(time) {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve();
-          }, time);
-        });
-      }
-
       async function encodeAnimation(maxRounds) {
-        for (let i = 0; i < maxRounds; ++i) {
-          draw(i);
-          encode(i);
-          await delay(DURATION_PER_FRAME_MS);
-        }
-        return Promise.resolve();
+        return new Promise((resolve) => {
+          function repeat(round, resolve) {
+            draw(round);
+            encode(round);
+
+            if (round >= maxRounds) {
+              resolve();
+              return;
+            }
+
+            setTimeout(() => {
+              repeat(round + 1, resolve);
+            }, DURATION_PER_FRAME_MS);
+            // window.requestAnimationFrame(() => {
+            //   repeat(round + 1, resolve);
+            // });
+          }
+
+          repeat(0, resolve);
+        });
       }
 
       async function runTest() {
