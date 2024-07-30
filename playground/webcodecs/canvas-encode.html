@@ -89,13 +89,13 @@
       async function encodeAnimation(maxRounds) {
         return new Promise((resolve) => {
           function repeat(round, resolve) {
-            draw(round);
-            encode(round);
-
             if (round >= maxRounds) {
               resolve();
               return;
             }
+
+            draw(round);
+            encode(round);
 
             setTimeout(() => {
               repeat(round + 1, resolve);
