@@ -3,14 +3,14 @@
     <title>Encode Canvas by VideoEncoder</title>
     <script src="third_party/mp4boxjs/mp4box.all.min.js"></script>
     <script>
-      const BACKGROUND_COLOR = "#000000";
-      const CELL_COLOR = "#00FF00";
+      const CELL_COLORS = ["#FF0000", "#00FF00"];
 
       const WIDTH = 250;
       const HEIGHT = 300;
       const ROWS = 5;
       const COLS = 6;
-      const SAMPLES = ROWS * COLS;
+      const SAMPLES_PER_CANVAS = ROWS * COLS;
+      const MP4_SAMPLES = 2 * SAMPLES_PER_CANVAS;
 
       const FPS = 10; // frames per second
       const DURATION_PER_FRAME_MS = 1000 / FPS; // ms
@@ -33,7 +33,7 @@
               codec: metadata.decoderConfig.codec,
               width: metadata.decoderConfig.codedWidth,
               height: metadata.decoderConfig.codedHeight,
-              nb_samples: SAMPLES,
+              nb_samples: MP4_SAMPLES,
               timescale: MP4_TIMESCALE,
             };
             if (metadata.decoderConfig.description) {
@@ -69,6 +69,10 @@
       }
 
       function draw(round) {
+        const colorIndex =
+          Math.floor(round / SAMPLES_PER_CANVAS) % CELL_COLORS.length;
+        const color = CELL_COLORS[colorIndex];
+
         const positionX = round % ROWS;
         const positionY = Math.floor(round / ROWS) % COLS;
 
@@ -79,10 +83,7 @@
         const offsetX = positionX * cellSize.width;
         const offsetY = positionY * cellSize.height;
 
-        // ctx.fillStyle = BACKGROUND_COLOR;
-        // ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = CELL_COLOR;
+        ctx.fillStyle = color;
         ctx.fillRect(offsetX, offsetY, cellSize.width, cellSize.height);
       }
 
@@ -97,12 +98,12 @@
             draw(round);
             encode(round);
 
-            setTimeout(() => {
-              repeat(round + 1, resolve);
-            }, DURATION_PER_FRAME_MS);
-            // window.requestAnimationFrame(() => {
+            // setTimeout(() => {
             //   repeat(round + 1, resolve);
-            // });
+            // }, DURATION_PER_FRAME_MS);
+            window.requestAnimationFrame(() => {
+              repeat(round + 1, resolve);
+            });
           }
 
           repeat(0, resolve);
@@ -111,7 +112,7 @@
 
       async function runTest() {
         // Reset canvas
-        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillStyle = CELL_COLORS[CELL_COLORS.length - 1];
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // For H264: avcN.PPCCLL
@@ -130,7 +131,7 @@
           latencyMode: "quality", // or "realtime",
         });
 
-        await encodeAnimation(SAMPLES);
+        await encodeAnimation(MP4_SAMPLES);
         await encoder.flush();
         encoder.reset();
         MP4_FILE.save("output.mp4");
@@ -143,7 +144,7 @@
         ctx = canvas.getContext("2d");
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
-        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillStyle = CELL_COLORS[CELL_COLORS.length - 1];
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Initialize button.
