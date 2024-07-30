@@ -1,0 +1,154 @@
+<html>
+  <head>
+    <title>Encode Canvas by VideoEncoder</title>
+    <script src="third_party/mp4boxjs/mp4box.all.min.js"></script>
+    <script>
+      const BACKGROUND_COLOR = "#000000";
+      const CELL_COLOR = "#00FF00";
+
+      const WIDTH = 250;
+      const HEIGHT = 300;
+      const ROWS = 5;
+      const COLS = 6;
+      const SAMPLES = ROWS * COLS;
+
+      const FPS = 10; // frames per second
+      const DURATION_PER_FRAME_MS = 1000 / FPS; // ms
+      const DURATION_PER_FRAME_US = 1000000 / FPS; // us
+
+      const KEYFRAME_INDEX_INTERVAL = 3;
+
+      const MP4_TIMESCALE = 1000000;
+      const MP4_FILE = MP4Box.createFile();
+      let MP4_TRACK_ID = null;
+
+      let canvas;
+      let ctx;
+
+      const encoder = new VideoEncoder({
+        output: (chunk, metadata) => {
+          // Add a track in the first output chunk
+          if (metadata.decoderConfig) {
+            let options = {
+              codec: metadata.decoderConfig.codec,
+              width: metadata.decoderConfig.codedWidth,
+              height: metadata.decoderConfig.codedHeight,
+              nb_samples: SAMPLES,
+              timescale: MP4_TIMESCALE,
+            };
+            if (metadata.decoderConfig.description) {
+              options.avcDecoderConfigRecord =
+                metadata.decoderConfig.description;
+            }
+            MP4_TRACK_ID = MP4_FILE.addTrack(options);
+          }
+
+          let buffer = new Uint8Array(chunk.byteLength);
+          chunk.copyTo(buffer);
+
+          MP4_FILE.addSample(MP4_TRACK_ID, buffer, {
+            dts: chunk.timestamp,
+            cts: chunk.timestamp,
+            is_sync: chunk.type === "key",
+          });
+        },
+        error: (err) => {
+          console.log(err);
+        },
+      });
+
+      async function encode(index) {
+        const img = await createImageBitmap(canvas);
+        const frame = new VideoFrame(img /*canvas*/, {
+          timestamp: index * DURATION_PER_FRAME_US,
+          duration: DURATION_PER_FRAME_US,
+        });
+        let keyFrame = index % KEYFRAME_INDEX_INTERVAL == 0;
+        encoder.encode(frame, { keyFrame });
+        frame.close();
+      }
+
+      function draw(round) {
+        const positionX = round % ROWS;
+        const positionY = Math.floor(round / ROWS) % COLS;
+
+        const cellSize = {
+          width: canvas.width / ROWS,
+          height: canvas.height / COLS,
+        };
+        const offsetX = positionX * cellSize.width;
+        const offsetY = positionY * cellSize.height;
+
+        // ctx.fillStyle = BACKGROUND_COLOR;
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = CELL_COLOR;
+        ctx.fillRect(offsetX, offsetY, cellSize.width, cellSize.height);
+      }
+
+      function delay(time) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve();
+          }, time);
+        });
+      }
+
+      async function encodeAnimation(maxRounds) {
+        for (let i = 0; i < maxRounds; ++i) {
+          draw(i);
+          encode(i);
+          await delay(DURATION_PER_FRAME_MS);
+        }
+        return Promise.resolve();
+      }
+
+      async function runTest() {
+        // Reset canvas
+        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // For H264: avcN.PPCCLL
+        // avc1.42001e: baseline, level 30
+        // avc1.4d001e: main, level 30
+        // avc1.64001e: high, level 30
+        encoder.configure({
+          codec: "avc1.4d001e",
+          width: WIDTH,
+          height: HEIGHT,
+          // hardwareAcceleration: "prefer-hardware",
+          bitrate: MP4_TIMESCALE,
+          framerate: FPS,
+          alpha: "discard",
+          bitrateMode: "variable", // or "constant", "quantizer"
+          latencyMode: "quality", // or "realtime",
+        });
+
+        await encodeAnimation(SAMPLES);
+        await encoder.flush();
+        encoder.reset();
+        MP4_FILE.save("output.mp4");
+        MP4_TRACK_ID = null;
+      }
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        // Initialize canvas
+        canvas = document.getElementById("canvas");
+        ctx = canvas.getContext("2d");
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Initialize button.
+        const button = document.getElementById("run");
+        button.addEventListener("click", runTest);
+      });
+    </script>
+  </head>
+
+  <body>
+    <canvas id="canvas"></canvas>
+    <button id="run">Run</button>
+  </body>
+</html>
