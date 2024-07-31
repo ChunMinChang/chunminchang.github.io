@@ -64,8 +64,8 @@
       });
 
       async function encode(index) {
-        const img = await createImageBitmap(canvas);
-        const frame = new VideoFrame(img /*canvas*/, {
+        // const img = await createImageBitmap(canvas);
+        const frame = new VideoFrame(canvas /*img*/, {
           timestamp: index * DURATION_PER_FRAME_US,
           duration: DURATION_PER_FRAME_US,
         });
