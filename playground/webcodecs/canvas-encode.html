@@ -135,6 +135,7 @@
           alpha: "discard",
           bitrateMode: "variable", // or "constant", "quantizer"
           latencyMode: "quality", // or "realtime",
+          avc: {format: 'avc'},
         });
 
         await encodeAnimation(MP4_SAMPLES);
