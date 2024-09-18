@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VideoEncoder with OffscreenCanvas Demo</title>
+    <style>
+      #avcFormatSelect {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body data-new-gr-c-s-check-loaded="8.912.0" data-gr-ext-installed="">
+    <h1>VideoEncoder with OffscreenCanvas Demo</h1>
+    <select id="codecSelect">
+      <option value="avc1.42001E" selected="selected">H.264 Baseline</option>
+      <option value="avc1.4D001E">H.264 Main</option>
+      <option value="avc1.64001E">H.264 High</option>
+      <option value="vp8">VP8</option>
+      <option value="vp09.00.10.08">VP9</option>
+      <option value="av01.0.04M.08">AV1</option>
+    </select>
+    <select id="avcFormatSelect" style="display: inline-block">
+      <option value="avc" selected="selected">AVC</option>
+      <option value="annexb">Annex B</option>
+    </select>
+    <label>
+      <input type="checkbox" id="waitPerFrame" checked="checked" /> Wait per
+      frame
+    </label>
+    <button id="startButton">Start Encoding</button>
+    <div id="result"></div>
+
+    <script>
+      const codecSelect = document.getElementById("codecSelect");
+      const avcFormatSelect = document.getElementById("avcFormatSelect");
+      const waitPerFrameCheckbox = document.getElementById("waitPerFrame");
+      const startButton = document.getElementById("startButton");
+      const resultDiv = document.getElementById("result");
+
+      const width = 640;
+      const height = 480;
+      const offscreen = new OffscreenCanvas(width, height);
+      const ctx = offscreen.getContext("2d");
+
+      function randomizeCanvas() {
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = Math.random() * 255; // R
+          data[i + 1] = Math.random() * 255; // G
+          data[i + 2] = Math.random() * 255; // B
+          data[i + 3] = 255; // A
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+
+      async function encodeFrames(codec, avcFormat, waitPerFrame) {
+        const config = {
+          codec: codec,
+          width: width,
+          height: height,
+          bitrate: 1_000_000, // 1 Mbps
+          framerate: 30,
+          latencyMode: "realtime",
+        };
+
+        // Add AVC configuration for H.264
+        if (codec.startsWith("avc1")) {
+          config.avc = { format: avcFormat };
+        }
+
+        console.log(config);
+
+        let outputPromiseResolve;
+        const encoder = new VideoEncoder({
+          output: (chunk, metadata) => {
+            console.log(chunk);
+            if (outputPromiseResolve) {
+              outputPromiseResolve();
+            }
+          },
+          error: (e) => {
+            console.error(e);
+            if (outputPromiseResolve) {
+              outputPromiseResolve(e);
+            }
+          },
+        });
+
+        await encoder.configure(config);
+
+        const startTime = performance.now();
+
+        for (let i = 0; i < 10; i++) {
+          randomizeCanvas();
+          const frame = new VideoFrame(offscreen, { timestamp: i * 1000000 });
+
+          if (waitPerFrame) {
+            // Reset the output promise for this frame
+            outputPromiseResolve = null;
+            const newOutputPromise = new Promise((resolve) => {
+              outputPromiseResolve = resolve;
+            });
+
+            encoder.encode(frame, { keyFrame: i % 30 === 0 });
+            frame.close();
+
+            // Wait for this frame to be encoded
+            await newOutputPromise;
+          } else {
+            encoder.encode(frame, { keyFrame: i % 30 === 0 });
+            frame.close();
+          }
+        }
+
+        if (!waitPerFrame) {
+          await encoder.flush();
+        }
+
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+
+        encoder.close();
+        return duration;
+      }
+
+      // Function to toggle AVC format select visibility
+      function toggleAvcFormatSelect() {
+        if (codecSelect.value.startsWith("avc1")) {
+          avcFormatSelect.style.display = "inline-block";
+        } else {
+          avcFormatSelect.style.display = "none";
+        }
+      }
+
+      // Add event listener to codec select
+      codecSelect.addEventListener("change", toggleAvcFormatSelect);
+
+      // Initial call to set correct visibility
+      toggleAvcFormatSelect();
+
+      startButton.addEventListener("click", async () => {
+        const selectedCodec = codecSelect.value;
+        const selectedAvcFormat = avcFormatSelect.value;
+        const waitPerFrame = waitPerFrameCheckbox.checked;
+        startButton.disabled = true;
+        resultDiv.textContent = "Encoding in progress...";
+
+        try {
+          const duration = await encodeFrames(
+            selectedCodec,
+            selectedAvcFormat,
+            waitPerFrame
+          );
+          resultDiv.textContent = `Encoding completed in ${duration.toFixed(
+            2
+          )} ms`;
+        } catch (error) {
+          resultDiv.textContent = `Error: ${error.message}`;
+        } finally {
+          startButton.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
