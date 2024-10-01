@@ -26,17 +26,12 @@
       <option value="avc" selected="selected">AVC</option>
       <option value="annexb">Annex B</option>
     </select>
-    <label>
-      <input type="checkbox" id="waitPerFrame" checked="checked" /> Wait per
-      frame
-    </label>
     <button id="startButton">Start Encoding</button>
     <div id="result"></div>
 
     <script>
       const codecSelect = document.getElementById("codecSelect");
       const avcFormatSelect = document.getElementById("avcFormatSelect");
-      const waitPerFrameCheckbox = document.getElementById("waitPerFrame");
       const startButton = document.getElementById("startButton");
       const resultDiv = document.getElementById("result");
 
@@ -57,7 +52,7 @@
         ctx.putImageData(imageData, 0, 0);
       }
 
-      async function encodeFrames(codec, avcFormat, waitPerFrame) {
+      async function encodeFrames(codec, avcFormat) {
         const config = {
           codec: codec,
           width: width,
@@ -74,60 +69,99 @@
 
         console.log(config);
 
-        let outputPromiseResolve;
+        let frameEncodeTimes = [];
+        let frameOutputTimes = [];
+        let firstFrameEncodeTime = null;
+        let lastFrameOutputTime = null;
+
         const encoder = new VideoEncoder({
           output: (chunk, metadata) => {
+            const endTime = performance.now();
+            frameOutputTimes.push({
+              timestamp: chunk.timestamp,
+              time: endTime,
+            });
+            lastFrameOutputTime = endTime;
             console.log(chunk);
-            if (outputPromiseResolve) {
-              outputPromiseResolve();
-            }
           },
           error: (e) => {
             console.error(e);
-            if (outputPromiseResolve) {
-              outputPromiseResolve(e);
-            }
           },
         });
 
-        await encoder.configure(config);
+        encoder.configure(config);
 
-        const startTime = performance.now();
-
-        for (let i = 0; i < 10; i++) {
+        const totalFrames = 100;
+        for (let i = 0; i < totalFrames; i++) {
           randomizeCanvas();
           const frame = new VideoFrame(offscreen, { timestamp: i * 1000000 });
 
-          if (waitPerFrame) {
-            // Reset the output promise for this frame
-            outputPromiseResolve = null;
-            const newOutputPromise = new Promise((resolve) => {
-              outputPromiseResolve = resolve;
-            });
-
-            encoder.encode(frame, { keyFrame: i % 30 === 0 });
-            frame.close();
-
-            // Wait for this frame to be encoded
-            await newOutputPromise;
-          } else {
-            encoder.encode(frame, { keyFrame: i % 30 === 0 });
-            frame.close();
+          const frameEncodeTime = performance.now();
+          if (firstFrameEncodeTime === null) {
+            firstFrameEncodeTime = frameEncodeTime;
           }
+          frameEncodeTimes.push({
+            timestamp: frame.timestamp,
+            time: frameEncodeTime,
+          });
+
+          encoder.encode(frame, { keyFrame: i == 0 });
+          frame.close();
         }
 
-        if (!waitPerFrame) {
-          await encoder.flush();
-        }
-
-        const endTime = performance.now();
-        const duration = endTime - startTime;
+        await encoder.flush();
 
         encoder.close();
-        return duration;
+
+        const roundTripTimes = calculateRoundTripTimes(
+          frameEncodeTimes,
+          frameOutputTimes
+        );
+
+        const averageRoundTripTime =
+          roundTripTimes.reduce((a, b) => a + b.time, 0) /
+          roundTripTimes.length;
+
+        const duration = lastFrameOutputTime - firstFrameEncodeTime;
+
+        return {
+          duration,
+          averageRoundTripTime,
+          roundTripTimes,
+          frameOutputTimes,
+          frameEncodeTimes,
+        };
       }
 
-      // Function to toggle AVC format select visibility
+      function calculateRoundTripTimes(frameEncodeTimes, frameOutputTimes) {
+        let roundTripTimes = [];
+        let encodeIndex = 0;
+        let outputIndex = 0;
+
+        while (
+          encodeIndex < frameEncodeTimes.length &&
+          outputIndex < frameOutputTimes.length
+        ) {
+          const encodeEntry = frameEncodeTimes[encodeIndex];
+          const outputEntry = frameOutputTimes[outputIndex];
+
+          if (encodeEntry.timestamp === outputEntry.timestamp) {
+            const roundTripTime = outputEntry.time - encodeEntry.time;
+            roundTripTimes.push({
+              timestamp: outputEntry.timestamp,
+              time: roundTripTime,
+            });
+            encodeIndex++;
+            outputIndex++;
+          } else if (encodeEntry.timestamp < outputEntry.timestamp) {
+            encodeIndex++;
+          } else {
+            outputIndex++;
+          }
+        }
+        return roundTripTimes;
+      }
+
       function toggleAvcFormatSelect() {
         if (codecSelect.value.startsWith("avc1")) {
           avcFormatSelect.style.display = "inline-block";
@@ -136,7 +170,6 @@
         }
       }
 
-      // Add event listener to codec select
       codecSelect.addEventListener("change", toggleAvcFormatSelect);
 
       // Initial call to set correct visibility
@@ -145,19 +178,34 @@
       startButton.addEventListener("click", async () => {
         const selectedCodec = codecSelect.value;
         const selectedAvcFormat = avcFormatSelect.value;
-        const waitPerFrame = waitPerFrameCheckbox.checked;
         startButton.disabled = true;
         resultDiv.textContent = "Encoding in progress...";
 
         try {
-          const duration = await encodeFrames(
-            selectedCodec,
-            selectedAvcFormat,
-            waitPerFrame
-          );
-          resultDiv.textContent = `Encoding completed in ${duration.toFixed(
+          const {
+            duration,
+            averageRoundTripTime,
+            roundTripTimes,
+            frameOutputTimes,
+            frameEncodeTimes,
+          } = await encodeFrames(selectedCodec, selectedAvcFormat);
+          let resultHTML = `<p>Encoding completed in ${duration.toFixed(
             2
-          )} ms`;
+          )} ms</p>`;
+          resultHTML += `<p>Frames output: ${frameOutputTimes.length}</p>`;
+          resultHTML += `<p>Average frame-encode-round-trip time: ${averageRoundTripTime.toFixed(
+            2
+          )} ms</p>`;
+          resultHTML += `<p>Round-trip times: ${roundTripTimes
+            .map((t) => t.time.toFixed(2))
+            .join(", ")} ms</p>`;
+          resultHTML += `<p>Frame encode times: ${frameEncodeTimes
+            .map((t) => t.time.toFixed(2))
+            .join(", ")} ms</p>`;
+          resultHTML += `<p>Frame output times: ${frameOutputTimes
+            .map((t) => t.time.toFixed(2))
+            .join(", ")} ms</p>`;
+          resultDiv.innerHTML = resultHTML;
         } catch (error) {
           resultDiv.textContent = `Error: ${error.message}`;
         } finally {
