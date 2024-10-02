@@ -26,12 +26,17 @@
       <option value="avc" selected="selected">AVC</option>
       <option value="annexb">Annex B</option>
     </select>
+    <label>
+      <input type="checkbox" id="realtime" checked />
+      Realtime
+    </label>
     <button id="startButton">Start Encoding</button>
     <div id="result"></div>
 
     <script>
       const codecSelect = document.getElementById("codecSelect");
       const avcFormatSelect = document.getElementById("avcFormatSelect");
+      const realtimeCheckbox = document.getElementById("realtime");
       const startButton = document.getElementById("startButton");
       const resultDiv = document.getElementById("result");
 
@@ -52,14 +57,14 @@
         ctx.putImageData(imageData, 0, 0);
       }
 
-      async function encodeFrames(codec, avcFormat) {
+      async function encodeFrames(codec, avcFormat, realtime) {
         const config = {
           codec: codec,
           width: width,
           height: height,
           bitrate: 1_000_000, // 1 Mbps
           framerate: 30,
-          latencyMode: "realtime",
+          latencyMode: realtime ? "realtime" : "quality",
         };
 
         // Add AVC configuration for H.264
@@ -178,6 +183,7 @@
       startButton.addEventListener("click", async () => {
         const selectedCodec = codecSelect.value;
         const selectedAvcFormat = avcFormatSelect.value;
+        const realtime = realtimeCheckbox.checked;
         startButton.disabled = true;
         resultDiv.textContent = "Encoding in progress...";
 
@@ -188,7 +194,7 @@
             roundTripTimes,
             frameOutputTimes,
             frameEncodeTimes,
-          } = await encodeFrames(selectedCodec, selectedAvcFormat);
+          } = await encodeFrames(selectedCodec, selectedAvcFormat, realtime);
           let resultHTML = `<p>Encoding completed in ${duration.toFixed(
             2
           )} ms</p>`;
