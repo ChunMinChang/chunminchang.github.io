@@ -14,6 +14,10 @@
 
   <body data-new-gr-c-s-check-loaded="8.912.0" data-gr-ext-installed="">
     <h1>VideoEncoder with OffscreenCanvas Demo</h1>
+    <label for="canvasWidth">Canvas Width:</label>
+    <input type="number" id="canvasWidth" value="640" min="1" max="3840" />
+    <label for="canvasHeight">Canvas Height:</label>
+    <input type="number" id="canvasHeight" value="480" min="1" max="2160" />
     <select id="codecSelect">
       <option value="avc1.42001E" selected="selected">H.264 Baseline</option>
       <option value="avc1.4D001E">H.264 Main</option>
@@ -57,14 +61,20 @@
         ctx.putImageData(imageData, 0, 0);
       }
 
-      async function encodeFrames(codec, avcFormat, realtime) {
+      async function encodeFrames(
+        codec,
+        avcFormat,
+        latencyMode,
+        width,
+        height
+      ) {
         const config = {
           codec: codec,
           width: width,
           height: height,
           bitrate: 1_000_000, // 1 Mbps
           framerate: 30,
-          latencyMode: realtime ? "realtime" : "quality",
+          latencyMode: latencyMode,
         };
 
         // Add AVC configuration for H.264
@@ -183,7 +193,9 @@
       startButton.addEventListener("click", async () => {
         const selectedCodec = codecSelect.value;
         const selectedAvcFormat = avcFormatSelect.value;
-        const realtime = realtimeCheckbox.checked;
+        const width = parseInt(document.getElementById("canvasWidth").value);
+        const height = parseInt(document.getElementById("canvasHeight").value);
+        const latencyMode = realtimeCheckbox.checked ? "realtime" : "quality";
         startButton.disabled = true;
         resultDiv.textContent = "Encoding in progress...";
 
@@ -194,7 +206,13 @@
             roundTripTimes,
             frameOutputTimes,
             frameEncodeTimes,
-          } = await encodeFrames(selectedCodec, selectedAvcFormat, realtime);
+          } = await encodeFrames(
+            selectedCodec,
+            selectedAvcFormat,
+            latencyMode,
+            width,
+            height
+          );
           let resultHTML = `<p>Encoding completed in ${duration.toFixed(
             2
           )} ms</p>`;
