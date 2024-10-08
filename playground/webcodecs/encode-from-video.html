@@ -5,11 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Video Encoder</title>
   </head>
+  <script>
+    var codecSelect;
 
+    function createVideo(src) {
+      const video = document.createElement("video");
+      video.src = src;
+      video.autoplay = false;
+      document.body.appendChild(video);
+      return video;
+    }
+
+    function removeVideo(video) {
+      document.body.removeChild(video);
+    }
+
+    async function configureEncoder(
+      video,
+      worker,
+      codec,
+      latencyMode,
+      avcFormat
+    ) {
+      video.addEventListener("loadedmetadata", (event) => {
+        worker.postMessage({
+          command: "configure",
+          codec,
+          width: video.videoWidth,
+          height: video.videoHeight,
+          latencyMode: latencyMode,
+          avcFormat,
+        });
+      });
+      return new Promise((resolve, reject) => {
+        video.addEventListener("canplaythrough", (event) => {
+          resolve(video);
+        });
+      });
+    }
+
+    async function getEncoderResults(worker) {
+      return new Promise((resolve, reject) => {
+        worker.onmessage = (event) => {
+          if (event.data.command === "result") {
+            const { command, timeDiff, encodeTimes, outputTimes } = event.data;
+            resolve([timeDiff, encodeTimes, outputTimes]);
+          }
+        };
+      });
+    }
+
+    async function testEncoder() {
+      const codec = codecSelect.value;
+      const avcFormat = document.getElementById("avcFormatSelect").value;
+      const latencyMode = document.getElementById("realTimeEncoding").checked
+        ? "realtime"
+        : "quality";
+
+      const worker = new Worker("encode-from-video_worker.js");
+      const video = createVideo("data/h264.mp4");
+      await configureEncoder(video, worker, codec, latencyMode, avcFormat);
+
+      let callbackId = null;
+      const encodeFrame = (now, metadata) => {
+        const frame = new VideoFrame(video, {
+          timestamp: metadata.mediaTime * 1e6 /* seconds to microseconds */,
+        });
+        worker.postMessage({ command: "encode", frame });
+        if (!video.ended) {
+          callbackId = video.requestVideoFrameCallback(encodeFrame);
+        }
+      };
+      callbackId = video.requestVideoFrameCallback(encodeFrame);
+
+      video.addEventListener("ended", () => {
+        worker.postMessage({ command: "flush" });
+      });
+
+      video.play();
+
+      let [timeDiff, encodeTimes, outputTimes] = await getEncoderResults(
+        worker
+      );
+
+      video.cancelVideoFrameCallback(callbackId);
+      removeVideo(video);
+
+      return [timeDiff, encodeTimes, outputTimes];
+    }
+
+    function updateResults(
+      timeDiff,
+      encodeTimes,
+      outputTimes,
+      averageRoundTripTime
+    ) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = `Total Time Difference: ${timeDiff} ms
+          <p>Number of encode data: ${encodeTimes.length}</p>
+          <p>Number of output data: ${outputTimes.length}</p>
+          <p>average encode time: ${averageRoundTripTime}</p>`;
+    }
+
+    function calculateRoundTripTimes(encodeTimes, outputTimes) {
+      let roundTripTimes = [];
+      let encodeIndex = 0;
+      let outputIndex = 0;
+
+      while (
+        encodeIndex < encodeTimes.length &&
+        outputIndex < outputTimes.length
+      ) {
+        const encodeEntry = encodeTimes[encodeIndex];
+        const outputEntry = outputTimes[outputIndex];
+
+        if (encodeEntry.timestamp === outputEntry.timestamp) {
+          const roundTripTime = outputEntry.time - encodeEntry.time;
+          roundTripTimes.push({
+            timestamp: outputEntry.timestamp,
+            time: roundTripTime,
+          });
+          encodeIndex++;
+          outputIndex++;
+        } else if (encodeEntry.timestamp < outputEntry.timestamp) {
+          encodeIndex++;
+        } else {
+          outputIndex++;
+        }
+      }
+      return roundTripTimes;
+    }
+
+    function toggleAvcFormatSelect() {
+      avcFormatSelect.style.display = codecSelect.value.startsWith("avc1")
+        ? "inline-block"
+        : "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+      codecSelect = document.getElementById("codecSelect");
+      codecSelect.addEventListener("change", toggleAvcFormatSelect);
+
+      toggleAvcFormatSelect();
+
+      const startButton = document.getElementById("startButton");
+      startButton.addEventListener("click", async () => {
+        let [timeDiff, encodeTimes, outputTimes] = await testEncoder();
+        const roundTripTimes = calculateRoundTripTimes(
+          encodeTimes,
+          outputTimes
+        );
+        const averageRoundTripTime =
+          roundTripTimes.reduce((a, b) => a + b.time, 0) /
+          roundTripTimes.length;
+        updateResults(
+          timeDiff,
+          encodeTimes,
+          outputTimes,
+          averageRoundTripTime
+        );
+      });
+    });
+  </script>
   <body>
-    <video id="video" controls>
-      <source src="data/h264.mp4" type="video/mp4" />
-    </video>
+    <label>
+      <input type="checkbox" id="realTimeEncoding" />
+      Realtime
+    </label>
     <select id="codecSelect">
       <option value="avc1.42001E">H264 Baseline</option>
       <option value="avc1.4D001E">H264 Main</option>
@@ -24,116 +186,5 @@
     </select>
     <button id="startButton">Start Encoding</button>
     <div id="results"></div>
-    <label>
-      <input type="checkbox" id="realTimeEncoding" />
-      Real-time Encoding
-    </label>
-    <script>
-      const worker = new Worker("encode-from-video_worker.js");
-      const video = document.getElementById("video");
-      const resultsDiv = document.getElementById("results");
-      const codecSelect = document.getElementById("codecSelect");
-      const avcFormatSelect = document.getElementById("avcFormatSelect");
-      const startButton = document.getElementById("startButton");
-      const realTimeEncoding = document.getElementById("realTimeEncoding");
-
-      function calculateRoundTripTimes(encodeTimes, outputTimes) {
-        let roundTripTimes = [];
-        let encodeIndex = 0;
-        let outputIndex = 0;
-
-        while (
-          encodeIndex < encodeTimes.length &&
-          outputIndex < outputTimes.length
-        ) {
-          const encodeEntry = encodeTimes[encodeIndex];
-          const outputEntry = outputTimes[outputIndex];
-
-          if (encodeEntry.timestamp === outputEntry.timestamp) {
-            const roundTripTime = outputEntry.time - encodeEntry.time;
-            roundTripTimes.push({
-              timestamp: outputEntry.timestamp,
-              time: roundTripTime,
-            });
-            encodeIndex++;
-            outputIndex++;
-          } else if (encodeEntry.timestamp < outputEntry.timestamp) {
-            encodeIndex++;
-          } else {
-            outputIndex++;
-          }
-        }
-        return roundTripTimes;
-      }
-
-      worker.onmessage = (event) => {
-        if (event.data.command === "result") {
-          const { command, timeDiff, encodeTimes, outputTimes } = event.data;
-          const roundTripTimes = calculateRoundTripTimes(
-            encodeTimes,
-            outputTimes
-          );
-          const averageRoundTripTime =
-            roundTripTimes.reduce((a, b) => a + b.time, 0) /
-            roundTripTimes.length;
-
-          resultsDiv.innerHTML = `Total Time Difference: ${timeDiff} ms
-          <p>Number of encode data: ${encodeTimes.length}</p>
-          <p>Number of output data: ${outputTimes.length}</p>
-          <p>average encode time: ${averageRoundTripTime}</p>`;
-        }
-      };
-
-      let callbackId = null;
-      let firstFrame = true;
-      const encodeFrame = (now, metadata) => {
-        console.log(metadata);
-        const frame = new VideoFrame(video, {
-          timestamp: metadata.mediaTime * 1e6, // Convert seconds to microseconds
-        });
-        if (firstFrame) {
-          const codec = codecSelect.value;
-          const avcFormat = avcFormatSelect.value;
-          worker.postMessage({
-            command: "configure",
-            codec,
-            avcFormat,
-            realTime: realTimeEncoding.checked,
-            width: frame.codedWidth,
-            height: frame.codedHeight,
-          });
-          firstFrame = false;
-        }
-        worker.postMessage({ command: "encode", frame });
-        if (!video.ended) {
-          callbackId = video.requestVideoFrameCallback(encodeFrame);
-        }
-      };
-
-      video.addEventListener("ended", () => {
-        console.log("Video has ended");
-        worker.postMessage({ command: "flush" });
-      });
-
-      startButton.addEventListener("click", () => {
-        console.log("run test");
-        if (callbackId) {
-          video.cancelVideoFrameCallback(callbackId);
-        }
-        firstFrame = true;
-        callbackId = video.requestVideoFrameCallback(encodeFrame);
-        video.play();
-      });
-
-      function toggleAvcFormatSelect() {
-        avcFormatSelect.style.display = codecSelect.value.startsWith("avc1")
-          ? "inline-block"
-          : "none";
-      }
-
-      codecSelect.addEventListener("change", toggleAvcFormatSelect);
-
-      toggleAvcFormatSelect();
-    </script>
   </body>
 </html>

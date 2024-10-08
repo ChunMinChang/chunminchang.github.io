@@ -14,7 +14,7 @@ function reset() {
 
 self.onmessage = async (event) => {
   if (event.data.command === "configure") {
-    const { command, codec, avcFormat, realTime, width, height } = event.data;
+    const { command, codec, width, height, latencyMode, avcFormat } = event.data;
     encoder = new VideoEncoder({
       output: (chunk, metadata) => {
         const endTime = performance.now();
@@ -29,7 +29,7 @@ self.onmessage = async (event) => {
       height: height,
       bitrate: 1000000, // 1 Mbps
       framerate: 30,
-      latencyMode: realTime ? "realtime" : "quality",
+      latencyMode: latencyMode,
     };
 
     // Add H264 specific configuration
