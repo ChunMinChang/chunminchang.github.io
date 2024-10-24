@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>encode, rescale, decode</title>
+    <script>
+      async function runTest(srcCanvas, destCanvas) {
+        // 1. Setup source canvas
+
+        srcCanvas.width = 640;
+        srcCanvas.height = 480;
+
+        const srcCtx = srcCanvas.getContext("2d");
+
+        // Draw a red triangle
+        srcCtx.fillStyle = "red";
+        srcCtx.beginPath();
+        srcCtx.moveTo(150, 50);
+        srcCtx.lineTo(100, 200);
+        srcCtx.lineTo(200, 200);
+        srcCtx.closePath();
+        srcCtx.fill();
+
+        // Draw a green rectangle
+        srcCtx.fillStyle = "green";
+        srcCtx.fillRect(75, 210, 150, 50);
+
+        // 2. Set rescaled size
+
+        const factor = 0.7;
+        const width = Math.round(factor * srcCanvas.width);
+        const height = Math.round(factor * srcCanvas.height);
+
+        // 3. Setup VideoEncoder and encode the VideoFrame created from the source canvas
+
+        let encodedResults = [];
+        const encoder = new VideoEncoder({
+          output: (chunk, metadata) => {
+            encodedResults.push({ chunk, metadata });
+          },
+          error: (error) => {
+            console.log(error);
+          },
+        });
+
+        const encoderConfig = {
+          codec: "avc1.42001E",
+          avc: { format: "annexb" },
+          width,
+          height,
+          framerate: 30,
+          bitrate: 1000000,
+        };
+
+        encoder.configure(encoderConfig);
+
+        const vf = new VideoFrame(srcCanvas, { timestamp: 0 });
+        encoder.encode(vf);
+        await encoder.flush();
+
+        // 4. Setup VideoDecoder and get its decoded output
+        let decodedResults = [];
+        const decoder = new VideoDecoder({
+          output(frame) {
+            decodedResults.push(frame);
+          },
+          error: (error) => {
+            console.log(error);
+          },
+        });
+
+        console.assert(encodedResults.length == 1);
+        console.assert(encodedResults[0].metadata);
+        console.assert(encodedResults[0].metadata.decoderConfig);
+        console.assert(encodedResults[0].chunk);
+
+        decoder.configure(encodedResults[0].metadata.decoderConfig);
+        decoder.decode(encodedResults[0].chunk);
+
+        await decoder.flush();
+        console.assert(decodedResults.length == 1);
+
+        // 5. Draw the decoded frame to the destination canvas
+
+        destCanvas.width = width;
+        destCanvas.height = height;
+        const destCtx = destCanvas.getContext("2d");
+        destCtx.drawImage(decodedResults[0], 0, 0);
+
+        encoder.close();
+        decoder.close();
+        vf.close();
+        decodedResults[0].close();
+      }
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        const srcCanvas = document.getElementById("source");
+        const destCanvas = document.getElementById("destination");
+        const button = document.getElementById("start");
+        button.addEventListener("click", async (event) => {
+          runTest(srcCanvas, destCanvas);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Test if Encoder can rescale VideoFrame</h1>
+    <button id="start">start</button>
+    <h3>Source Canvas</h3>
+    <canvas id="source"></canvas>
+    <h3>Destination Canvas</h3>
+    <canvas id="destination"></canvas>
+  </body>
+</html>
