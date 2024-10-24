@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>encode, rescale, decode</title>
+    <title>encoder rescale</title>
     <script>
       async function runTest(srcCanvas, destCanvas) {
         // 1. Setup source canvas
@@ -12,6 +12,9 @@
         const srcCtx = srcCanvas.getContext("2d");
 
         // Draw a red triangle
+        srcCtx.fillStyle = "yellow";
+        srcCtx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
+
         srcCtx.fillStyle = "red";
         srcCtx.beginPath();
         srcCtx.moveTo(150, 50);
@@ -26,7 +29,7 @@
 
         // 2. Set rescaled size
 
-        const factor = 0.7;
+        const factor = 0.5;
         const width = Math.round(factor * srcCanvas.width);
         const height = Math.round(factor * srcCanvas.height);
 
@@ -81,9 +84,13 @@
 
         // 5. Draw the decoded frame to the destination canvas
 
-        destCanvas.width = width;
-        destCanvas.height = height;
+        destCanvas.width = srcCanvas.width;
+        destCanvas.height = srcCanvas.height;
+
         const destCtx = destCanvas.getContext("2d");
+        destCtx.fillStyle = "blue";
+        destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
+
         destCtx.drawImage(decodedResults[0], 0, 0);
 
         encoder.close();
@@ -104,6 +111,7 @@
   </head>
   <body>
     <h1>Test if Encoder can rescale VideoFrame</h1>
+    <!-- TODO: Choose codecs -->
     <button id="start">start</button>
     <h3>Source Canvas</h3>
     <canvas id="source"></canvas>
