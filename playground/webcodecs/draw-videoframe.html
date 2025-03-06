@@ -1,0 +1,51 @@
+<html>
+<head>
+  <title>draw videoframe</title>
+  <script src="four-colors-image.js"></script>
+  <script>
+    const WIDTH = 200;
+    const HEIGHT = 120;
+
+    function drawImage() {
+      const format = getFormat();
+      const data = createImageData(format, WIDTH, HEIGHT);
+      const vf = new VideoFrame(data, { format, codedWidth: WIDTH, codedHeight: HEIGHT, timestamp: 0 });
+      const canvas = document.getElementById("draw");
+      canvas.width = vf.displayWidth;
+      canvas.height = vf.displayHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(vf, 0, 0);
+      vf.close();
+    }
+
+    function getFormat() {
+      return document.querySelector("#formats input:checked").value;
+    }
+
+    window.addEventListener("DOMContentLoaded", (event) => {
+      const radioButtons = document.querySelectorAll('input[type="radio"]');
+      radioButtons.forEach((radioButton) => {
+        radioButton.addEventListener("change", (event) => {
+          drawImage();
+        });
+      });
+
+      drawImage();
+    });
+  </script>
+</head>
+<body>
+  <h1>encode scaled image</h1>
+  <div id="formats">
+    <label>
+      <input type="radio" name="format" value="RGBX" checked>
+      RGB
+    </label>
+    <label>
+      <input type="radio" name="format" value="I420">
+      I420
+    </label>
+  </div>
+  <canvas id="draw"></canvas>
+</body>
+</html>
