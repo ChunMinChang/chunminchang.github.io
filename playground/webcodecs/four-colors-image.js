@@ -19,6 +19,9 @@ function rgb2yuv(rgb) {
 }
 
 function createImageData(format, width, height) {
+  if (!isFiniteNumber(width) || !isFiniteNumber(height)) {
+    throw new Error("Invalid width or height");
+  }
   if (format.toLowerCase() == "rgbx") {
     return createRGB32ImageData(width, height, RGB_FOUR_COLORS);
   }
@@ -99,4 +102,8 @@ function getColor(x, y, width, height, colors, channel) {
 
   const index = yIndex * 2 + xIndex;
   return colors[index][channel];
+}
+
+function isFiniteNumber(value) {
+  return typeof value === "number" && isFinite(value);
 }

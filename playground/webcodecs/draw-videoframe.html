@@ -3,16 +3,15 @@
     <title>draw videoframe</title>
     <script src="four-colors-image.js"></script>
     <script>
-      const WIDTH = 200;
-      const HEIGHT = 120;
-
       function drawImage() {
+        const size = getDimensions();
+        console.log("drawImage: " + size.width + "x" + size.height);
         const format = getFormat();
-        const data = createImageData(format, WIDTH, HEIGHT);
+        const data = createImageData(format, size.width, size.height);
         const vf = new VideoFrame(data, {
           format,
-          codedWidth: WIDTH,
-          codedHeight: HEIGHT,
+          codedWidth:size.width,
+          codedHeight: size.height,
           timestamp: 0,
         });
         const canvas = document.getElementById("draw");
@@ -21,6 +20,13 @@
         const ctx = canvas.getContext("2d");
         ctx.drawImage(vf, 0, 0);
         vf.close();
+      }
+
+      function getDimensions() {
+        const list = document.querySelectorAll("#dimensions input[type='number']");
+        const width = parseInt(list[0].value);
+        const height = parseInt(list[1].value);
+        return { width, height };
       }
 
       function getFormat() {
@@ -35,12 +41,23 @@
           });
         });
 
+        const dimensions = document.querySelectorAll("#dimensions input[type='number']");
+        dimensions.forEach((input) => {
+          input.addEventListener("change", (event) => {
+            drawImage();
+          });
+        });
+
         drawImage();
       });
     </script>
   </head>
   <body>
     <h1>Draw VideoFrame to Canvas</h1>
+    <div id="dimensions">
+      <label> Width: <input type="number" value="200" /> </label>
+      <label> Height: <input type="number" value="120" /> </label>
+    </div>
     <div id="formats">
       <label>
         <input type="radio" name="format" value="RGBX" checked />
