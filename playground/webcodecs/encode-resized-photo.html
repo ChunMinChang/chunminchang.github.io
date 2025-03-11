@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <title>encode resized photo</title>
+    <script src="webrtc.js"></script>
+    <script>
+      async function runTest() {
+        const { video, stream } = await createStreamingVideo();
+        const stmSettings = stream.getVideoTracks()[0].getSettings();
+        console.log(
+          "stream size: " + stmSettings.width + "x" + stmSettings.height
+        );
+        console.log(
+          "video size: " + video.videoWidth + "x" + video.videoHeight
+        );
+        const container = document.getElementById("camera");
+        container.appendChild(video);
+
+        const canvas = document.createElement("canvas");
+        container.appendChild(canvas);
+
+        const dimensions = document.getElementById("dimensions");
+        dimensions.style.display = "block";
+
+        button.replaceWith(button.cloneNode(false));
+        button.disabled = false;
+        button.textContent = "Take Picture to Encode";
+        button.addEventListener("click", async () => {
+          const vf = takePicture(video);
+          console.log(
+            "videoframe size: " + vf.displayWidth + "x" + vf.displayHeight
+          );
+          encodeAndDrawPhoto(vf, canvas);
+        });
+      }
+
+      async function encodeAndDrawPhoto(vf, canvas) {
+        // 1. Setup VideoEncoder and encode the VideoFrame with resized dimensions
+        let encodedResults = [];
+        const encoder = new VideoEncoder({
+          output: (chunk, metadata) => {
+            encodedResults.push({ chunk, metadata });
+          },
+          error: (error) => {
+            console.log(error);
+          },
+        });
+
+        const dimensions = getDimensions();
+        const encoderConfig = {
+          codec: "avc1.42001E",
+          avc: { format: "annexb" },
+          width: dimensions.width,
+          height: dimensions.height,
+          framerate: 30,
+          bitrate: 1000000,
+        };
+
+        encoder.configure(encoderConfig);
+        encoder.encode(vf);
+        await encoder.flush();
+
+        vf.close();
+
+        // 2. Setup VideoDecoder and decode the encoded chunk
+        let decodedResults = [];
+        const decoder = new VideoDecoder({
+          output(frame) {
+            decodedResults.push(frame);
+          },
+          error: (error) => {
+            console.log(error);
+          },
+        });
+
+        console.assert(encodedResults.length == 1);
+        console.assert(encodedResults[0].metadata);
+        console.assert(encodedResults[0].metadata.decoderConfig);
+        console.assert(encodedResults[0].chunk);
+
+        decoder.configure(encodedResults[0].metadata.decoderConfig);
+        decoder.decode(encodedResults[0].chunk);
+
+        await decoder.flush();
+        console.assert(decodedResults.length == 1);
+
+        const decodedFrame = decodedResults[0];
+        drawImage(decodedFrame, canvas);
+        decodedFrame.close();
+      }
+
+      function drawImage(videoframe, canvas) {
+        canvas.width = videoframe.displayWidth;
+        canvas.height = videoframe.displayHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(videoframe, 0, 0);
+      }
+
+      function getDimensions() {
+        const list = document.querySelectorAll(
+          "#dimensions input[type='number']"
+        );
+        const width = parseInt(list[0].value);
+        const height = parseInt(list[1].value);
+        return { width, height };
+      }
+
+      window.addEventListener("DOMContentLoaded", (event) => {
+        const button = document.getElementById("button");
+        button.addEventListener("click", (event) => {
+          event.target.disabled = true;
+          runTest();
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Encode resized photo</h1>
+    <button id="button">Start</button>
+    <div id="dimensions" style="display: none">
+      <p>Source Size</p>
+      <label> Width: <input type="number" value="1280" /> </label>
+      <label> Height: <input type="number" value="720" /> </label>
+    </div>
+    <div id="camera"></div>
+  </body>
+</html>
