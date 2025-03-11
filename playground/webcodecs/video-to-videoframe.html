@@ -3,22 +3,32 @@
     <title>VideoElement to VideoFrame</title>
     <script src="webrtc.js"></script>
     <script>
-      var videoElement = null;
-      var startbutton = null;
-      var takephoto = null;
-      var canvasElement = null;
+      async function runTest() {
+        const { video, stream } = await createStreamingVideo();
+        const stmSettings = stream.getVideoTracks()[0].getSettings();
+        console.log(
+          "stream size: " + stmSettings.width + "x" + stmSettings.height
+        );
+        console.log(
+          "video size: " + video.videoWidth + "x" + video.videoHeight
+        );
+        const container = document.getElementById("camera");
+        container.appendChild(video);
 
-      async function startVideo() {
-        const stream = await getVideoStream();
-        console.log(stream.getVideoTracks()[0].getSettings());
-        video.srcObject = stream;
-        video.play();
+        const cvs = document.createElement("canvas");
+        container.appendChild(cvs);
+
+        button.replaceWith(button.cloneNode(false));
+        button.disabled = false;
+        button.textContent = "Take Picture";
+        button.addEventListener("click", async () => {
+          const vf = takePicture(video);
+          console.log("videoframe size: ", vf.displayWidth, vf.displayHeight);
+          drawVideoToCanvas(vf, cvs);
+        });
       }
 
-      function drawVideoToCanvas(video, canvas) {
-        console.log("video size: ", video.videoWidth, video.videoHeight);
-        const vf = takePicture(video);
-        console.log("videoframe size: ", vf.displayWidth, vf.displayHeight);
+      function drawVideoToCanvas(vf, canvas) {
         const ctx = canvas.getContext("2d");
         canvas.width = vf.displayWidth;
         canvas.height = vf.displayHeight;
@@ -26,33 +36,17 @@
       }
 
       window.addEventListener("DOMContentLoaded", (event) => {
-        canvasElement = document.getElementById("canvas");
-        takephoto = document.getElementById("takephoto");
-
-        videoElement = document.getElementById("video");
-        videoElement.addEventListener("canplay", (event) => {
-          takephoto.disabled = false;
-          takephoto.addEventListener("click", (event) => {
-            takephoto.disabled = true;
-            drawVideoToCanvas(videoElement, canvasElement);
-          });
-        });
-
-        startbutton = document.getElementById("startbutton");
-        startbutton.addEventListener("click", (event) => {
+        const button = document.getElementById("button");
+        button.addEventListener("click", (event) => {
           event.target.disabled = true;
-          startVideo();
+          runTest();
         });
       });
     </script>
   </head>
   <body>
     <h1>VideoElement to VideoFrame</h1>
-    <button id="startbutton">Start</button>
-    <button id="takephoto" disabled>Take photo</button>
-    <div class="camera">
-      <video id="video">Video stream not available.</video>
-      <canvas id="canvas"></canvas>
-    </div>
+    <button id="button">Start</button>
+    <div id="camera"></div>
   </body>
 </html>
