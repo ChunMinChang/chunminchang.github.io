@@ -18,21 +18,38 @@
         const cvs = document.createElement("canvas");
         container.appendChild(cvs);
 
+        const dimensions = document.getElementById("dimensions");
+        dimensions.style.display = "block";
+
         button.replaceWith(button.cloneNode(false));
         button.disabled = false;
         button.textContent = "Take Picture";
         button.addEventListener("click", async () => {
           const vf = takePicture(video);
           console.log("videoframe size: ", vf.displayWidth, vf.displayHeight);
-          drawVideoToCanvas(vf, cvs);
+          drawVideoToCanvas(vf, cvs, getDimensions());
+          vf.close();
         });
       }
 
-      function drawVideoToCanvas(vf, canvas) {
+      function drawVideoToCanvas(vf, canvas, size) {
         const ctx = canvas.getContext("2d");
         canvas.width = vf.displayWidth;
         canvas.height = vf.displayHeight;
+        if (size && size.width && size.height) {
+          canvas.width = size.width;
+          canvas.height = size.height;
+        }
         ctx.drawImage(vf, 0, 0, canvas.width, canvas.height);
+      }
+
+      function getDimensions() {
+        const list = document.querySelectorAll(
+          "#dimensions input[type='number']"
+        );
+        const width = parseInt(list[0].value);
+        const height = parseInt(list[1].value);
+        return { width, height };
       }
 
       window.addEventListener("DOMContentLoaded", (event) => {
@@ -47,6 +64,11 @@
   <body>
     <h1>VideoElement to VideoFrame</h1>
     <button id="button">Start</button>
+    <div id="dimensions" style="display: none">
+      <p>Source Size</p>
+      <label> Width: <input type="number" value="1280" /> </label>
+      <label> Height: <input type="number" value="720" /> </label>
+    </div>
     <div id="camera"></div>
   </body>
 </html>
