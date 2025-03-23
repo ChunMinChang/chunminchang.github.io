@@ -4,8 +4,6 @@
     <script src="four-colors-image.js"></script>
     <script>
       async function runTest() {
-        const length = 10;
-
         // 1. Setup VideoEncoder with target dimensions
         let encodedResults = [];
         const encoder = new VideoEncoder({
@@ -29,11 +27,22 @@
 
         encoder.configure(encoderConfig);
 
-        // 2. Encode the VideoFrame with format and colorspace
+        // 2. Encode the VideoFrame with different formats and colorspaces
+        const colorSpaceSets = {
+          primaries: ["bt709"],
+          transfer: ["bt709"],
+          matrix: ["bt709"],
+          fullRange: [true, false],
+        };
+        const colorSpaces = generateAllCombinations(colorSpaceSets);
         const sourceFrames = [];
-        for (let i = 0; i < length; ++i) {
-          const format = i % 2 == 0 ? "I420" : "RGBX";
-          sourceFrames.push(createVideoFrame(format, size, i));
+        let timestamp = 0;
+        for (const format of ["I420", "RGBX"]) {
+          colorSpaces.forEach((colorSpace) => {
+            sourceFrames.push(
+              createVideoFrame(format, size, timestamp++, colorSpace)
+            );
+          });
         }
 
         for (const frame of sourceFrames) {
@@ -145,7 +154,7 @@
         ctx.drawImage(videoframe, 0, 0);
       }
 
-      function createVideoFrame(format, size, timestamp, colorspace) {
+      function createVideoFrame(format, size, timestamp, colorSpace) {
         const data = createImageData(format, size.width, size.height);
         let init = {
           format,
@@ -153,10 +162,53 @@
           codedHeight: size.height,
           timestamp,
         };
-        if (colorspace) {
-          let init = { ...init, colorspace };
+        if (colorSpace) {
+          init = { ...init, colorSpace };
         }
         return new VideoFrame(data, init);
+      }
+
+      function generateAllCombinations(colorSpaceSets) {
+        const keys = Object.keys(colorSpaceSets);
+        let colorSpaces = [];
+        generateAllCombinationsHelper(keys, 0, {}, colorSpaces, colorSpaceSets);
+        return colorSpaces;
+      }
+
+      function generateAllCombinationsHelper(
+        keys,
+        keyIndex,
+        colorSpace,
+        results,
+        colorSpaceSets
+      ) {
+        if (keyIndex >= keys.length) {
+          // Push the copied object since the colorSpace will be reused.
+          results.push(Object.assign({}, colorSpace));
+          return;
+        }
+
+        const prop = keys[keyIndex];
+        // case 1: Skip this property.
+        generateAllCombinationsHelper(
+          keys,
+          keyIndex + 1,
+          colorSpace,
+          results,
+          colorSpaceSets
+        );
+        // case 2: Set this property with a valid value.
+        for (const val of colorSpaceSets[prop]) {
+          colorSpace[prop] = val;
+          generateAllCombinationsHelper(
+            keys,
+            keyIndex + 1,
+            colorSpace,
+            results,
+            colorSpaceSets
+          );
+          delete colorSpace[prop];
+        }
       }
 
       function getDimensions() {
@@ -197,7 +249,7 @@
       <label> Height: <input type="number" value="20" /> </label>
     </div>
     <h2>Error colors</h2>
-    <p>empty if test passes</p>
+    <p>color diff</p>
     <h3>Expectation</h3>
     <canvas id="expectation"></canvas>
     <h3>Actual result</h3>
