@@ -78,7 +78,7 @@
         const data = createImageData(format, size.width, size.height);
         return new VideoFrame(data, {
           format,
-          codedWidth:size.width,
+          codedWidth: size.width,
           codedHeight: size.height,
           timestamp: 0,
         });
@@ -91,7 +91,9 @@
       }
 
       function getDimensions() {
-        const list = document.querySelectorAll("#dimensions input[type='number']");
+        const list = document.querySelectorAll(
+          "#dimensions input[type='number']"
+        );
         const width = parseInt(list[0].value);
         const height = parseInt(list[1].value);
         return { width, height };
@@ -116,14 +118,18 @@
           });
         });
 
-        const dimensions = document.querySelectorAll("#dimensions input[type='number']");
+        const dimensions = document.querySelectorAll(
+          "#dimensions input[type='number']"
+        );
         dimensions.forEach((input) => {
           input.addEventListener("change", (event) => {
             runTest();
           });
         });
 
-        const resized = document.querySelectorAll("#resizig input[type='number']");
+        const resized = document.querySelectorAll(
+          "#resizig input[type='number']"
+        );
         resized.forEach((input) => {
           input.addEventListener("change", (event) => {
             runTest();
@@ -155,7 +161,6 @@
       <p>Destination Size</p>
       <label> Width: <input type="number" value="200" /> </label>
       <label> Height: <input type="number" value="150" /> </label>
-    </div>
     </div>
     <h2>Source</h2>
     <canvas id="source"></canvas>

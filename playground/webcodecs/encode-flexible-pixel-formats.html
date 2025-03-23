@@ -29,10 +29,10 @@
 
         encoder.configure(encoderConfig);
 
-        // 2. Encode the VideoFrame with defined size
+        // 2. Encode the VideoFrame with format and colorspace
         const sourceFrames = [];
-        for (let i = 0 ; i < length ; ++i) {
-          const format = i % 2 == 0? "I420" : "RGBX";
+        for (let i = 0; i < length; ++i) {
+          const format = i % 2 == 0 ? "I420" : "RGBX";
           sourceFrames.push(createVideoFrame(format, size, i));
         }
 
@@ -73,15 +73,26 @@
         console.assert(decodedResults.length == encodedResults.length);
 
         // 4. Compare the decoded results with the original VideoFrames
-        for (let i = 0 ; i < sourceFrames.length ; ++i) {
-          console.assert(sourceFrames[i].codedWidth == decodedResults[i].codedWidth);
-          console.assert(sourceFrames[i].codedHeight == decodedResults[i].codedHeight);
-          console.assert(sourceFrames[i].displayWidth == decodedResults[i].displayWidth);
-          console.assert(sourceFrames[i].displayHeight == decodedResults[i].displayHeight);
-          console.assert(sourceFrames[i].timestamp == decodedResults[i].timestamp);
+        for (let i = 0; i < sourceFrames.length; ++i) {
+          console.assert(
+            sourceFrames[i].codedWidth == decodedResults[i].codedWidth
+          );
+          console.assert(
+            sourceFrames[i].codedHeight == decodedResults[i].codedHeight
+          );
+          console.assert(
+            sourceFrames[i].displayWidth == decodedResults[i].displayWidth
+          );
+          console.assert(
+            sourceFrames[i].displayHeight == decodedResults[i].displayHeight
+          );
+          console.assert(
+            sourceFrames[i].timestamp == decodedResults[i].timestamp
+          );
 
           // TODO: Find a solid way to compare colors.
-          let same = sourceFrames[i].codedWidth == decodedResults[i].codedWidth &&
+          let same =
+            sourceFrames[i].codedWidth == decodedResults[i].codedWidth &&
             sourceFrames[i].codedHeight == decodedResults[i].codedHeight &&
             sourceFrames[i].displayWidth == decodedResults[i].displayWidth &&
             sourceFrames[i].displayHeight == decodedResults[i].displayHeight &&
@@ -101,10 +112,14 @@
       async function compareColors(vf1, vf2, tolerance) {
         const imgData1 = getImageData(vf1);
         const imgData2 = getImageData(vf2);
-        if (imgData1.width != imgData2.width || imgData1.height != imgData2.height || imgData1.data.length != imgData2.data.length) {
+        if (
+          imgData1.width != imgData2.width ||
+          imgData1.height != imgData2.height ||
+          imgData1.data.length != imgData2.data.length
+        ) {
           return false;
         }
-        for (let i = 0 ; i < imgData1.data.length ; ++i) {
+        for (let i = 0; i < imgData1.data.length; ++i) {
           if (Math.abs(imgData1.data[i] - imgData2.data[i]) > tolerance) {
             return false;
           }
@@ -113,8 +128,11 @@
       }
 
       function getImageData(videoframe) {
-        const cnv = new OffscreenCanvas(videoframe.displayWidth, videoframe.displayHeight);
-        const ctx = cnv.getContext('2d');
+        const cnv = new OffscreenCanvas(
+          videoframe.displayWidth,
+          videoframe.displayHeight
+        );
+        const ctx = cnv.getContext("2d");
         ctx.drawImage(videoframe, 0, 0);
         return ctx.getImageData(0, 0, cnv.width, cnv.height);
       }
@@ -127,25 +145,24 @@
         ctx.drawImage(videoframe, 0, 0);
       }
 
-      function createVideoFrame(format, size, timestamp) {
+      function createVideoFrame(format, size, timestamp, colorspace) {
         const data = createImageData(format, size.width, size.height);
-        return new VideoFrame(data, {
+        let init = {
           format,
-          codedWidth:size.width,
+          codedWidth: size.width,
           codedHeight: size.height,
           timestamp,
-        });
+        };
+        if (colorspace) {
+          let init = { ...init, colorspace };
+        }
+        return new VideoFrame(data, init);
       }
 
       function getDimensions() {
-        const list = document.querySelectorAll("#dimensions input[type='number']");
-        const width = parseInt(list[0].value);
-        const height = parseInt(list[1].value);
-        return { width, height };
-      }
-
-      function getResizedDimensions() {
-        const list = document.querySelectorAll("#resizig input[type='number']");
+        const list = document.querySelectorAll(
+          "#dimensions input[type='number']"
+        );
         const width = parseInt(list[0].value);
         const height = parseInt(list[1].value);
         return { width, height };
@@ -159,15 +176,10 @@
           });
         });
 
-        const dimensions = document.querySelectorAll("#dimensions input[type='number']");
+        const dimensions = document.querySelectorAll(
+          "#dimensions input[type='number']"
+        );
         dimensions.forEach((input) => {
-          input.addEventListener("change", (event) => {
-            runTest();
-          });
-        });
-
-        const resized = document.querySelectorAll("#resizig input[type='number']");
-        resized.forEach((input) => {
           input.addEventListener("change", (event) => {
             runTest();
           });
@@ -183,7 +195,6 @@
       <p>Source Size</p>
       <label> Width: <input type="number" value="20" /> </label>
       <label> Height: <input type="number" value="20" /> </label>
-    </div>
     </div>
     <h2>Error colors</h2>
     <p>empty if test passes</p>
