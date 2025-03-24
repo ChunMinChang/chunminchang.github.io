@@ -23,6 +23,7 @@
           height: size.height,
           framerate: 30,
           bitrate: 1000000,
+          latencyMode: "realtime",
         };
 
         encoder.configure(encoderConfig);
@@ -35,15 +36,13 @@
           fullRange: [true, false],
         };
         const colorSpaces = generateAllCombinations(colorSpaceSets);
-        const sourceFrames = [];
-        let timestamp = 0;
-        for (const format of ["I420", "RGBX"]) {
-          colorSpaces.forEach((colorSpace) => {
-            sourceFrames.push(
-              createVideoFrame(format, size, timestamp++, colorSpace)
-            );
-          });
-        }
+        const formats = ["I420", "RGBX"];
+        const sourceFrames = generateVideoFrames(
+          encoderConfig.width,
+          encoderConfig.height,
+          formats,
+          colorSpaces
+        );
 
         for (const frame of sourceFrames) {
           encoder.encode(frame);
@@ -154,16 +153,29 @@
         ctx.drawImage(videoframe, 0, 0);
       }
 
-      function createVideoFrame(format, size, timestamp, colorSpace) {
-        const data = createImageData(format, size.width, size.height);
+      function generateVideoFrames(width, height, formats, colorSpaces) {
+        const frames = [];
+        let timestamp = 0;
+        for (const format of formats) {
+          colorSpaces.forEach((colorSpace) => {
+            frames.push(
+              createVideoFrame(format, width, height, timestamp++, colorSpace)
+            );
+          });
+        }
+        return frames;
+      }
+
+      function createVideoFrame(format, width, height, timestamp, colorSpace) {
+        const data = createImageData(format, width, height);
         let init = {
           format,
-          codedWidth: size.width,
-          codedHeight: size.height,
+          codedWidth: width,
+          codedHeight: height,
           timestamp,
         };
         if (colorSpace) {
-          init = { ...init, colorSpace };
+          init.colorSpace = colorSpace;
         }
         return new VideoFrame(data, init);
       }
@@ -221,28 +233,16 @@
       }
 
       window.addEventListener("DOMContentLoaded", (event) => {
-        const radioButtons = document.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach((radioButton) => {
-          radioButton.addEventListener("change", (event) => {
-            runTest();
-          });
+        const run = document.getElementById("run");
+        run.addEventListener("click", (event) => {
+          runTest();
         });
-
-        const dimensions = document.querySelectorAll(
-          "#dimensions input[type='number']"
-        );
-        dimensions.forEach((input) => {
-          input.addEventListener("change", (event) => {
-            runTest();
-          });
-        });
-
-        runTest();
       });
     </script>
   </head>
   <body>
     <h1>Draw VideoFrame to Canvas</h1>
+    <button id="run">Run</button>
     <div id="dimensions">
       <p>Source Size</p>
       <label> Width: <input type="number" value="20" /> </label>
