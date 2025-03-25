@@ -8,6 +8,7 @@
         cleanCanvas("destination");
 
         const vf = createVideoFrame();
+        console.log(vf.colorSpace);
         drawImage("source", vf);
 
         // 1. Setup VideoEncoder and encode the VideoFrame with resized dimensions
@@ -21,6 +22,7 @@
           },
         });
 
+        const latencyMode = getLatencyMode();
         const resized = getResizedDimensions();
         const encoderConfig = {
           codec: "avc1.42001E",
@@ -29,6 +31,7 @@
           height: resized.height,
           framerate: 30,
           bitrate: 1000000,
+          latencyMode,
         };
 
         encoder.configure(encoderConfig);
@@ -76,11 +79,13 @@
         const size = getDimensions();
         const format = getFormat();
         const data = createImageData(format, size.width, size.height);
+        const colorSpace = getColorSpace();
         return new VideoFrame(data, {
           format,
           codedWidth: size.width,
           codedHeight: size.height,
           timestamp: 0,
+          colorSpace,
         });
       }
 
@@ -99,6 +104,16 @@
         return { width, height };
       }
 
+      function getColorSpace() {
+        const isFullRange = document.getElementById("fullRange").checked;
+        return {
+          // primaries: "bt709",
+          // transfer: "bt709",
+          // matrix: "bt709",
+          fullRange: isFullRange,
+        };
+      }
+
       function getResizedDimensions() {
         const list = document.querySelectorAll("#resizig input[type='number']");
         const width = parseInt(list[0].value);
@@ -107,41 +122,33 @@
       }
 
       function getFormat() {
-        return document.querySelector("#formats input:checked").value;
+        return document.querySelector('input[name="format"]:checked').value;
+      }
+
+      function getLatencyMode() {
+        return document.querySelector('input[name="latencyMode"]:checked')
+          .value;
       }
 
       window.addEventListener("DOMContentLoaded", (event) => {
-        const radioButtons = document.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach((radioButton) => {
-          radioButton.addEventListener("change", (event) => {
-            runTest();
-          });
+        const btn = document.getElementById("run");
+        btn.addEventListener("click", (e) => {
+          runTest();
         });
-
-        const dimensions = document.querySelectorAll(
-          "#dimensions input[type='number']"
-        );
-        dimensions.forEach((input) => {
-          input.addEventListener("change", (event) => {
-            runTest();
-          });
-        });
-
-        const resized = document.querySelectorAll(
-          "#resizig input[type='number']"
-        );
-        resized.forEach((input) => {
-          input.addEventListener("change", (event) => {
-            runTest();
-          });
-        });
-
-        runTest();
       });
     </script>
   </head>
   <body>
     <h1>Draw VideoFrame to Canvas</h1>
+    <button id="run">run</button>
+    <div id="settings">
+      <label>colorspace</label>
+      <input type="checkbox" id="fullRange" name="colorspace" />full range
+      <br />
+      <label>latencyMode</label>
+      <input type="radio" name="latencyMode" value="quality" checked /> quality
+      <input type="radio" name="latencyMode" value="realtime" /> realtime
+    </div>
     <div id="dimensions">
       <p>Source Size</p>
       <label> Width: <input type="number" value="100" /> </label>
