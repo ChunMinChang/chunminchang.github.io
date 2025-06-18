@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Encoder</title>
+    <script src="webrtc.js"></script>
+    <script src="circular-queue.js"></script>
+    <script src="average.js"></script>
+  </head>
+  <script>
+    class Statistics {
+      constructor(length) {
+        // There will be more inputs than outputs since the encoder may generate
+        // the first output after receiving several inputs.
+        this.inputRecords = new Array();
+        this.calculation = new RollingAverage(length);
+      }
+
+      get average() {
+        return this.calculation.average;
+      }
+
+      recordInputTime(dataTimestamp, processingTimestamp) {
+        this.inputRecords.push({ dataTimestamp, processingTimestamp });
+      }
+
+      recordOutputTime(dataTimestamp, currentTimestamp) {
+        let inputIndex = 0;
+        while (inputIndex < this.inputRecords.length) {
+          if (this.inputRecords[inputIndex].dataTimestamp < dataTimestamp) {
+            inputIndex += 1;
+            continue;
+          } else if (
+            this.inputRecords[inputIndex].dataTimestamp == dataTimestamp
+          ) {
+            break;
+          } else {
+            inputIndex = this.inputRecords.length;
+            break;
+          }
+        }
+
+        let found = inputIndex != this.inputRecords.length;
+        if (!found) {
+          // all inputs are dropped?
+          this.inputRecords = [];
+          return;
+        }
+
+        let elapse =
+          currentTimestamp - this.inputRecords[inputIndex].processingTimestamp;
+        this.calculation.update(elapse);
+        // Remove outdated records
+        this.inputRecords.splice(0, inputIndex + 1);
+      }
+    }
+
+    const RESULTS_DIV_ID = "results";
+    const CAMERA_DIV_ID = "camera";
+    const FPS = 30;
+    const FRAME_DURATION = Math.round(1000 / FPS); // ms
+
+    var INTERVAL_ID = null;
+    var LAST_CALLBACK_TIMESTAMP = null;
+    var DURATION = 0;
+    var WORKER = null;
+
+    var STAT = new Statistics(50);
+
+    async function startTest() {
+      console.log("start test");
+
+      const { latencyMode, codec, avcFormat } = getConfig();
+      const { video, stream } = await createStreamingVideo();
+      const stmSettings = stream.getVideoTracks()[0].getSettings();
+      console.log(
+        "stream size: " + stmSettings.width + "x" + stmSettings.height
+      );
+      console.log("video size: " + video.videoWidth + "x" + video.videoHeight);
+      const container = document.getElementById(CAMERA_DIV_ID);
+      container.appendChild(video);
+
+      WORKER = new Worker("encode-worker.js");
+      WORKER.postMessage({
+        command: "configure",
+        codec,
+        width: video.videoWidth,
+        height: video.videoHeight,
+        latencyMode: latencyMode,
+        avcFormat,
+      });
+
+      WORKER.addEventListener("message", (event) => {
+        if (event.data.encodeTime) {
+          STAT.recordInputTime(
+            event.data.frameTimestamp,
+            event.data.encodeTime
+          );
+        } else if (event.data.chunk) {
+          STAT.recordOutputTime(
+            event.data.chunk.timestamp,
+            event.data.currentTime
+          );
+          showResult(STAT.average);
+        }
+      });
+
+      INTERVAL_ID = setInterval(() => {
+        if (LAST_CALLBACK_TIMESTAMP) {
+          let elapse = performance.now() - LAST_CALLBACK_TIMESTAMP;
+          DURATION += elapse;
+        } else {
+          DURATION = 0;
+        }
+        LAST_CALLBACK_TIMESTAMP = performance.now();
+
+        const frame = new VideoFrame(video, { timestamp: DURATION });
+        WORKER.postMessage({ command: "encode", frame });
+      }, FRAME_DURATION);
+    }
+
+    function endTest() {
+      console.log("end test");
+      clearInterval(INTERVAL_ID);
+
+      shutdown(WORKER);
+      clearElement(CAMERA_DIV_ID);
+      clearElement(RESULTS_DIV_ID);
+
+      CALLBACK_ID = null;
+      LAST_CALLBACK_TIMESTAMP = null;
+      DURATION = 0;
+      WORKER = null;
+      STAT = new Statistics(50);
+    }
+
+    async function shutdown(worker) {
+      worker.postMessage({ command: "flush" });
+      return new Promise((resolve, reject) => {
+        WORKER.addEventListener("message", (event) => {
+          if (event.data.command === "finish") {
+            resolve();
+          }
+        });
+        worker.terminate();
+      });
+    }
+
+    function showResult(value) {
+      const container = document.getElementById(RESULTS_DIV_ID);
+      const itemName = "avg-label";
+      if (
+        !document.querySelector(`#${RESULTS_DIV_ID} span[name='${itemName}']`)
+      ) {
+        const label = document.createElement("span");
+        label.setAttribute("name", itemName);
+        label.textContent = "average: ";
+        container.appendChild(label);
+      }
+      const valueName = "avg-value";
+      if (
+        !document.querySelector(`#${RESULTS_DIV_ID} span[name='${valueName}']`)
+      ) {
+        const label = document.createElement("span");
+        label.setAttribute("name", valueName);
+        container.appendChild(label);
+      }
+      const result = document.querySelector(
+        `#${RESULTS_DIV_ID} span[name='${valueName}']`
+      );
+      result.textContent = value;
+    }
+
+    function getConfig() {
+      const codec = document.getElementById("codecSelect").value;
+      const avcFormat = document.getElementById("avcFormatSelect").value;
+      const latencyMode = document.getElementById("realTimeEncoding").checked
+        ? "realtime"
+        : "quality";
+      return { latencyMode, codec, avcFormat };
+    }
+
+    function toggleAvcFormatSelect() {
+      avcFormatSelect.style.display = codecSelect.value.startsWith("avc1")
+        ? "inline-block"
+        : "none";
+    }
+
+    function clearElement(id) {
+      const element = document.getElementById(id);
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+      const codecSelect = document.getElementById("codecSelect");
+      codecSelect.addEventListener("change", toggleAvcFormatSelect);
+      toggleAvcFormatSelect();
+
+      const runButton = document.getElementById("run");
+      runButton.addEventListener("click", async () => {
+        if (runButton.innerText == "Start") {
+          runButton.innerText = "End";
+          startTest();
+        } else {
+          endTest();
+          runButton.innerText = "Start";
+        }
+      });
+    });
+  </script>
+  <body>
+    <label>
+      <input type="checkbox" id="realTimeEncoding" />
+      Realtime
+    </label>
+    <select id="codecSelect">
+      <option value="avc1.42001E">H264 Baseline</option>
+      <option value="avc1.4D001E">H264 Main</option>
+      <option value="avc1.64001E">H264 High</option>
+      <option value="vp8">VP8</option>
+      <option value="vp09.00.10.08">VP9</option>
+      <option value="av01.0.04M.08">AV1</option>
+    </select>
+    <select id="avcFormatSelect" style="display: none">
+      <option value="avc">AVC</option>
+      <option value="annexb">Annex B</option>
+    </select>
+    <button id="run">Start</button>
+    <div id="camera"></div>
+    <div id="results"></div>
+  </body>
+</html>

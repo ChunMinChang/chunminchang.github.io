@@ -7,14 +7,12 @@ function getVideoStream(size) {
   return navigator.mediaDevices.getUserMedia(constraints);
 }
 
-function createVideoWithStream(size) {
+async function createVideoWithStream(size) {
   const video = document.createElement("video");
   video.autoplay = true;
-  getVideoStream(size).then((stream) => {
-    video.srcObject = stream;
-    video.play();
-  });
-  return video;
+  const stream = await getVideoStream(size);
+  video.srcObject = stream;
+  return { video, stream };
 }
 
 async function createStreamingVideo(size) {
