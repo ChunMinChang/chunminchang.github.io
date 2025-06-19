@@ -9,16 +9,21 @@
     <script src="average.js"></script>
   </head>
   <script>
-     class Statistics {
+    class Statistics {
       constructor(length) {
         // There will be more inputs than outputs since the encoder may generate
         // the first output after receiving several inputs.
         this.inputRecords = new Array();
-        this.calculation = new RollingAverage(length);
+        this.rollingAvg = new RollingAverage(length);
+        this.cumulativeAvg = new CumulativeAverage();
       }
 
-      get average() {
-        return this.calculation.average;
+      get rollingAverage() {
+        return this.rollingAvg.average;
+      }
+
+      get cumulativeAverage() {
+        return this.cumulativeAvg.average;
       }
 
       recordInputTime(dataTimestamp, processingTimestamp) {
@@ -50,7 +55,8 @@
 
         let elapse =
           currentTimestamp - this.inputRecords[inputIndex].processingTimestamp;
-        this.calculation.update(elapse);
+        this.rollingAvg.update(elapse);
+        this.cumulativeAvg.update(elapse);
         // Remove outdated records
         this.inputRecords.splice(0, inputIndex + 1);
       }
@@ -63,7 +69,8 @@
     var DURATION = 0;
     var WORKER = null;
 
-    var STAT = new Statistics(50);
+    const ROLLING_WINDOW_LEN = 50;
+    var STAT = new Statistics(ROLLING_WINDOW_LEN);
 
     async function startTest() {
       console.log("start test");
@@ -90,11 +97,16 @@
 
       WORKER.addEventListener("message", (event) => {
         if (event.data.encodeTime) {
-          STAT.recordInputTime(event.data.frameTimestamp, event.data.encodeTime);
-        }
-        else if (event.data.chunk) {
-          STAT.recordOutputTime(event.data.chunk.timestamp, event.data.currentTime);
-          showResult(STAT.average);
+          STAT.recordInputTime(
+            event.data.frameTimestamp,
+            event.data.encodeTime
+          );
+        } else if (event.data.chunk) {
+          STAT.recordOutputTime(
+            event.data.chunk.timestamp,
+            event.data.currentTime
+          );
+          showResults(STAT.rollingAverage, STAT.cumulativeAverage);
         }
       });
 
@@ -127,7 +139,7 @@
       LAST_CALLBACK_TIMESTAMP = null;
       DURATION = 0;
       WORKER = null;
-      STAT = new Statistics(50);
+      STAT = new Statistics(ROLLING_WINDOW_LEN);
     }
 
     async function shutdown(worker) {
@@ -142,29 +154,70 @@
       });
     }
 
-    function showResult(value) {
+    function showResults(rollingAvg, cumulativeAvg) {
       const container = document.getElementById(RESULTS_DIV_ID);
-      const itemName = "avg-label";
-      if (
-        !document.querySelector(`#${RESULTS_DIV_ID} span[name='${itemName}']`)
-      ) {
-        const label = document.createElement("span");
-        label.setAttribute("name", itemName);
-        label.textContent = "average: ";
+
+      const rolAvgId = "rollingAvg";
+      const cumAvgId = "cumulativeAvg";
+
+      const tableId = "metrics";
+      if (!document.querySelector(`#${RESULTS_DIV_ID} table#${tableId}`)) {
+        const table = document.createElement("table");
+        table.id = tableId;
+
+        const caption = document.createElement("caption");
+        caption.textContent = "Performance Metrics";
+        table.appendChild(caption);
+
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        ["Metric", "Result"].forEach((text) => {
+          const th = document.createElement("th");
+          th.textContent = text;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        [
+          { name: "Rolling Average", id: rolAvgId },
+          { name: "Cumulative Average", id: cumAvgId },
+        ].forEach((item) => {
+          const tr = document.createElement("tr");
+
+          const th = document.createElement("th");
+          th.textContent = item.name;
+          tr.appendChild(th);
+
+          const td = document.createElement("td");
+          td.id = item.id;
+          // th.textContent will be filled below;
+          tr.appendChild(td);
+
+          tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+        container.appendChild(table);
+      }
+
+      const note = "note";
+      if (!document.querySelector(`#${RESULTS_DIV_ID} p[name='${note}']`)) {
+        const label = document.createElement("p");
+        label.setAttribute("name", note);
+        label.textContent = `The averages above represent the time from
+          submitting a frame to receiving its output. The rolling average uses
+          the most recent ${ROLLING_WINDOW_LEN} results, while the cumulative
+          average includes all results so far.`;
         container.appendChild(label);
       }
-      const valueName = "avg-value";
-      if (
-        !document.querySelector(`#${RESULTS_DIV_ID} span[name='${valueName}']`)
-      ) {
-        const label = document.createElement("span");
-        label.setAttribute("name", valueName);
-        container.appendChild(label);
-      }
-      const result = document.querySelector(
-        `#${RESULTS_DIV_ID} span[name='${valueName}']`
-      );
-      result.textContent = value;
+
+      const rolAvgEle = document.getElementById(rolAvgId);
+      rolAvgEle.textContent = rollingAvg.toFixed(3);
+
+      const cumAvgEle = document.getElementById(cumAvgId);
+      cumAvgEle.textContent = cumulativeAvg.toFixed(3);
     }
 
     function getConfig() {
