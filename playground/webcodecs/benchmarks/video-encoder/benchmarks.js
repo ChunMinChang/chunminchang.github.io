@@ -11,12 +11,13 @@ const DEFAULT_PARAMS = {
     { codec: "vp09.00.10.08" },
     // H264 baseline
     { codec: "avc1.42001E", avc: { format: "avc" } },
-    { codec: "avc1.42001E", avc: { format: "annexb" } }
-  ]
+    { codec: "avc1.42001E", avc: { format: "annexb" } },
+  ],
 };
 
-addTestsLoader(async function() {
-  const { configList, width, height, framerate, bitrate, duration } = parseParamsFromURL();
+addTestsLoader(async function () {
+  const { configList, width, height, framerate, bitrate, duration } =
+    parseParamsFromURL();
   let testcases = [];
   for (const c of configList) {
     let config = {
@@ -36,18 +37,18 @@ addTestsLoader(async function() {
       if (config.latencyMode == "realtime") {
         testcases.push({
           name: `${name} realtime encode`,
-          func: async function() {
+          func: async function () {
             return await realtimeEncodeTest(config, duration);
-          }
+          },
         });
       }
 
       if (config.latencyMode == "quality") {
         testcases.push({
           name: `${name} quality encode`,
-          func: async function() {
+          func: async function () {
             return await qualityEncodeTest(config, duration);
-          }
+          },
         });
       }
     }
@@ -64,7 +65,8 @@ function parseParamsFromURL() {
 
   const frameInterval = 1000 / framerate; //ms
   const duration = params.has("duration")
-    ? Math.max(parseInt(params.get("duration")), frameInterval) || DEFAULT_PARAMS.duration
+    ? Math.max(parseInt(params.get("duration")), frameInterval) ||
+      DEFAULT_PARAMS.duration
     : DEFAULT_PARAMS.duration;
 
   const bitrate = params.has("bitrate")
@@ -80,19 +82,27 @@ function parseParamsFromURL() {
     height = h;
   }
 
-  const latencyModes = params
-    .get("latencyModes")
-    ?.split(",")
-    .filter(mode => mode === "realtime" || mode === "quality") || DEFAULT_PARAMS.latencyModes;
+  const latencyModes =
+    params
+      .get("latencyModes")
+      ?.split(",")
+      .filter((mode) => mode === "realtime" || mode === "quality") ||
+    DEFAULT_PARAMS.latencyModes;
 
   const configList = params.has("codecs")
-    ? params.get("codecs").split(",").flatMap(codecString => {
-        const [codec, format] = codecString.split(":");
-        const config = format ? { codec, avc: { format } } : { codec };
-        return latencyModes.map(latencyMode => ({ ...config, latencyMode }));
-      })
-    : DEFAULT_PARAMS.codecList.flatMap(config =>
-        latencyModes.map(latencyMode => ({ ...config, latencyMode }))
+    ? params
+        .get("codecs")
+        .split(",")
+        .flatMap((codecString) => {
+          const [codec, format] = codecString.split(":");
+          const config = format ? { codec, avc: { format } } : { codec };
+          return latencyModes.map((latencyMode) => ({
+            ...config,
+            latencyMode,
+          }));
+        })
+    : DEFAULT_PARAMS.codecList.flatMap((config) =>
+        latencyModes.map((latencyMode) => ({ ...config, latencyMode }))
       );
 
   return { configList, width, height, framerate, bitrate, duration };
@@ -112,24 +122,26 @@ async function realtimeEncodeTest(config, dur) {
   let { encodeTimes, outputTimes } = await getEncoderResults(worker);
 
   let results = { key: {}, delta: {} };
-  results.key.encodeTimes = encodeTimes.filter(x => x.type == "key");
-  results.delta.encodeTimes = encodeTimes.filter(x => x.type != "key");
-  results.key.outputTimes = outputTimes.filter(x => x.type == "key");
-  results.delta.outputTimes = outputTimes.filter(x => x.type != "key");
+  results.key.encodeTimes = encodeTimes.filter((x) => x.type == "key");
+  results.delta.encodeTimes = encodeTimes.filter((x) => x.type != "key");
+  results.key.outputTimes = outputTimes.filter((x) => x.type == "key");
+  results.delta.outputTimes = outputTimes.filter((x) => x.type != "key");
 
   results.key.frameDroppingRate =
-    (results.key.encodeTimes.length - results.key.outputTimes.length) /
-    results.key.encodeTimes.length * 100;
+    ((results.key.encodeTimes.length - results.key.outputTimes.length) /
+      results.key.encodeTimes.length) *
+    100;
   results.delta.frameDroppingRate =
-    (results.delta.encodeTimes.length - results.delta.outputTimes.length) /
-    results.delta.encodeTimes.length * 100;
+    ((results.delta.encodeTimes.length - results.delta.outputTimes.length) /
+      results.delta.encodeTimes.length) *
+    100;
 
   results.key.roundTripTimes = calculateRoundTripTimes(
     results.key.encodeTimes,
     results.key.outputTimes
   );
   results.key.roundTripResult = getMeanAndStandardDeviation(
-    results.key.roundTripTimes.map(x => x.time)
+    results.key.roundTripTimes.map((x) => x.time)
   );
 
   results.delta.roundTripTimes = calculateRoundTripTimes(
@@ -137,7 +149,7 @@ async function realtimeEncodeTest(config, dur) {
     results.delta.outputTimes
   );
   results.delta.roundTripResult = getMeanAndStandardDeviation(
-    results.delta.roundTripTimes.map(x => x.time)
+    results.delta.roundTripTimes.map((x) => x.time)
   );
 
   removeCanvas(canvas);
@@ -351,7 +363,7 @@ async function encodeCanvas(
 async function getEncoderResults(worker) {
   worker.postMessage({ command: "flush" });
   return new Promise((resolve, _) => {
-    worker.onmessage = event => {
+    worker.onmessage = (event) => {
       if (event.data.command === "result") {
         const { encodeTimes, outputTimes } = event.data;
         resolve({ encodeTimes, outputTimes });
@@ -371,10 +383,7 @@ function calculateRoundTripTimes(encodeTimes, outputTimes) {
   let roundTripTimes = [];
   let encodeIndex = 0;
   let outputIndex = 0;
-  while (
-    encodeIndex < encodeTimes.length &&
-    outputIndex < outputTimes.length
-  ) {
+  while (encodeIndex < encodeTimes.length && outputIndex < outputTimes.length) {
     const encodeEntry = encodeTimes[encodeIndex];
     const outputEntry = outputTimes[outputIndex];
 
@@ -401,7 +410,7 @@ function getMeanAndStandardDeviation(values) {
   }
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const stddev = Math.sqrt(
-    values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) /
+    values.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) /
       values.length
   );
   const cv = stddev / mean;

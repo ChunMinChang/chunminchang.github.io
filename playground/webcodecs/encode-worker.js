@@ -5,7 +5,8 @@ function reset() {
 
 self.onmessage = async (event) => {
   if (event.data.command === "configure") {
-    const { command, codec, width, height, latencyMode, avcFormat } = event.data;
+    const { command, codec, width, height, latencyMode, avcFormat } =
+      event.data;
     encoder = new VideoEncoder({
       output: (chunk, metadata) => {
         const currentTime = performance.now();
@@ -34,7 +35,10 @@ self.onmessage = async (event) => {
     const { command, frame } = event.data;
     const currentTime = performance.now();
     encoder.encode(frame);
-    self.postMessage({ encodeTime: currentTime, frameTimestamp: frame.timestamp });
+    self.postMessage({
+      encodeTime: currentTime,
+      frameTimestamp: frame.timestamp,
+    });
     frame.close();
   } else if (event.data.command === "flush") {
     await encoder.flush();
