@@ -1,4 +1,5 @@
 const DEFAULT_PARAMS = {
+  duration: 3000, // ms
   width: 640,
   height: 480,
   bitrate: 1000000, // 1 Mbps
@@ -15,7 +16,7 @@ const DEFAULT_PARAMS = {
 };
 
 addTestsLoader(async function() {
-  const { configList, width, height, framerate, bitrate } = parseParamsFromURL();
+  const { configList, width, height, framerate, bitrate, duration } = parseParamsFromURL();
   let testcases = [];
   for (const c of configList) {
     let config = {
@@ -36,7 +37,7 @@ addTestsLoader(async function() {
         testcases.push({
           name: `${name} realtime encode`,
           func: async function() {
-            return await realtimeEncodeTest(config);
+            return await realtimeEncodeTest(config, duration);
           }
         });
       }
@@ -45,7 +46,7 @@ addTestsLoader(async function() {
         testcases.push({
           name: `${name} quality encode`,
           func: async function() {
-            return await qualityEncodeTest(config);
+            return await qualityEncodeTest(config, duration);
           }
         });
       }
@@ -60,6 +61,11 @@ function parseParamsFromURL() {
   const framerate = params.has("framerate")
     ? Math.max(parseInt(params.get("framerate")), 0) || DEFAULT_PARAMS.framerate
     : DEFAULT_PARAMS.framerate;
+
+  const frameInterval = 1000 / framerate; //ms
+  const duration = params.has("duration")
+    ? Math.max(parseInt(params.get("duration")), frameInterval) || DEFAULT_PARAMS.duration
+    : DEFAULT_PARAMS.duration;
 
   const bitrate = params.has("bitrate")
     ? Math.max(parseInt(params.get("bitrate")), 0) || DEFAULT_PARAMS.bitrate
@@ -89,12 +95,12 @@ function parseParamsFromURL() {
         latencyModes.map(latencyMode => ({ ...config, latencyMode }))
       );
 
-  return { configList, width, height, framerate, bitrate };
+  return { configList, width, height, framerate, bitrate, duration };
 }
 
-async function realtimeEncodeTest(config) {
+async function realtimeEncodeTest(config, dur) {
   const fps = 30;
-  const totalDuration = 3000; // ms
+  const totalDuration = dur;
   const keyFrameInterval = 15; // 1 key every 15 frames
 
   const worker = new Worker("encoder-worker.js");
@@ -165,9 +171,9 @@ async function realtimeEncodeTest(config) {
   };
 }
 
-async function qualityEncodeTest(config) {
+async function qualityEncodeTest(config, dur) {
   const fps = 30;
-  const totalDuration = 3000; // ms
+  const totalDuration = duration;
   const keyFrameInterval = 15; // 1 key every 15 frames
 
   const worker = new Worker("encoder-worker.js");
