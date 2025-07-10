@@ -185,7 +185,7 @@ async function realtimeEncodeTest(config, dur) {
 
 async function qualityEncodeTest(config, dur) {
   const fps = 30;
-  const totalDuration = duration;
+  const totalDuration = dur;
   const keyFrameInterval = 15; // 1 key every 15 frames
 
   const worker = new Worker("encoder-worker.js");
