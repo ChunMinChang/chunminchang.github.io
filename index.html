@@ -6,157 +6,197 @@
 -->
 <!DOCTYPE html>
 <html>
-
-<head>
-  <link rel="icon" href="images/logo.ico">
-  <title>Chun-Min Chang</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Google website verification -->
-  <meta name="google-site-verification" content="rsvB3BPb9lA2IEbXOXduJDdwGZWmXFfskDTJKdbH1a4" />
-  <!-- css settings
+  <head>
+    <link rel="icon" href="images/logo.ico" />
+    <title>Chun-Min Chang</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Google website verification -->
+    <meta
+      name="google-site-verification"
+      content="rsvB3BPb9lA2IEbXOXduJDdwGZWmXFfskDTJKdbH1a4"
+    />
+    <!-- css settings
   ========================================================================= -->
-  <!-- bootstrap css -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-  <!-- font awesome css -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
-    integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
-  <!-- custom css -->
-  <link rel="stylesheet" href="css/style.css">
+    <!-- bootstrap css -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <!-- font awesome css -->
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+      integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ"
+      crossorigin="anonymous"
+    />
+    <!-- custom css -->
+    <link rel="stylesheet" href="css/style.css" />
 
-  <!-- markup for google -->
-  <script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type" : "WebSite",
-    "name" : "Chun-Min Chang",
-    "alternateName" : "Chun-Min Chang's personal website",
-    "url": "http://chunminchang.github.io"
-  }
-  </script>
-  <!-- Google analytics -->
-  <script type="text/javascript" src="js/google-analytics.js"></script>
-</head>
+    <!-- markup for google -->
+    <script type="application/ld+json">
+      {
+        "@context": "http://schema.org",
+        "@type": "WebSite",
+        "name": "Chun-Min Chang",
+        "alternateName": "Chun-Min Chang's personal website",
+        "url": "http://chunminchang.github.io"
+      }
+    </script>
+    <!-- Google analytics -->
+    <script type="text/javascript" src="js/google-analytics.js"></script>
+  </head>
 
-<body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
-  <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#page-top">張鈞閔</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+  <body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#page-top">張鈞閔</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav ml-auto">
-        <!-- mr/ml-auto: move items to left/right -->
-        <li class="nav-item">
-          <a class="nav-link" href="#about">About
-            <span class="sr-only">(current)</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#experience">Experience</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#works">Works</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" target="_blank" href="./blog/">Blog</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+          <!-- mr/ml-auto: move items to left/right -->
+          <li class="nav-item">
+            <a class="nav-link" href="#about"
+              >About
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#experience">Experience</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#works">Works</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" target="_blank" href="./blog/">Blog</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-  <!-- About -->
-  <section id="about" class="section">
-    <div class="container">
-      <h1>Chun-Min Chang</h1>
-      <div class="row">
-        <div class="col-lg-8 mx-auto">
-          <p>Hi, I am Chun-Min Chang (Kun-Bín Tiunn), a self-directed learner
-            and a maker who enjoys building products from original ideas.
-            As a born risk-taker with curiosity,
-            I keep trying new things and challenging myself.</p>
-          <p>When I was child, I have dreamt about becoming a craftsman,
-            an author, an architect, or a scientist.
-            Now, I build products by hands as a craftsman;
-            write quality code as an author;
-            design software models as an architect;
-            analyze and solve problems as a scientist.</p>
-          <p>I am a software engineer.
-            I am living all of my dreams in my daily life.</p>
-          <!-- <p>Playing guitar shows my passion for expressing ideasin a creative way.
+    <!-- About -->
+    <section id="about" class="section">
+      <div class="container">
+        <h1>Chun-Min Chang</h1>
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <p>
+              Hi, I am Chun-Min Chang (Kun-Bín Tiunn), a self-directed learner
+              and a maker who enjoys building products from original ideas. As a
+              born risk-taker with curiosity, I keep trying new things and
+              challenging myself.
+            </p>
+            <p>
+              When I was child, I have dreamt about becoming a craftsman, an
+              author, an architect, or a scientist. Now, I build products by
+              hands as a craftsman; write quality code as an author; design
+              software models as an architect; analyze and solve problems as a
+              scientist.
+            </p>
+            <p>
+              I am a software engineer. I am living all of my dreams in my daily
+              life.
+            </p>
+            <!-- <p>Playing guitar shows my passion for expressing ideasin a creative way.
           Reading books widely in many fields gives me ability to think differently.
           My engineering background scientifically constructs my concepts
           to the world with diverse angles.</p> -->
+          </div>
+          <div class="col-lg-4 mx-auto">
+            <img id="head" src="images/chunmin.jpg" />
+          </div>
         </div>
-        <div class="col-lg-4 mx-auto">
-          <img id="head" src="images/chunmin.jpg" />
+        <!-- contact bar -->
+        <!-- Icons are from https://freeicons.io/ -->
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <ul class="list-inline icon-list-inline">
+              <!-- Mail -->
+              <li class="list-inline-item">
+                <!-- <i class="far fa-envelope-open fa-lg"></i> -->
+                <a
+                  href="mailto:chun.m.chang@gmail.com?Subject=Hello"
+                  target="_top"
+                >
+                  <!-- <i class="fas fa-envelope-open"></i> -->
+                  <img width="24" height="24" src="images/icons/mail.svg" />
+                </a>
+              </li>
+              <!-- Github -->
+              <li class="list-inline-item">
+                <a target="_blank" href="https://github.com/ChunMinChang/">
+                  <!-- <i class="fab fa-github fa-lg"></i> -->
+                  <img width="24" height="24" src="images/icons/github.svg" />
+                </a>
+              </li>
+              <!-- Linkedin -->
+              <li class="list-inline-item">
+                <a
+                  target="_blank"
+                  href="https://www.linkedin.com/in/chunminchang"
+                >
+                  <!-- <i class="fab fa-linkedin fa-lg"></i> -->
+                  <img width="24" height="24" src="images/icons/linkedin.svg" />
+                </a>
+              </li>
+              <!-- Resume -->
+              <li class="list-inline-item">
+                <a target="_blank" href="docs/resume.pdf">
+                  <!-- <i class="fas fa-file"></i> Resume -->
+                  <img width="24" height="24" src="images/icons/paper.svg" />
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-      <!-- contact bar -->
-      <!-- Icons are from https://freeicons.io/ -->
-      <div class="row">
-        <div class="col-lg-8 mx-auto">
-          <ul class="list-inline icon-list-inline">
-            <!-- Mail -->
-            <li class="list-inline-item">
-              <!-- <i class="far fa-envelope-open fa-lg"></i> -->
-              <a href="mailto:chun.m.chang@gmail.com?Subject=Hello" target="_top">
-                <!-- <i class="fas fa-envelope-open"></i> -->
-                <img width="24" height="24" src="images/icons/mail.svg" />
-              </a>
-            </li>
-            <!-- Github -->
-            <li class="list-inline-item">
-              <a target="_blank" href="https://github.com/ChunMinChang/">
-                <!-- <i class="fab fa-github fa-lg"></i> -->
-                <img width="24" height="24" src="images/icons/github.svg" />
-              </a>
-            </li>
-            <!-- Linkedin -->
-            <li class="list-inline-item">
-              <a target="_blank" href="https://www.linkedin.com/in/chunminchang">
-                <!-- <i class="fab fa-linkedin fa-lg"></i> -->
-                <img width="24" height="24" src="images/icons/linkedin.svg" />
-              </a>
-            </li>
-            <!-- Resume -->
-            <li class="list-inline-item">
-              <a target="_blank" href="docs/resume.pdf">
-                <!-- <i class="fas fa-file"></i> Resume -->
-                <img width="24" height="24" src="images/icons/paper.svg" />
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Experience -->
-  <section id="experience" class="section">
-    <div class="container">
-      <h1>Experience</h1>
+    <!-- Experience -->
+    <section id="experience" class="section">
+      <div class="container">
+        <h1>Experience</h1>
         <div class="row">
           <div class="col-lg-12 mx-auto">
             <h2>Work Experience</h2>
             <div class="row">
-              <div class="col-sm-12 mx-auto"><b>Mozilla</b>, Portland, OR, U.S. / Vancouver, BC, Canada</div>
+              <div class="col-sm-12 mx-auto">
+                <b>Mozilla</b>, Portland, OR, U.S. / Vancouver, BC, Canada
+              </div>
               <div class="col-sm-12 mx-auto">
                 <div class="row">
-                  <div class="col-sm-9 mx-auto"><b>Staff Software Engineer</b></div>
+                  <div class="col-sm-9 mx-auto">
+                    <b>Staff Software Engineer</b>
+                  </div>
                   <div class="col-sm-3 mx-auto">Mar 2024 - Present</div>
                   <div class="col-sm-12 mx-auto">
-                    <ul>Firefox Media
+                    <ul>
+                      Firefox Media
                       <li>
                         <a target="_blank" href="https://youtu.be/8_40fIZaA5w">
-                          Enhanced VideoEncoder performance to 6x speed on MacOS, cutting processing time from ~40ms to ~6ms for a 25FPS video</a>
+                          Enhanced VideoEncoder performance to 6x speed on
+                          MacOS, cutting processing time from ~40ms to ~6ms for
+                          a 25FPS video</a
+                        >
                       </li>
                       <li>
                         <a target="_blank" href="https://youtu.be/26wbjarfvAU">
-                          Improve VideoEncoder performance by 7x on Windows, reducing processing time from ~35 ms to ~5 ms for 30 FPS video</a>
+                          Improve VideoEncoder performance by 7x on Windows,
+                          reducing processing time from ~35 ms to ~5 ms for 30
+                          FPS video</a
+                        >
                       </li>
                     </ul>
                   </div>
@@ -164,28 +204,46 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-sm-12 mx-auto"><b>Mozilla</b>, Portland, OR, U.S. / Vancouver, BC, Canada</div>
+              <div class="col-sm-12 mx-auto">
+                <b>Mozilla</b>, Portland, OR, U.S. / Vancouver, BC, Canada
+              </div>
               <div class="col-sm-12 mx-auto">
                 <div class="row">
-                  <div class="col-sm-9 mx-auto"><b>Senior Software Engineer</b></div>
+                  <div class="col-sm-9 mx-auto">
+                    <b>Senior Software Engineer</b>
+                  </div>
                   <div class="col-sm-3 mx-auto">Mar 2021 - Feb 2024</div>
                   <div class="col-sm-12 mx-auto">
-                    <ul>Firefox Media
+                    <ul>
+                      Firefox Media
                       <li>
-                        <a target="_blank"
-                          href="https://chunminchang.github.io/blog/post/webcodecs-and-the-future-of-media-processing-on-the-web">
-                          Engineered W3C WebCodecs API, revolutionizing web-based media processing capabilities</a>
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/webcodecs-and-the-future-of-media-processing-on-the-web"
+                        >
+                          Engineered W3C WebCodecs API, revolutionizing
+                          web-based media processing capabilities</a
+                        >
                         <ul>
-                          <li>Architected a unified model for Audio and Video Decoder/Encoder, improving system
-                            coherence and maintainability</li>
-                          <li>Developed a video encoder utilizing FFmpeg for various formats (H.264, VP8, VP9, AV1)</li>
+                          <li>
+                            Architected a unified model for Audio and Video
+                            Decoder/Encoder, improving system coherence and
+                            maintainability
+                          </li>
+                          <li>
+                            Developed a video encoder utilizing FFmpeg for
+                            various formats (H.264, VP8, VP9, AV1)
+                          </li>
                         </ul>
                       </li>
                       <li>
-                        <a target="_blank"
-                          href="https://chunminchang.github.io/blog/post/firefox-webrtc-multi-microphones">
-                          Overhauled audio infrastructure, optimizing multi-microphone capabilities for web
-                          conferencing</a>
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/firefox-webrtc-multi-microphones"
+                        >
+                          Overhauled audio infrastructure, optimizing
+                          multi-microphone capabilities for web conferencing</a
+                        >
                       </li>
                     </ul>
                   </div>
@@ -193,42 +251,64 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-sm-12 mx-auto"><b>Mozilla</b>, Portland, OR, U.S.</div>
+              <div class="col-sm-12 mx-auto">
+                <b>Mozilla</b>, Portland, OR, U.S.
+              </div>
               <div class="col-sm-12 mx-auto">
                 <div class="row">
                   <div class="col-sm-9 mx-auto"><b>Software Engineer</b></div>
                   <div class="col-sm-3 mx-auto">Jul 2018 - Feb 2021</div>
                   <div class="col-sm-12 mx-auto">
-                    <ul>Firefox Media
+                    <ul>
+                      Firefox Media
                       <li>
-                        <a target="_blank"
-                          href="https://chunminchang.github.io/blog/post/summary-of-cubeb-oxidation-on-mac-os">
-                          Spearheaded the migration of audio library on MacOS from C/C++ to Rust, significantly enhance
-                          stability
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/summary-of-cubeb-oxidation-on-mac-os"
+                        >
+                          Spearheaded the migration of audio library on MacOS
+                          from C/C++ to Rust, significantly enhance stability
                         </a>
                         <ul>
-                          <li>Resolved 10+ critical data racing issues and memory leaks, bolstering system reliability
+                          <li>
+                            Resolved 10+ critical data racing issues and memory
+                            leaks, bolstering system reliability
                           </li>
-                          <li>Achieved a 35x performance improvement for simultaneous multi-stream initiation</li>
-                          <li>Expanded test coverage to nearly 100% for critical code paths</li>
+                          <li>
+                            Achieved a 35x performance improvement for
+                            simultaneous multi-stream initiation
+                          </li>
+                          <li>
+                            Expanded test coverage to nearly 100% for critical
+                            code paths
+                          </li>
                         </ul>
                       </li>
                       <li>
-                        <a target="_blank" href="https://chunminchang.github.io/blog/post/media-session-api">
-                          Implemented W3C Media Session API, enabling seamless media playback control in Firefox via
-                          system UI
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/media-session-api"
+                        >
+                          Implemented W3C Media Session API, enabling seamless
+                          media playback control in Firefox via system UI
                         </a>
                       </li>
                       <li>
-                        <a target="_blank"
-                          href="https://chunminchang.github.io/blog/post/firefox-avif-transparency-support">
-                          Introduced AVIF image transparency support, improving compatibility with modern standards
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/firefox-avif-transparency-support"
+                        >
+                          Introduced AVIF image transparency support, improving
+                          compatibility with modern standards
                         </a>
                       </li>
                       <li>
-                        <a target="_blank"
-                          href="https://chunminchang.github.io/blog/post/code-reviews-i-did-in-mozilla">
-                          Served as a core reviewer, ensuring code quality across a multinational team
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/code-reviews-i-did-in-mozilla"
+                        >
+                          Served as a core reviewer, ensuring code quality
+                          across a multinational team
                         </a>
                       </li>
                     </ul>
@@ -237,57 +317,85 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-sm-12 mx-auto"><b>Mozilla</b>, Taipei, Taiwan</div>
+              <div class="col-sm-12 mx-auto">
+                <b>Mozilla</b>, Taipei, Taiwan
+              </div>
               <div class="col-sm-12 mx-auto">
                 <div class="row">
                   <div class="col-sm-9 mx-auto"><b>Software Engineer</b></div>
                   <div class="col-sm-3 mx-auto">Oct 2014 - Jan 2018</div>
                   <div class="col-sm-12 mx-auto">
-                    <ul>Firefox Media Playback
+                    <ul>
+                      Firefox Media Playback
                       <li>
-                        <a target="_blank" href="https://www.youtube.com/watch?v=6QIFC7WWkS0">
-                          Reduced audio looping delays by 90%, enhancing the audio experience for global users
+                        <a
+                          target="_blank"
+                          href="https://www.youtube.com/watch?v=6QIFC7WWkS0"
+                        >
+                          Reduced audio looping delays by 90%, enhancing the
+                          audio experience for global users
                         </a>
                       </li>
                       <li>
-                        <a target="_blank" href="https://chunminchang.github.io/blog/post/audio-5-1">
-                          Implemented cross-platform (Windows, macOS, and Linux) surround sound (5.1/7.1) support
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/audio-5-1"
+                        >
+                          Implemented cross-platform (Windows, macOS, and Linux)
+                          surround sound (5.1/7.1) support
                         </a>
                         <ul>
                           <li>
-                            <a target="_blank" href="https://github.com/ChunMinChang/audio-mixer">
-                              Crafted a versatile audio mixer for seamless conversion between various channel layouts
+                            <a
+                              target="_blank"
+                              href="https://github.com/ChunMinChang/audio-mixer"
+                            >
+                              Crafted a versatile audio mixer for seamless
+                              conversion between various channel layouts
                             </a>
                           </li>
                         </ul>
                       </li>
                       <li>
-                        <a target="_blank"
-                          href="https://chunminchang.github.io/blog/post/audio-device-information-on-firefox">
-                          Created a high-impact diagnostic tool streamlining bug triage, used daily to gather audio
-                          device information
+                        <a
+                          target="_blank"
+                          href="https://chunminchang.github.io/blog/post/audio-device-information-on-firefox"
+                        >
+                          Created a high-impact diagnostic tool streamlining bug
+                          triage, used daily to gather audio device information
                         </a>
                       </li>
                     </ul>
                   </div>
                   <div class="col-sm-12 mx-auto">
-                    <ul>Firefox OS
+                    <ul>
+                      Firefox OS
                       <li>
-                        <a target="_blank"
-                          href="https://docs.google.com/presentation/d/15iXd4ZXy9Y1uKdXkuFsdoqXAzw7Y4pUFKlDaNiAFkb0/edit?usp=sharing">
-                          Established secure transmission protocols (J-PAKE over TLS) between Firefox OS TV and Firefox
-                          Android, safeguarding data privacy.
+                        <a
+                          target="_blank"
+                          href="https://docs.google.com/presentation/d/15iXd4ZXy9Y1uKdXkuFsdoqXAzw7Y4pUFKlDaNiAFkb0/edit?usp=sharing"
+                        >
+                          Established secure transmission protocols (J-PAKE over
+                          TLS) between Firefox OS TV and Firefox Android,
+                          safeguarding data privacy.
                         </a>
                       </li>
                       <li>
-                        <a target="_blank" href="https://www.youtube.com/watch?v=KtuMOzwR8YM">
-                          Integrated the W3C Presentation API, enabling seamless webpage casting from desktop Firefox to
-                          Firefox OS TV.
+                        <a
+                          target="_blank"
+                          href="https://www.youtube.com/watch?v=KtuMOzwR8YM"
+                        >
+                          Integrated the W3C Presentation API, enabling seamless
+                          webpage casting from desktop Firefox to Firefox OS TV.
                         </a>
                       </li>
                       <li>
-                        <a target="_blank" href="https://hacks.mozilla.org/2015/07/keyboard-events-in-firefox-os-tv/">
-                          Orchestrated input method connectivity for physical keyboards on Firefox OS phones
+                        <a
+                          target="_blank"
+                          href="https://hacks.mozilla.org/2015/07/keyboard-events-in-firefox-os-tv/"
+                        >
+                          Orchestrated input method connectivity for physical
+                          keyboards on Firefox OS phones
                         </a>
                       </li>
                     </ul>
@@ -298,32 +406,58 @@
 
             <h2>Education</h2>
             <div class="row">
-              <div class="col-sm-12 mx-auto"><b>National Tsing Hua University (清華大學)</b>, Hsinchu, Taiwan</div>
+              <div class="col-sm-12 mx-auto">
+                <b>National Tsing Hua University (清華大學)</b>, Hsinchu, Taiwan
+              </div>
               <div class="col-sm-12 mx-auto">
                 <div class="row">
                   <!-- <div class="col-sm-6 mx-auto">M.S. in Computer Science</div>
                 <div class="col-sm-6 mx-auto">Jul 2012 - Jun 2014</div> -->
-                  <div class="col-sm-12 mx-auto">M.S. in <b>Computer Science</b></div>
+                  <div class="col-sm-12 mx-auto">
+                    M.S. in <b>Computer Science</b>
+                  </div>
                   <div class="col-sm-12 mx-auto">
                     <ul>
-                      <li>Advisor: <a target="_blank" href="https://epl.tw/people/phchou/">Prof. Pai H. Chou</a> (<a
-                          target="_blank" href="https://epl.tw/">Embedded Platform Lab</a>)</li>
                       <li>
-                        <a target="_blank" href="https://hdl.handle.net/11296/zbsg7c">
-                          Thesis: Cooperative Tracking using Encounter Information by Particle Filtering
+                        Advisor:
+                        <a target="_blank" href="https://epl.tw/people/phchou/"
+                          >Prof. Pai H. Chou</a
+                        >
+                        (<a target="_blank" href="https://epl.tw/"
+                          >Embedded Platform Lab</a
+                        >)
+                      </li>
+                      <li>
+                        <a
+                          target="_blank"
+                          href="https://hdl.handle.net/11296/zbsg7c"
+                        >
+                          Thesis: Cooperative Tracking using Encounter
+                          Information by Particle Filtering
                         </a>
                         <ul>
                           <li>
-                            Formulated an innovative mathematical model utilizing Sequential Monte Carlo (SMC) methods
-                            for infrastructure-independent device tracking within three months</li>
-                          <li>
-                            Achieved superior computational accuracy
-                            with reduced computing time compared to similar works
+                            Formulated an innovative mathematical model
+                            utilizing Sequential Monte Carlo (SMC) methods for
+                            infrastructure-independent device tracking within
+                            three months
                           </li>
-                          <li><a target="_blank"
-                              href="https://drive.google.com/file/d/1v8CUlLACmTXq6fmeCvjbJUcRhCfGo9pH/view?usp=sharing">pdf</a>
-                            / <a target="_blank"
-                              href="https://drive.google.com/file/d/11zMhqcUZ4GnWRAa0MxG6twGpXh4W93FC/view?usp=sharing">slide</a>
+                          <li>
+                            Achieved superior computational accuracy with
+                            reduced computing time compared to similar works
+                          </li>
+                          <li>
+                            <a
+                              target="_blank"
+                              href="https://drive.google.com/file/d/1v8CUlLACmTXq6fmeCvjbJUcRhCfGo9pH/view?usp=sharing"
+                              >pdf</a
+                            >
+                            /
+                            <a
+                              target="_blank"
+                              href="https://drive.google.com/file/d/11zMhqcUZ4GnWRAa0MxG6twGpXh4W93FC/view?usp=sharing"
+                              >slide</a
+                            >
                           </li>
                         </ul>
                       </li>
@@ -333,415 +467,574 @@
                 <div class="row">
                   <!-- <div class="col-sm-6 mx-auto">B.S. in Computer Science</div>
                 <div class="col-sm-6 mx-auto">Sep 2008 - Jun 2012</div> -->
-                  <div class="col-sm-12 mx-auto">B.S. in <b>Computer Science</b></div>
+                  <div class="col-sm-12 mx-auto">
+                    B.S. in <b>Computer Science</b>
+                  </div>
                   <div class="col-sm-12 mx-auto">
                     <ul>
                       <li>
-                        <a target="_blank" href="https://www.youtube.com/watch?v=NNKKSRLWHKo">
-                          <b>Third Prize</b> in the senior CS project contest: Remote Controllable Wifi Webcam Car
+                        <a
+                          target="_blank"
+                          href="https://www.youtube.com/watch?v=NNKKSRLWHKo"
+                        >
+                          <b>Third Prize</b> in the senior CS project contest:
+                          Remote Controllable Wifi Webcam Car
                         </a>
                       </li>
                       <li>
-                        Leadership: Headed the Guitar Club and directed activity planning for 10+ school camps
+                        Leadership: Headed the Guitar Club and directed activity
+                        planning for 10+ school camps
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- end of col-lg-8 -->
-        </div><!-- end of row -->
-    </div><!-- end of container-fluid -->
-  </section>
+          </div>
+          <!-- end of col-lg-8 -->
+        </div>
+        <!-- end of row -->
+      </div>
+      <!-- end of container-fluid -->
+    </section>
 
-  <!-- Works -->
-  <section id="works" class="section">
-    <div class="container">
-      <h1>Works</h1>
-      <h2>Observe carefully. Imagine boldly.</h2>
-      <p>I have been exploring the possibilities of technology to address human needs.
-        It's as easy as an warning alarm ringing when other vehicles approach you;
-        It's also as sophisticated as anonymous chatting
-        (phenomena have revealed that persons who cannot date
-        have problems when meeting face to face.)
-        I perceive there is no boundary of my works,
-        because the only limit is imagination itself.
-        Parts of my projects were reported by TV, newspapers and magazines.
-        It shows these works can really address the customer's pain points.</p>
+    <!-- Works -->
+    <section id="works" class="section">
+      <div class="container">
+        <h1>Works</h1>
+        <h2>Observe carefully. Imagine boldly.</h2>
+        <p>
+          I have been exploring the possibilities of technology to address human
+          needs. It's as easy as an warning alarm ringing when other vehicles
+          approach you; It's also as sophisticated as anonymous chatting
+          (phenomena have revealed that persons who cannot date have problems
+          when meeting face to face.) I perceive there is no boundary of my
+          works, because the only limit is imagination itself. Parts of my
+          projects were reported by TV, newspapers and magazines. It shows these
+          works can really address the customer's pain points.
+        </p>
 
-      <!-- Nav tabs -->
-      <ul class="nav nav-pills" role="tablist">
-        <li class="nav-item">
-          <a class="nav-link active" data-toggle="pill" role="tab" href="#mozilla-us">Mozilla US</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-toggle="pill" role="tab" href="#mozilla-tw">Mozilla Taiwan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-toggle="pill" role="tab" href="#mars">Mars Lab</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-toggle="pill" role="tab" href="#student">Student Works</a>
-        </li>
-      </ul>
+        <!-- Nav tabs -->
+        <ul class="nav nav-pills" role="tablist">
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              data-toggle="pill"
+              role="tab"
+              href="#mozilla-us"
+              >Mozilla US</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" role="tab" href="#mozilla-tw"
+              >Mozilla Taiwan</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" role="tab" href="#mars"
+              >Mars Lab</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" role="tab" href="#student"
+              >Student Works</a
+            >
+          </li>
+        </ul>
 
-      <!-- Tab panes -->
-      <div class="tab-content text-center">
-        <!-- Works in Mozilla US -->
-        <div class="tab-pane active container fade show" id="mozilla-us">
-          <div class="card-deck">
-            <div class="card">
-              <img class="card-img-top" src="images/works/webcodecs/icon-square.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">WebCodecs</h5>
-                <p class="card-text">W3C WebCodecs API and the future of media processing</p>
+        <!-- Tab panes -->
+        <div class="tab-content text-center">
+          <!-- Works in Mozilla US -->
+          <div class="tab-pane active container fade show" id="mozilla-us">
+            <div class="card-deck">
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/webcodecs/icon-square.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">WebCodecs</h5>
+                  <p class="card-text">
+                    W3C WebCodecs API and the future of media processing
+                  </p>
+                </div>
+                <div class="card-footer">July, 2023</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://chunminchang.github.io/blog/post/webcodecs-and-the-future-of-media-processing-on-the-web"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
-              <div class="card-footer">
-                July, 2023
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/multi-mics/icon-square.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Multi-microphones in WebRTC</h5>
+                  <p class="card-text">Firefox WebRTC: Multi-microphones</p>
+                </div>
+                <div class="card-footer">April, 2022</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://chunminchang.github.io/blog/post/firefox-webrtc-multi-microphones"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
-              <div class="card-footer">
-                <a target="_blank"
-                  href="https://chunminchang.github.io/blog/post/webcodecs-and-the-future-of-media-processing-on-the-web"
-                  class="btn btn-dark">More</a>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/AVIF/FF-AVIF-square.png"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">AVIF Transparency</h5>
+                  <p class="card-text">AVIF Transparency support in Firefox</p>
+                </div>
+                <div class="card-footer">December, 2020</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://chunminchang.github.io/blog/post/firefox-avif-transparency-support"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/media-session-api/SMTC-square.png"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Media Session API</h5>
+                  <p class="card-text">W3C media-session API in Firefox</p>
+                </div>
+                <div class="card-footer">August, 2020</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://chunminchang.github.io/blog/post/media-session-api"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="https://www.rust-lang.org/logos/rust-logo-blk.svg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Cubeb Oxidation on Mac OSX</h5>
+                  <p class="card-text">
+                    Oxidize Firefox Audio backend from C++ into Rust
+                  </p>
+                </div>
+                <div class="card-footer">March, 2020</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://chunminchang.github.io/blog/post/summary-of-cubeb-oxidation-on-mac-os"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="card">
-              <img class="card-img-top" src="images/works/multi-mics/icon-square.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Multi-microphones in WebRTC</h5>
-                <p class="card-text">Firefox WebRTC: Multi-microphones</p>
+          <!-- Works in Mozilla Taiwan -->
+          <div class="tab-pane container fade show" id="mozilla-tw">
+            <div class="card-deck">
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/audio-seamless-looping/audio-seamless-looping-square-optimize.gif"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Audio Seamless Looping</h5>
+                  <p class="card-text">Loop audio seamlessly</p>
+                </div>
+                <div class="card-footer">November, 2017</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://www.youtube.com/watch?v=6QIFC7WWkS0"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
-              <div class="card-footer">
-                April, 2022
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
               </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://chunminchang.github.io/blog/post/firefox-webrtc-multi-microphones"
-                  class="btn btn-dark">More</a>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/audio-5.1/audio-5.1-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Audio 5.1</h5>
+                  <p class="card-text">
+                    Multi-channel surround sound on Firefox
+                  </p>
+                </div>
+                <div class="card-footer">March, 2017</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://chunminchang.github.io/blog/post/audio-5-1"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
+              </div>
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/presentation-api/firefox-desktop-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Webpage Casting</h5>
+                  <p class="card-text">Cast webpage to presentable devices</p>
+                </div>
+                <div class="card-footer">November, 2016</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://www.youtube.com/watch?v=KtuMOzwR8YM"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
+              </div>
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/fxos-tv/fennec-fxos-tv-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Remote-control Services on FxOS TV</h5>
+                  <p class="card-text">Control FxOS TV from Android</p>
+                </div>
+                <div class="card-footer">June, 2016</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://www.youtube.com/watch?list=PLSVOWZrQzZlY07b3gR6ONDECSsh-83w9N&v=aALqyd4YVuA"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="card">
-              <img class="card-img-top" src="images/works/AVIF/FF-AVIF-square.png" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">AVIF Transparency</h5>
-                <p class="card-text">AVIF Transparency support in Firefox</p>
+          <!-- Works in Mars Lab -->
+          <div class="tab-pane container fade" id="mars">
+            <div class="card-deck">
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/meetoo/meetoo-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Meetoo</h5>
+                  <p class="card-text">Gett Out of the Friendzone</p>
+                </div>
+                <div class="card-footer">September, 2013</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://prezi.com/qaaomv9m8of9/meetoo/"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
-              <div class="card-footer">
-                December, 2020
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
               </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://chunminchang.github.io/blog/post/firefox-avif-transparency-support"
-                  class="btn btn-dark">More</a>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/course-index/course-index-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Course Index</h5>
+                  <p class="card-text">Choose courses suiting you best</p>
+                </div>
+                <div class="card-footer">May, 2013</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://prezi.com/octlzwy5qd48/coursepointer/"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
+              </div>
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/matchmaker/matchmaker-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Matchmaker</h5>
+                  <p class="card-text">Show your love freely</p>
+                </div>
+                <div class="card-footer">March, 2013</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://prezi.com/aaddacccl2sp/matchmaker/"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="card">
-              <img class="card-img-top" src="images/works/media-session-api/SMTC-square.png" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Media Session API</h5>
-                <p class="card-text">W3C media-session API in Firefox</p>
+          <!-- Works in Student Works -->
+          <div class="tab-pane container fade" id="student">
+            <div class="card-deck">
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/iot/light-control-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">IoT Projects</h5>
+                  <p class="card-text">ecoBT Devcies</p>
+                </div>
+                <div class="card-footer">September, 2013</div>
+                <div class="card-footer">
+                  <button
+                    type="button"
+                    class="btn btn-dark"
+                    data-toggle="modal"
+                    data-target="#ecobt"
+                  >
+                    More
+                  </button>
+                </div>
               </div>
-              <div class="card-footer">
-                August, 2020
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://chunminchang.github.io/blog/post/media-session-api"
-                  class="btn btn-dark">More</a>
-              </div>
-            </div>
 
-            <div class="card">
-              <img class="card-img-top" src="https://www.rust-lang.org/logos/rust-logo-blk.svg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Cubeb Oxidation on Mac OSX</h5>
-                <p class="card-text">Oxidize Firefox Audio backend from C++ into Rust</p>
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
               </div>
-              <div class="card-footer">
-                March, 2020
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/motorcycle-safeguard/motorcycle-safeguard-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Motorcycle Safeguard</h5>
+                  <p class="card-text">Always Ride Safely</p>
+                </div>
+                <div class="card-footer">January, 2013</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://prezi.com/s3rszmlmee9d/motorcycle-safeguard/"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://chunminchang.github.io/blog/post/summary-of-cubeb-oxidation-on-mac-os"
-                  class="btn btn-dark">More</a>
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/word-trend/word-trend-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Word Trends</h5>
+                  <p class="card-text">Is your word out of fashion?</p>
+                </div>
+                <div class="card-footer">June, 2012</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://prezi.com/incqq2zvs0yk/is-your-word-out-of-fashion/"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
+              </div>
+
+              <div class="w-100 d-none d-sm-block d-md-none mb-3">
+                <!-- Force breaking line on sm and add 3 on margin-bottom -->
+              </div>
+
+              <div class="card">
+                <img
+                  class="card-img-top"
+                  src="images/works/ThirdEye/ThirdEye-square-tiny.jpg"
+                  alt="Card image cap"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">ThirdEye</h5>
+                  <p class="card-text">WiFi webcam car</p>
+                </div>
+                <div class="card-footer">September, 2011</div>
+                <div class="card-footer">
+                  <a
+                    target="_blank"
+                    href="https://www.youtube.com/watch?v=NNKKSRLWHKo"
+                    class="btn btn-dark"
+                    >More</a
+                  >
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <!-- Modals for Works -->
 
-        <!-- Works in Mozilla Taiwan -->
-        <div class="tab-pane container fade show" id="mozilla-tw">
-          <div class="card-deck">
-            <div class="card">
-              <img class="card-img-top"
-                src="images/works/audio-seamless-looping/audio-seamless-looping-square-optimize.gif"
-                alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Audio Seamless Looping</h5>
-                <p class="card-text">Loop audio seamlessly</p>
+        <!-- IoT-Projects Modal -->
+        <div class="modal fade text-center" id="ecobt">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <!-- Modal Header -->
+              <div class="modal-header">
+                <h5 class="modal-title">IoT Projects: ecoBT devices</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                  &times;
+                </button>
               </div>
-              <div class="card-footer">
-                November, 2017
+              <!-- Modal body -->
+              <div class="modal-body">
+                <h3>ecoTag</h3>
+                <p>January, 2014</p>
+                <iframe
+                  id="iframe_container"
+                  frameborder="0"
+                  webkitallowfullscreen=""
+                  mozallowfullscreen=""
+                  allowfullscreen=""
+                  width="550"
+                  height="400"
+                  src="https://prezi.com/embed/512_h5gv7_sy/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;landing_data=bHVZZmNaNDBIWnNjdEVENDRhZDFNZGNIUE1lbnl2MUF6QnpwbUFiVjFuendhMnNnT2xLVUhiM2VwS2ZhOE15Kw&amp;landing_sign=O3Sh0ZuUiUcvKNsyu7jm1MvJZtRtAOPc3c-XCW_cOPk"
+                ></iframe>
+                <h3>Bluetooth 4.0 Light Control</h3>
+                <p>September, 2013</p>
+                <iframe
+                  id="iframe_container"
+                  frameborder="0"
+                  webkitallowfullscreen=""
+                  mozallowfullscreen=""
+                  allowfullscreen=""
+                  width="550"
+                  height="400"
+                  src="https://prezi.com/embed/qqa0hm96eh2a/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;landing_data=bHVZZmNaNDBIWnNjdEVENDRhZDFNZGNIUE1lbnl2MUF6QnpwbUFiVjBPUStJeHBrQTIzemFEbGZ3QjJZR3J6OQ&amp;landing_sign=RQ6ThBtBnIXkjoGYw7eIAbTk4KnKVcKo1u2V91T7GiU"
+                ></iframe>
+                <h3>Smart Logistic Container</h3>
+                <p>September, 2013</p>
+                <iframe
+                  id="iframe_container"
+                  frameborder="0"
+                  webkitallowfullscreen=""
+                  mozallowfullscreen=""
+                  allowfullscreen=""
+                  width="550"
+                  height="400"
+                  src="https://prezi.com/embed/r6kmbn85bau0/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;landing_data=bHVZZmNaNDBIWnNjdEVENDRhZDFNZGNIUE1lbnl2MUF6QnpwbUFiVjFpeGRQZUVjRVNwMHByVmR0SFR6MTl6OA&amp;landing_sign=3Vv_vRiEmXtAVBdLTFqnmtllfLQDu8klu51w1wt8Wuc"
+                ></iframe>
               </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://www.youtube.com/watch?v=6QIFC7WWkS0" class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/audio-5.1/audio-5.1-tiny.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Audio 5.1</h5>
-                <p class="card-text">Multi-channel surround sound on Firefox</p>
-              </div>
-              <div class="card-footer">
-                March, 2017
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://chunminchang.github.io/blog/post/audio-5-1"
-                  class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/presentation-api/firefox-desktop-square-tiny.jpg"
-                alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Webpage Casting</h5>
-                <p class="card-text">Cast webpage to presentable devices</p>
-              </div>
-              <div class="card-footer">
-                November, 2016
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://www.youtube.com/watch?v=KtuMOzwR8YM" class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/fxos-tv/fennec-fxos-tv-square-tiny.jpg"
-                alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Remote-control Services on FxOS TV</h5>
-                <p class="card-text">Control FxOS TV from Android</p>
-              </div>
-              <div class="card-footer">
-                June, 2016
-              </div>
-              <div class="card-footer">
-                <a target="_blank"
-                  href="https://www.youtube.com/watch?list=PLSVOWZrQzZlY07b3gR6ONDECSsh-83w9N&v=aALqyd4YVuA"
-                  class="btn btn-dark">More</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Works in Mars Lab -->
-        <div class="tab-pane container fade" id="mars">
-          <div class="card-deck">
-            <div class="card">
-              <img class="card-img-top" src="images/works/meetoo/meetoo-square-tiny.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Meetoo</h5>
-                <p class="card-text">Gett Out of the Friendzone</p>
-              </div>
-              <div class="card-footer">
-                September, 2013
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://prezi.com/qaaomv9m8of9/meetoo/" class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/course-index/course-index-square-tiny.jpg"
-                alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Course Index</h5>
-                <p class="card-text">Choose courses suiting you best</p>
-              </div>
-              <div class="card-footer">
-                May, 2013
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://prezi.com/octlzwy5qd48/coursepointer/" class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/matchmaker/matchmaker-square-tiny.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Matchmaker</h5>
-                <p class="card-text">Show your love freely</p>
-              </div>
-              <div class="card-footer">
-                March, 2013
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://prezi.com/aaddacccl2sp/matchmaker/" class="btn btn-dark">More</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Works in Student Works -->
-        <div class="tab-pane container fade" id="student">
-          <div class="card-deck">
-            <div class="card">
-              <img class="card-img-top" src="images/works/iot/light-control-square-tiny.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">IoT Projects</h5>
-                <p class="card-text">ecoBT Devcies</p>
-              </div>
-              <div class="card-footer">
-                September, 2013
-              </div>
-              <div class="card-footer">
-                <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#ecobt">
-                  More
+              <!-- Modal footer -->
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  data-dismiss="modal"
+                >
+                  Close
                 </button>
               </div>
             </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/motorcycle-safeguard/motorcycle-safeguard-square-tiny.jpg"
-                alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Motorcycle Safeguard</h5>
-                <p class="card-text">Always Ride Safely</p>
-              </div>
-              <div class="card-footer">
-                January, 2013
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://prezi.com/s3rszmlmee9d/motorcycle-safeguard/"
-                  class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/word-trend/word-trend-tiny.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">Word Trends</h5>
-                <p class="card-text">Is your word out of fashion?</p>
-              </div>
-              <div class="card-footer">
-                June, 2012
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://prezi.com/incqq2zvs0yk/is-your-word-out-of-fashion/"
-                  class="btn btn-dark">More</a>
-              </div>
-            </div>
-
-            <div class="w-100 d-none d-sm-block d-md-none mb-3">
-              <!-- Force breaking line on sm and add 3 on margin-bottom -->
-            </div>
-
-            <div class="card">
-              <img class="card-img-top" src="images/works/ThirdEye/ThirdEye-square-tiny.jpg" alt="Card image cap" />
-              <div class="card-body">
-                <h5 class="card-title">ThirdEye</h5>
-                <p class="card-text">WiFi webcam car</p>
-              </div>
-              <div class="card-footer">
-                September, 2011
-              </div>
-              <div class="card-footer">
-                <a target="_blank" href="https://www.youtube.com/watch?v=NNKKSRLWHKo" class="btn btn-dark">More</a>
-              </div>
-            </div>
           </div>
         </div>
+        <!-- End of IoT-Projects Modal-->
       </div>
-      <!-- Modals for Works -->
+    </section>
 
-      <!-- IoT-Projects Modal -->
-      <div class="modal fade text-center" id="ecobt">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content">
-            <!-- Modal Header -->
-            <div class="modal-header">
-              <h5 class="modal-title">IoT Projects: ecoBT devices</h5>
-              <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <!-- Modal body -->
-            <div class="modal-body">
-              <h3>ecoTag</h3>
-              <p>January, 2014</p>
-              <iframe id="iframe_container" frameborder="0" webkitallowfullscreen="" mozallowfullscreen=""
-                allowfullscreen="" width="550" height="400"
-                src="https://prezi.com/embed/512_h5gv7_sy/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;landing_data=bHVZZmNaNDBIWnNjdEVENDRhZDFNZGNIUE1lbnl2MUF6QnpwbUFiVjFuendhMnNnT2xLVUhiM2VwS2ZhOE15Kw&amp;landing_sign=O3Sh0ZuUiUcvKNsyu7jm1MvJZtRtAOPc3c-XCW_cOPk"></iframe>
-              <h3>Bluetooth 4.0 Light Control</h3>
-              <p>September, 2013</p>
-              <iframe id="iframe_container" frameborder="0" webkitallowfullscreen="" mozallowfullscreen=""
-                allowfullscreen="" width="550" height="400"
-                src="https://prezi.com/embed/qqa0hm96eh2a/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;landing_data=bHVZZmNaNDBIWnNjdEVENDRhZDFNZGNIUE1lbnl2MUF6QnpwbUFiVjBPUStJeHBrQTIzemFEbGZ3QjJZR3J6OQ&amp;landing_sign=RQ6ThBtBnIXkjoGYw7eIAbTk4KnKVcKo1u2V91T7GiU"></iframe>
-              <h3>Smart Logistic Container</h3>
-              <p>September, 2013</p>
-              <iframe id="iframe_container" frameborder="0" webkitallowfullscreen="" mozallowfullscreen=""
-                allowfullscreen="" width="550" height="400"
-                src="https://prezi.com/embed/r6kmbn85bau0/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;landing_data=bHVZZmNaNDBIWnNjdEVENDRhZDFNZGNIUE1lbnl2MUF6QnpwbUFiVjFpeGRQZUVjRVNwMHByVmR0SFR6MTl6OA&amp;landing_sign=3Vv_vRiEmXtAVBdLTFqnmtllfLQDu8klu51w1wt8Wuc"></iframe>
-            </div>
-            <!-- Modal footer -->
-            <div class="modal-footer">
-              <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div><!-- End of IoT-Projects Modal-->
-
-    </div>
-  </section>
-
-  <!-- javascript libraries
+    <!-- javascript libraries
   ========================================================================= -->
-  <!-- bootstrap js (including jQuery and Popper.js) -->
-  <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    <!-- bootstrap js (including jQuery and Popper.js) -->
+    <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
           integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
           crossorigin="anonymous"></script> -->
-  <!-- The jquery slim version doesn't support $(...).animate(...).
+    <!-- The jquery slim version doesn't support $(...).animate(...).
        Use min version instead. -->
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-    crossorigin="anonymous"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-    crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
 
-  <!-- Smooth scrolling animation -->
-  <script src="js/scrollspy.js"></script>
-  <script src="js/keymatcher.js"></script>
-</body>
-
+    <!-- Smooth scrolling animation -->
+    <script src="js/scrollspy.js"></script>
+    <script src="js/keymatcher.js"></script>
+  </body>
 </html>
