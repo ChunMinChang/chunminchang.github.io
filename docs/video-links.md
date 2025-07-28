@@ -15,3 +15,4 @@
 
 ## Other
 - Dancing LED: https://ody.sh/vnNlieHQFY
+- Audio device selector: https://ody.sh/joFWAcRyRX
