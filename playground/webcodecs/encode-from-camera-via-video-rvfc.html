@@ -62,6 +62,7 @@
       }
     }
 
+    const SHOWN_CONFIG = "usedConfig";
     const RESULTS_DIV_ID = "results";
     const CAMERA_DIV_ID = "camera";
     var CALLBACK_ID = null;
@@ -73,10 +74,18 @@
     var STAT = new Statistics(ROLLING_WINDOW_LEN);
 
     async function startTest() {
-      console.log("start test");
+      const {
+        codec,
+        resolution,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+      } = getConfig();
+      showConfig();
 
-      const { latencyMode, codec, avcFormat } = getConfig();
-      const { video, stream } = await createStreamingVideo();
+      const { video, stream } = await createStreamingVideo(resolution);
       const stmSettings = stream.getVideoTracks()[0].getSettings();
       console.log(
         "stream size: " + stmSettings.width + "x" + stmSettings.height
@@ -88,11 +97,15 @@
       WORKER = new Worker("encode-worker.js");
       WORKER.postMessage({
         command: "configure",
-        codec,
-        width: video.videoWidth,
-        height: video.videoHeight,
-        latencyMode: latencyMode,
-        avcFormat,
+        codec: codec.name,
+        width: resolution.width,
+        height: resolution.height,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+        avcFormat: codec.avc,
       });
 
       WORKER.addEventListener("message", (event) => {
@@ -126,14 +139,13 @@
     }
 
     function endTest() {
-      console.log("end test");
-
       const video = document.querySelector(`#${CAMERA_DIV_ID} video`);
       video.cancelVideoFrameCallback(CALLBACK_ID);
 
       shutdown(WORKER);
       clearElement(CAMERA_DIV_ID);
       clearElement(RESULTS_DIV_ID);
+      clearElement(SHOWN_CONFIG);
 
       CALLBACK_ID = null;
       LAST_CALLBACK_TIMESTAMP = null;
@@ -221,18 +233,44 @@
     }
 
     function getConfig() {
-      const codec = document.getElementById("codecSelect").value;
-      const avcFormat = document.getElementById("avcFormatSelect").value;
-      const latencyMode = document.getElementById("realTimeEncoding").checked
-        ? "realtime"
-        : "quality";
-      return { latencyMode, codec, avcFormat };
-    }
-
-    function toggleAvcFormatSelect() {
-      avcFormatSelect.style.display = codecSelect.value.startsWith("avc1")
-        ? "inline-block"
-        : "none";
+      const codec = {
+        name: document.getElementById("codecString").value,
+      };
+      if (document.querySelector('input[name="avcFormat"]:checked')) {
+        codec.avc = document.querySelector(
+          'input[name="avcFormat"]:checked'
+        ).value;
+      }
+      const resolution = {
+        width: parseInt(document.getElementById("videoWidth").value, 10),
+        height: parseInt(document.getElementById("videoHeight").value, 10),
+      };
+      const framerate = parseInt(
+        document.getElementById("framerateValue").value,
+        10
+      );
+      const bitrate = parseInt(
+        document.getElementById("bitrateValue").value,
+        10
+      );
+      const bitrateMode = document.querySelector(
+        'input[name="bitrateMode"]:checked'
+      ).value;
+      const scalabilityMode = document.querySelector(
+        'input[name="scalabilityMode"]:checked'
+      ).value;
+      const latencyMode = document.querySelector(
+        'input[name="latencyMode"]:checked'
+      ).value;
+      return {
+        codec,
+        resolution,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+      };
     }
 
     function clearElement(id) {
@@ -242,10 +280,98 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", (event) => {
+    function toggleAvcFormatSelection() {
+      const codecString = document.getElementById("codecString").value;
+      const enabled = codecString.startsWith("avc1");
+
+      const formats = document.querySelectorAll('input[name="avcFormat"]');
+      formats.forEach((format) => {
+        if (!enabled) {
+          format.checked = false;
+        }
+        format.disabled = !enabled;
+      });
+      if (enabled) {
+        const latencyMode = document.querySelector(
+          'input[name="latencyMode"]:checked'
+        ).value;
+        const defaultAvcFormat = latencyMode === "realtime" ? "annexb" : "avc";
+        document.getElementById(`avcFormat-${defaultAvcFormat}`).checked = true;
+      }
+    }
+
+    function parseResolution(resolution) {
+      const [width, height] = resolution.split("x").map(Number);
+      return { width, height };
+    }
+
+    function setResolution(resolution) {
+      const { width, height } = parseResolution(resolution);
+      document.getElementById("videoWidth").value = width;
+      document.getElementById("videoHeight").value = height;
+    }
+
+    function initConfigSelection() {
+      // Codec selection
+      const codecString = document.getElementById("codecString");
+      codecString.addEventListener("input", (evt) => {
+        toggleAvcFormatSelection();
+      });
+
       const codecSelect = document.getElementById("codecSelect");
-      codecSelect.addEventListener("change", toggleAvcFormatSelect);
-      toggleAvcFormatSelect();
+      codecSelect.addEventListener("change", (evt) => {
+        codecString.value = evt.target.value;
+        toggleAvcFormatSelection();
+      });
+
+      codecString.value = codecSelect.value;
+      toggleAvcFormatSelection();
+
+      // Resolution selection
+      const resolutionSelect = document.getElementById("resolutionSelect");
+      resolutionSelect.addEventListener("change", (evt) => {
+        setResolution(evt.target.value);
+      });
+      setResolution(resolutionSelect.value);
+
+      // Framerate selection
+      const framerateSelect = document.getElementById("framerateSelect");
+      const framerateValue = document.getElementById("framerateValue");
+      framerateSelect.addEventListener("change", (evt) => {
+        framerateValue.value = evt.target.value;
+      });
+      framerateValue.value = framerateSelect.value;
+
+      // Bitrate selection
+      const bitrateSelect = document.getElementById("bitrateSelect");
+      const bitrateValue = document.getElementById("bitrateValue");
+      bitrateSelect.addEventListener("change", (evt) => {
+        bitrateValue.value = evt.target.value;
+      });
+      bitrateValue.value = bitrateSelect.value;
+    }
+
+    function showConfig() {
+      const usedConfig = document.getElementById(SHOWN_CONFIG);
+      clearElement(SHOWN_CONFIG);
+
+      const config = getConfig();
+      const codecText = config.codec.avc
+        ? `${config.codec.name} (${config.codec.avc})`
+        : config.codec.name;
+      const resolutionText = `${config.resolution.width}x${config.resolution.height}`;
+      const framerateText = `${config.framerate} fps`;
+      const bitrateText = `${config.bitrate} bps`;
+      const bitrateModeText = config.bitrateMode;
+      const scalabilityModeText = config.scalabilityMode;
+      const latencyModeText = config.latencyMode;
+      const configText = `Codec: ${codecText}, Resolution: ${resolutionText}, Framerate: ${framerateText}, Bitrate: ${bitrateText}, Bitrate Mode: ${bitrateModeText}, Scalability Mode: ${scalabilityModeText}, Latency Mode: ${latencyModeText}`;
+      usedConfig.innerHTML = "<b>Current Configuration: </b>";
+      usedConfig.innerHTML += configText;
+    }
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+      initConfigSelection();
 
       const runButton = document.getElementById("run");
       runButton.addEventListener("click", async () => {
@@ -260,24 +386,147 @@
     });
   </script>
   <body>
-    <label>
-      <input type="checkbox" id="realTimeEncoding" />
-      Realtime
-    </label>
-    <select id="codecSelect">
-      <option value="avc1.42001E">H264 Baseline</option>
-      <option value="avc1.4D001E">H264 Main</option>
-      <option value="avc1.64001E">H264 High</option>
-      <option value="vp8">VP8</option>
-      <option value="vp09.00.10.08">VP9</option>
-      <option value="av01.0.04M.08">AV1</option>
-    </select>
-    <select id="avcFormatSelect" style="display: none">
-      <option value="avc">AVC</option>
-      <option value="annexb">Annex B</option>
-    </select>
-    <button id="run">Start</button>
     <div id="camera"></div>
     <div id="results"></div>
+    <div id="usedConfig"></div>
+    <button id="run">Start</button>
+    <div id="encoderConfig">
+      <h3>Encoder Configuration</h3>
+      <p>Choose default value from list, or enter custom value.</p>
+      <fieldset>
+        <legend>Codec</legend>
+        <select id="codecSelect" for="codecString">
+          <option value="avc1.42001E">H264 Baseline</option>
+          <option value="avc1.4D001E">H264 Main</option>
+          <option value="avc1.64001E">H264 High</option>
+          <option value="vp8">VP8</option>
+          <option value="vp09.00.10.08">VP9</option>
+          <option value="av01.0.04M.08">AV1</option>
+        </select>
+        <input type="text" id="codecString" />
+        <fieldset>
+          <legend>AVC Format</legend>
+          <input
+            type="radio"
+            id="avcFormat-avc"
+            name="avcFormat"
+            value="avc"
+            checked
+          />
+          <label for="avcFormat-avc">AVC</label>
+          <input
+            type="radio"
+            id="avcFormat-annexb"
+            name="avcFormat"
+            value="annexb"
+          />
+          <label for="avcFormat-annexb">Annex B</label>
+        </fieldset>
+      </fieldset>
+      <fieldset>
+        <select id="resolutionSelect">
+          <option value="640x480">480p</option>
+          <option value="1280x720">720p</option>
+          <option value="1920x1080">1080p</option>
+          <option value="2560x1440">1440p</option>
+          <option value="3840x2160">2K</option>
+          <option value="7680x4320">4K</option>
+        </select>
+        <label
+          >Width
+          <input type="number" id="videoWidth" />
+        </label>
+        <label
+          >Height
+          <input type="number" id="videoHeight" />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Framerate</legend>
+        <select id="framerateSelect" for="framerateValue">
+          <option value="30">30 fps</option>
+          <option value="60">60 fps</option>
+        </select>
+        <input type="number" id="framerateValue" />
+      </fieldset>
+      <fieldset>
+        <legend>Bitrate</legend>
+        <select id="bitrateSelect" for="bitrateValue">
+          <option value="1000000">1 Mbps</option>
+          <option value="2000000">2 Mbps</option>
+          <option value="5000000">5 Mbps</option>
+          <option value="10000000">10 Mbps</option>
+          <option value="20000000">20 Mbps</option>
+          <option value="50000000">50 Mbps</option>
+        </select>
+        <input type="number" id="bitrateValue" />
+      </fieldset>
+      <fieldset>
+        <legend>Bitrate Mode</legend>
+        <input
+          type="radio"
+          id="bitrate-variable"
+          name="bitrateMode"
+          value="variable"
+          checked
+        />
+        <label for="bitrate-variable">variable</label>
+        <input
+          type="radio"
+          id="bitrate-constant"
+          name="bitrateMode"
+          value="constant"
+        />
+        <label for="bitrate-constant">constant</label>
+      </fieldset>
+      <fieldset>
+        <legend>Scalability Mode</legend>
+        <!-- <select id="scalabilitySelect" for="scalabilityValue">
+          <option value="None">None</option>
+          <option value="L1T1">L1T1</option>
+          <option value="L1T2">L1T2</option>
+        </select> -->
+        <input
+          type="radio"
+          id="scalability-none"
+          name="scalabilityMode"
+          value="none"
+          checked
+        />
+        <label for="scalability-none">None</label>
+        <input
+          type="radio"
+          id="scalability-L1T1"
+          name="scalabilityMode"
+          value="L1T1"
+        />
+        <label for="scalability-L1T1">L1T1</label>
+        <input
+          type="radio"
+          id="scalability-L1T2"
+          name="scalabilityMode"
+          value="L1T2"
+        />
+        <label for="scalability-L1T2">L1T2</label>
+      </fieldset>
+      <fieldset>
+        <legend>Latency Mode</legend>
+        <input
+          type="radio"
+          id="latency-realtime"
+          name="latencyMode"
+          value="realtime"
+          checked
+        />
+        <label for="latency-realtime">realtime</label>
+        <input
+          type="radio"
+          id="latency-quality"
+          name="latencyMode"
+          value="quality"
+        />
+        <label for="latency-quality">quality</label>
+      </fieldset>
+    </div>
   </body>
 </html>

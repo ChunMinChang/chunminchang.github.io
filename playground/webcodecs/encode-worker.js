@@ -5,8 +5,18 @@ function reset() {
 
 self.onmessage = async (event) => {
   if (event.data.command === "configure") {
-    const { command, codec, width, height, latencyMode, avcFormat } =
-      event.data;
+    const {
+      command,
+      codec,
+      width,
+      height,
+      framerate,
+      bitrate,
+      bitrateMode,
+      scalabilityMode,
+      latencyMode,
+      avcFormat,
+    } = event.data;
     encoder = new VideoEncoder({
       output: (chunk, metadata) => {
         const currentTime = performance.now();
@@ -15,12 +25,13 @@ self.onmessage = async (event) => {
       error: (e) => console.error(e),
     });
     const config = {
-      codec: codec,
-      width: width,
-      height: height,
-      bitrate: 1000000, // 1 Mbps
-      framerate: 30,
-      latencyMode: latencyMode,
+      codec,
+      width,
+      height,
+      framerate,
+      bitrate,
+      bitrateMode,
+      latencyMode,
     };
 
     // Add H264 specific configuration
@@ -28,7 +39,11 @@ self.onmessage = async (event) => {
       config.avc = { format: avcFormat };
     }
 
-    console.log(config);
+    const validScalabilityModes = ["L1T1", "L1T2"];
+    if (validScalabilityModes.includes(scalabilityMode)) {
+      config.scalabilityMode = scalabilityMode;
+    }
+    console.log("Configuring encoder with:", config);
 
     encoder.configure(config);
   } else if (event.data.command === "encode") {
