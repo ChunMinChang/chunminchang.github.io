@@ -10,11 +10,14 @@ self.onmessage = async (event) => {
       codec,
       width,
       height,
+      displayWidth,
+      displayHeight,
       framerate,
       bitrate,
       bitrateMode,
       scalabilityMode,
       latencyMode,
+      hardwareAcceleration,
       avcFormat,
     } = event.data;
     encoder = new VideoEncoder({
@@ -28,10 +31,10 @@ self.onmessage = async (event) => {
       codec,
       width,
       height,
+      displayWidth,
+      displayHeight,
       framerate,
       bitrate,
-      bitrateMode,
-      latencyMode,
     };
 
     // Add H264 specific configuration
@@ -43,6 +46,26 @@ self.onmessage = async (event) => {
     if (validScalabilityModes.includes(scalabilityMode)) {
       config.scalabilityMode = scalabilityMode;
     }
+
+    const validBitrateModes = ["constant", "variable"];
+    if (validBitrateModes.includes(bitrateMode)) {
+      config.bitrateMode = bitrateMode;
+    }
+
+    const validLatencyModes = ["realtime", "quality"];
+    if (validLatencyModes.includes(latencyMode)) {
+      config.latencyMode = latencyMode;
+    }
+
+    const validHardwareAcceleration = [
+      "no-preference",
+      "prefer-hardware",
+      "prefer-software",
+    ];
+    if (validHardwareAcceleration.includes(hardwareAcceleration)) {
+      config.hardwareAcceleration = hardwareAcceleration;
+    }
+
     console.log("Configuring encoder with:", config);
 
     encoder.configure(config);

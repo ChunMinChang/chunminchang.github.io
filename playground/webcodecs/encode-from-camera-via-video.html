@@ -79,16 +79,18 @@
     async function startTest() {
       const {
         codec,
-        resolution,
+        videoSize,
+        displaySize,
         framerate,
         bitrate,
         bitrateMode,
         scalabilityMode,
         latencyMode,
+        hardwareAcceleration,
       } = getConfig();
       showConfig();
 
-      const { video, stream } = await createStreamingVideo(resolution);
+      const { video, stream } = await createStreamingVideo(videoSize);
       const stmSettings = stream.getVideoTracks()[0].getSettings();
       console.log(
         "stream size: " + stmSettings.width + "x" + stmSettings.height
@@ -101,13 +103,16 @@
       WORKER.postMessage({
         command: "configure",
         codec: codec.name,
-        width: resolution.width,
-        height: resolution.height,
+        width: videoSize.width,
+        height: videoSize.height,
+        displayWidth: displaySize.width,
+        displayHeight: displaySize.height,
         framerate,
         bitrate,
         bitrateMode,
         scalabilityMode,
         latencyMode,
+        hardwareAcceleration,
         avcFormat: codec.avc,
       });
 
@@ -242,9 +247,13 @@
           'input[name="avcFormat"]:checked'
         ).value;
       }
-      const resolution = {
+      const videoSize = {
         width: parseInt(document.getElementById("videoWidth").value, 10),
         height: parseInt(document.getElementById("videoHeight").value, 10),
+      };
+      const displaySize = {
+        width: parseInt(document.getElementById("displayWidth").value, 10),
+        height: parseInt(document.getElementById("displayHeight").value, 10),
       };
       const framerate = parseInt(
         document.getElementById("framerateValue").value,
@@ -263,14 +272,19 @@
       const latencyMode = document.querySelector(
         'input[name="latencyMode"]:checked'
       ).value;
+      const hardwareAcceleration = document.querySelector(
+        'input[name="hardwareAcceleration"]:checked'
+      ).value;
       return {
         codec,
-        resolution,
+        videoSize,
+        displaySize,
         framerate,
         bitrate,
         bitrateMode,
         scalabilityMode,
         latencyMode,
+        hardwareAcceleration,
       };
     }
 
@@ -301,15 +315,15 @@
       }
     }
 
-    function parseResolution(resolution) {
-      const [width, height] = resolution.split("x").map(Number);
+    function parseSize(sizeString) {
+      const [width, height] = sizeString.split("x").map(Number);
       return { width, height };
     }
 
-    function setResolution(resolution) {
-      const { width, height } = parseResolution(resolution);
-      document.getElementById("videoWidth").value = width;
-      document.getElementById("videoHeight").value = height;
+    function setSize(sizeString, widthId, heightId) {
+      const { width, height } = parseSize(sizeString);
+      document.getElementById(widthId).value = width;
+      document.getElementById(heightId).value = height;
     }
 
     function initConfigSelection() {
@@ -328,12 +342,19 @@
       codecString.value = codecSelect.value;
       toggleAvcFormatSelection();
 
-      // Resolution selection
-      const resolutionSelect = document.getElementById("resolutionSelect");
-      resolutionSelect.addEventListener("change", (evt) => {
-        setResolution(evt.target.value);
+      // videoSize selection
+      const videoSizeSelect = document.getElementById("videoSizeSelect");
+      videoSizeSelect.addEventListener("change", (evt) => {
+        setSize(evt.target.value, "videoWidth", "videoHeight");
       });
-      setResolution(resolutionSelect.value);
+      setSize(videoSizeSelect.value, "videoWidth", "videoHeight");
+
+      // displaySize selection
+      const displaySizeSelect = document.getElementById("displaySizeSelect");
+      displaySizeSelect.addEventListener("change", (evt) => {
+        setSize(evt.target.value, "displayWidth", "displayHeight");
+      });
+      setSize(displaySizeSelect.value, "displayWidth", "displayHeight");
 
       // Framerate selection
       const framerateSelect = document.getElementById("framerateSelect");
@@ -360,13 +381,15 @@
       const codecText = config.codec.avc
         ? `${config.codec.name} (${config.codec.avc})`
         : config.codec.name;
-      const resolutionText = `${config.resolution.width}x${config.resolution.height}`;
+      const videoSizeText = `${config.videoSize.width}x${config.videoSize.height}`;
+      const displaySizeText = `${config.displaySize.width}x${config.displaySize.height}`;
       const framerateText = `${config.framerate} fps`;
       const bitrateText = `${config.bitrate} bps`;
       const bitrateModeText = config.bitrateMode;
       const scalabilityModeText = config.scalabilityMode;
       const latencyModeText = config.latencyMode;
-      const configText = `Codec: ${codecText}, Resolution: ${resolutionText}, Framerate: ${framerateText}, Bitrate: ${bitrateText}, Bitrate Mode: ${bitrateModeText}, Scalability Mode: ${scalabilityModeText}, Latency Mode: ${latencyModeText}`;
+      const hardwareAccelerationText = config.hardwareAcceleration;
+      const configText = `Codec: ${codecText}, Video Size: ${videoSizeText}, Display Size: ${displaySizeText}, Framerate: ${framerateText}, Bitrate: ${bitrateText}, Bitrate Mode: ${bitrateModeText}, Scalability Mode: ${scalabilityModeText}, Latency Mode: ${latencyModeText}, Hardware Acceleration: ${hardwareAccelerationText}`;
       usedConfig.innerHTML = "<b>Current Configuration: </b>";
       usedConfig.innerHTML += configText;
     }
@@ -425,7 +448,7 @@
         </fieldset>
       </fieldset>
       <fieldset>
-        <select id="resolutionSelect">
+        <select id="videoSizeSelect">
           <option value="640x480">480p</option>
           <option value="1280x720">720p</option>
           <option value="1920x1080">1080p</option>
@@ -440,6 +463,24 @@
         <label
           >Height
           <input type="number" id="videoHeight" />
+        </label>
+      </fieldset>
+      <fieldset>
+        <select id="displaySizeSelect">
+          <option value="640x480">480p</option>
+          <option value="1280x720">720p</option>
+          <option value="1920x1080">1080p</option>
+          <option value="2560x1440">1440p</option>
+          <option value="3840x2160">2K</option>
+          <option value="7680x4320">4K</option>
+        </select>
+        <label
+          >Display Width
+          <input type="number" id="displayWidth" />
+        </label>
+        <label
+          >Display Height
+          <input type="number" id="displayHeight" />
         </label>
       </fieldset>
       <fieldset>
@@ -527,6 +568,31 @@
           value="quality"
         />
         <label for="latency-quality">quality</label>
+      </fieldset>
+      <fieldset>
+        <legend>Hardware Acceleration</legend>
+        <input
+          type="radio"
+          id="acceleration-none"
+          name="hardwareAcceleration"
+          value="no-preference"
+          checked
+        />
+        <label for="acceleration-none">no-preference</label>
+        <input
+          type="radio"
+          id="acceleration-hardware"
+          name="hardwareAcceleration"
+          value="prefer-hardware"
+        />
+        <label for="acceleration-hardware">prefer-hardware</label>
+        <input
+          type="radio"
+          id="acceleration-software"
+          name="hardwareAcceleration"
+          value="prefer-software"
+        />
+        <label for="acceleration-software">prefer-software</label>
       </fieldset>
     </div>
   </body>
