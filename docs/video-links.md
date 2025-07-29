@@ -11,7 +11,7 @@
 
 ### Firefox OS
 - Cast page from Fx Android to FxOS TV via W3# Presentation API: https://ody.sh/NHrHa2qX29
-- FxOS TV Remote control from Fx Andoird: https://ody.sh/vtsKB0OGVv
+- FxOS TV Remote control from Fx Andoird: https://ody.sh/PGl0ldy4yM
 
 ## Other
 - Dancing LED: https://ody.sh/vnNlieHQFY
