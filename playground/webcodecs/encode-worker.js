@@ -68,6 +68,14 @@ self.onmessage = async (event) => {
 
     console.log("Configuring encoder with:", config);
 
+    const support = await VideoEncoder.isConfigSupported(config);
+    console.log("supported? ", support.supported);
+    console.log("returned config: ", support.config);
+    if (!support.supported) {
+      self.postMessage({ error: "Configuration not supported" });
+      return;
+    }
+
     encoder.configure(config);
   } else if (event.data.command === "encode") {
     const { command, frame } = event.data;
