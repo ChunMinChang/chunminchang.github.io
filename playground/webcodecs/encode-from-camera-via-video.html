@@ -76,6 +76,48 @@
     const ROLLING_WINDOW_LEN = 50;
     var STAT = new Statistics(ROLLING_WINDOW_LEN);
 
+    async function stopEncoding(options) {
+      let { resetTime, intervalId, worker, flush } = options;
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      if (resetTime) {
+        LAST_CALLBACK_TIMESTAMP = null;
+        DURATION = 0;
+      }
+
+      if (worker && flush) {
+        worker.postMessage({ command: "flush" });
+        return new Promise((resolve) => {
+          const listener = (event) => {
+            if (event.data.result === "flushed") {
+              worker.removeEventListener("message", listener);
+              resolve();
+            }
+          };
+          worker.addEventListener("message", listener);
+        });
+      }
+      return Promise.resolve();
+    }
+
+    function startEncoding(worker, video) {
+      let intervalId = setInterval(() => {
+        if (LAST_CALLBACK_TIMESTAMP) {
+          let elapse = performance.now() - LAST_CALLBACK_TIMESTAMP;
+          DURATION += elapse;
+        } else {
+          DURATION = 0;
+        }
+        LAST_CALLBACK_TIMESTAMP = performance.now();
+        const frame = new VideoFrame(video, { timestamp: DURATION });
+        WORKER.postMessage({ command: "encode", frame });
+      }, FRAME_DURATION);
+      return intervalId;
+    }
+
     async function startTest() {
       const {
         codec,
@@ -122,38 +164,90 @@
             event.data.frameTimestamp,
             event.data.encodeTime
           );
-        } else if (event.data.chunk) {
+        }
+        if (event.data.chunk) {
           STAT.recordOutputTime(
             event.data.chunk.timestamp,
             event.data.currentTime
           );
           showResults(STAT.rollingAverage, STAT.cumulativeAverage);
         }
+        if (event.data.error) {
+          console.error("Encoder error: ", event.data.error);
+        }
+        if (event.data.result === "flushed") {
+          console.log("Encoder has been flushed");
+        }
+        if (event.data.result === "closed") {
+          console.log("Encoder has been closed");
+        }
       });
 
-      INTERVAL_ID = setInterval(() => {
-        if (LAST_CALLBACK_TIMESTAMP) {
-          let elapse = performance.now() - LAST_CALLBACK_TIMESTAMP;
-          DURATION += elapse;
-        } else {
-          DURATION = 0;
-        }
-        LAST_CALLBACK_TIMESTAMP = performance.now();
-
-        const frame = new VideoFrame(video, { timestamp: DURATION });
-        WORKER.postMessage({ command: "encode", frame });
-      }, FRAME_DURATION);
+      INTERVAL_ID = startEncoding(WORKER, video);
     }
 
-    function endTest() {
-      clearInterval(INTERVAL_ID);
+    async function reconfigTest() {
+      if (INTERVAL_ID) {
+        // Pause encoding without explicitly flushing the encoder. Any pending
+        // frames should be handled by the encoder during reconfiguration.
+        // Time values are preserved so that encoding resumes with a continuous
+        // timestamp sequence.
+        await stopEncoding({
+          resetTime: false,
+          intervalId: INTERVAL_ID,
+          worker: WORKER,
+          flush: false,
+        });
+      }
 
-      shutdown(WORKER);
+      const {
+        codec,
+        videoSize,
+        displaySize,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+        hardwareAcceleration,
+      } = getConfig();
+      showConfig();
+
+      WORKER.postMessage({
+        command: "configure",
+        codec: codec.name,
+        width: videoSize.width,
+        height: videoSize.height,
+        displayWidth: displaySize.width,
+        displayHeight: displaySize.height,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+        hardwareAcceleration,
+        avcFormat: codec.avc,
+      });
+
+      const video = document.querySelector(`#${CAMERA_DIV_ID} video`);
+      INTERVAL_ID = startEncoding(WORKER, video);
+    }
+
+    async function endTest() {
+      await stopEncoding({
+        resetTime: true,
+        intervalId: INTERVAL_ID,
+        worker: WORKER,
+        flush: true,
+      });
+
+      await shutdown(WORKER);
+
       clearElement(CAMERA_DIV_ID);
       clearElement(RESULTS_DIV_ID);
       clearElement(SHOWN_CONFIG);
 
-      CALLBACK_ID = null;
+      INTERVAL_ID = null;
       LAST_CALLBACK_TIMESTAMP = null;
       DURATION = 0;
       WORKER = null;
@@ -161,14 +255,14 @@
     }
 
     async function shutdown(worker) {
-      worker.postMessage({ command: "flush" });
+      worker.postMessage({ command: "close" });
       return new Promise((resolve, reject) => {
-        WORKER.addEventListener("message", (event) => {
-          if (event.data.command === "finish") {
+        worker.addEventListener("message", (event) => {
+          if (event.data.result === "closed") {
+            worker.terminate();
             resolve();
           }
         });
-        worker.terminate();
       });
     }
 
@@ -397,14 +491,22 @@
     document.addEventListener("DOMContentLoaded", (event) => {
       initConfigSelection();
 
-      const runButton = document.getElementById("run");
-      runButton.addEventListener("click", async () => {
-        if (runButton.innerText == "Start") {
-          runButton.innerText = "End";
+      const endButton = document.getElementById("end");
+      endButton.disabled = true;
+      endButton.addEventListener("click", async () => {
+        endTest();
+        startButton.innerText = "Start";
+        endButton.disabled = true;
+      });
+
+      const startButton = document.getElementById("start");
+      startButton.addEventListener("click", async () => {
+        if (startButton.innerText == "Start") {
           startTest();
+          startButton.innerText = "Reconfig";
+          endButton.disabled = false;
         } else {
-          endTest();
-          runButton.innerText = "Start";
+          reconfigTest();
         }
       });
     });
@@ -413,7 +515,8 @@
     <div id="camera"></div>
     <div id="results"></div>
     <div id="usedConfig"></div>
-    <button id="run">Start</button>
+    <button id="start">Start</button>
+    <button id="end">End</button>
     <div id="encoderConfig">
       <h3>Encoder Configuration</h3>
       <p>Choose default value from list, or enter custom value.</p>

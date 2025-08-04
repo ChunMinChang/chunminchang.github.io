@@ -1,5 +1,8 @@
 let encoder;
-function reset() {
+function close() {
+  if (encoder) {
+    encoder.close();
+  }
   encoder = null;
 }
 
@@ -25,7 +28,10 @@ self.onmessage = async (event) => {
         const currentTime = performance.now();
         self.postMessage({ chunk, currentTime });
       },
-      error: (e) => console.error(e),
+      error: (e) => {
+        console.error(e);
+        self.postMessage({ error: e.message });
+      },
     });
     const config = {
       codec,
@@ -88,7 +94,9 @@ self.onmessage = async (event) => {
     frame.close();
   } else if (event.data.command === "flush") {
     await encoder.flush();
-    self.postMessage({ result: "finish" });
-    reset();
+    self.postMessage({ result: "flushed" });
+  } else if (event.data.command === "close") {
+    close();
+    self.postMessage({ result: "closed" });
   }
 };
