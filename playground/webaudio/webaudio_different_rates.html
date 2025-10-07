@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <title>WebAudio Different Sample Rates Test</title>
+    <script>
+      async function runTest() {
+        const canRunTest =
+          navigator.mediaDevices.getSupportedConstraints()["sampleRate"];
+        if (!canRunTest) {
+          console.log(
+            "Browser does not support sampleRate constraint. Test skipped."
+          );
+          return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: false,
+          audio: { sampleRate: { exact: 48000 } },
+        });
+        console.log(
+          "Got MediaStream with audio track settings:",
+          stream.getAudioTracks()[0].getSettings()
+        );
+
+        const ctx1 = new AudioContext({ sampleRate: 44100 });
+        console.log("Created AudioContext with sample rate:", ctx1.sampleRate);
+        const source1 = ctx1.createMediaStreamSource(stream);
+        console.log("Created a MediaStreamAudioSourceNode:", source1);
+
+        const ctx2 = new AudioContext({ sampleRate: 88200 });
+        console.log("Created AudioContext with sample rate:", ctx2.sampleRate);
+        const source2 = ctx2.createMediaStreamSource(stream);
+        console.log("Created a MediaStreamAudioSourceNode:", source2);
+
+        const analyser1 = ctx1.createAnalyser();
+        source1.connect(analyser1);
+        analyser1.fftSize = 128;
+        const bufferLength1 = analyser1.frequencyBinCount;
+        const dataArray1 = new Uint8Array(bufferLength1);
+        analyser1.getByteTimeDomainData(dataArray1);
+        console.log(
+          `Analyser1 get ${dataArray1.length} bytes of time domain data`
+        );
+
+        const analyser2 = ctx2.createAnalyser();
+        source2.connect(analyser2);
+        analyser2.fftSize = 128;
+        const bufferLength2 = analyser2.frequencyBinCount;
+        const dataArray2 = new Uint8Array(bufferLength2);
+        analyser2.getByteTimeDomainData(dataArray2);
+        console.log(
+          `Analyser2 get ${dataArray2.length} bytes of time domain data`
+        );
+
+        await ctx1.close();
+        analyser2.getByteTimeDomainData(dataArray2);
+        console.log(
+          `Analyser2 can still get ${dataArray2.length} bytes of time domain data after ctx1 is closed`
+        );
+
+        await ctx2.close();
+        stream.getTracks().forEach((track) => track.stop());
+
+        console.log("Test completed successfully.");
+      }
+
+      window.addEventListener("DOMContentLoaded", (event) => {
+        const btn = document.createElement("button");
+        btn.textContent = "Run Test";
+        document.body.appendChild(btn);
+        btn.onclick = () => {
+          runTest();
+          btn.disabled = true;
+        };
+      });
+    </script>
+  </head>
+  <body>
+    <p>
+      Testing MediaStreamAudioSourceNode using a MediaStream with a sample rate
+      different from the AudioContext.
+    </p>
+  </body>
+</html>
