@@ -2,70 +2,129 @@
   <head>
     <title>WebAudio Different Sample Rates Test</title>
     <script>
-      async function runTest() {
-        const canRunTest =
-          navigator.mediaDevices.getSupportedConstraints()["sampleRate"];
-        if (!canRunTest) {
-          console.log(
-            "Browser does not support sampleRate constraint. Test skipped."
+      function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function createSineWaveSource(rate, frequency) {
+        const ctx = new AudioContext({ sampleRate: rate });
+        const osc = ctx.createOscillator();
+        osc.frequency.value = frequency;
+        const dest = ctx.createMediaStreamDestination();
+        osc.connect(dest);
+        osc.start();
+        return { ctx, osc, dest };
+      }
+
+      function createAudioWaveAnalyser(source, waveFrequency) {
+        const analyser = source.context.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0;
+        analyser.frequencyBuf = new Float32Array(analyser.frequencyBinCount);
+        source.connect(analyser);
+
+        analyser.waveFreq = waveFrequency;
+
+        analyser.connect(source.context.destination);
+        analyser.timeDomainBuf = new Float32Array(analyser.frequencyBinCount);
+
+        analyser.divElement = document.createElement("div");
+        document.body.appendChild(analyser.divElement);
+        analyser.canvasElement = document.createElement("canvas");
+        analyser.divElement.appendChild(analyser.canvasElement);
+        analyser.canvasElement.width = 300;
+        analyser.canvasElement.height = 300;
+
+        analyser.notifyAnalysis = () => {
+          const cvsCtx = analyser.canvasElement.getContext("2d");
+          const { width, height } = analyser.canvasElement;
+          cvsCtx.clearRect(0, 0, width, height);
+
+          analyser.getFloatTimeDomainData(analyser.timeDomainBuf);
+          for (let i = 0; i < analyser.timeDomainBuf.length; i++) {
+            cvsCtx.fillRect(
+              i,
+              height / 2,
+              1,
+              (-analyser.timeDomainBuf[i] * height) / 2
+            );
+          }
+
+          analyser.getFloatFrequencyData(analyser.frequencyBuf);
+          for (let i = 0; i < analyser.frequencyBuf.length; i++) {
+            cvsCtx.fillRect(
+              i,
+              height,
+              1,
+              -analyser.frequencyBuf[i] + analyser.minDecibels
+            );
+          }
+
+          // Verify the peak is at the expected index:
+          const maxVal = Math.max(...analyser.frequencyBuf);
+          const maxIndex = analyser.frequencyBuf.indexOf(maxVal);
+          const peakIndex = Math.round(
+            (analyser.waveFreq * analyser.fftSize) / analyser.context.sampleRate
           );
-          return;
+          console.assert(
+            maxIndex === peakIndex,
+            `Peak index ${maxIndex} is not at expected index ${peakIndex}`
+          );
+          console.assert(
+            Math.abs(maxIndex - peakIndex) <= 1,
+            `Peak index ${maxIndex} is not near the expected index ${peakIndex}`
+          );
+
+          requestAnimationFrame(analyser.notifyAnalysis);
+        };
+
+        return analyser;
+      }
+
+      function createMediaStreamAudioSourceNode(rate, stream) {
+        const ctx = new AudioContext({ sampleRate: rate });
+        const source = ctx.createMediaStreamSource(stream);
+        return source;
+      }
+
+      async function runTest() {
+        const toneFrequency = 440; // A4
+        const sourceRate = 44100;
+        const sineWaveSource = createSineWaveSource(sourceRate, toneFrequency);
+
+        const targetRates = [sourceRate, 48000, 96000];
+        const pairs = [];
+        let maxWaitTime = 0; // ms
+        for (const targetRate of targetRates) {
+          const sourceNode = createMediaStreamAudioSourceNode(
+            targetRate,
+            sineWaveSource.dest.stream
+          );
+          const analyser = createAudioWaveAnalyser(
+            sourceNode,
+            sineWaveSource.osc.frequency.value
+          );
+          pairs.push({ sourceNode, analyser });
+
+          const analyserBufferMs =
+            (analyser.fftSize / analyser.context.sampleRate) * 1000;
+          if (analyserBufferMs > maxWaitTime) {
+            maxWaitTime = analyserBufferMs;
+          }
+        }
+        // Wait for enough samples to fill the analyser buffer?
+        await delay(maxWaitTime);
+
+        for (const { analyser } of pairs) {
+          analyser.notifyAnalysis();
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: false,
-          audio: { sampleRate: { exact: 48000 } },
-        });
-        console.log(
-          "Got MediaStream with audio track settings:",
-          stream.getAudioTracks()[0].getSettings()
-        );
-
-        const ctx1 = new AudioContext({ sampleRate: 44100 });
-        console.log("Created AudioContext with sample rate:", ctx1.sampleRate);
-        const source1 = ctx1.createMediaStreamSource(stream);
-        console.log("Created a MediaStreamAudioSourceNode:", source1);
-
-        const ctx2 = new AudioContext({ sampleRate: 88200 });
-        console.log("Created AudioContext with sample rate:", ctx2.sampleRate);
-        const source2 = ctx2.createMediaStreamSource(stream);
-        console.log("Created a MediaStreamAudioSourceNode:", source2);
-
-        const analyser1 = ctx1.createAnalyser();
-        source1.connect(analyser1);
-        analyser1.fftSize = 128;
-        const bufferLength1 = analyser1.frequencyBinCount;
-        const dataArray1 = new Uint8Array(bufferLength1);
-        analyser1.getByteTimeDomainData(dataArray1);
-        console.log(
-          `Analyser1 get ${dataArray1.length} bytes of time domain data`
-        );
-
-        const analyser2 = ctx2.createAnalyser();
-        source2.connect(analyser2);
-        analyser2.fftSize = 128;
-        const bufferLength2 = analyser2.frequencyBinCount;
-        const dataArray2 = new Uint8Array(bufferLength2);
-        analyser2.getByteTimeDomainData(dataArray2);
-        console.log(
-          `Analyser2 get ${dataArray2.length} bytes of time domain data`
-        );
-
-        await ctx1.close();
-        analyser2.getByteTimeDomainData(dataArray2);
-        console.log(
-          `Analyser2 can still get ${dataArray2.length} bytes of time domain data after ctx1 is closed`
-        );
-
-        await ctx2.close();
-        stream.getTracks().forEach((track) => track.stop());
-
-        console.log("Test completed successfully.");
+        // TODO: Add buttons to close each sourceNode and its context.
       }
 
       window.addEventListener("DOMContentLoaded", (event) => {
         const btn = document.createElement("button");
-        btn.textContent = "Run Test";
+        btn.textContent = "start";
         document.body.appendChild(btn);
         btn.onclick = () => {
           runTest();
