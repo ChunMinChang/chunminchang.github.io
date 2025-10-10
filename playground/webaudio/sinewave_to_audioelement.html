@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <title>AudioElement from WebAudio MediaStream (440 Hz)</title>
+  </head>
+  <script>
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = 440; // A4
+    const dest = new MediaStreamAudioDestinationNode(ctx);
+    osc.connect(dest);
+
+    window.addEventListener("DOMContentLoaded", (event) => {
+      const audioEl = document.createElement("audio");
+      audioEl.srcObject = dest.stream;
+      document.body.appendChild(audioEl);
+      const btn = document.createElement("button");
+      btn.textContent = "play";
+      document.body.appendChild(btn);
+
+      let started = false;
+      btn.addEventListener("click", async () => {
+        if (!started) {
+          osc.start();
+          audioEl.srcObject = dest.stream;
+          started = true;
+        }
+
+        if (btn.textContent === "play") {
+          await audioEl.play();
+          btn.textContent = "stop";
+        } else {
+          audioEl.pause();
+          btn.textContent = "play";
+        }
+      });
+    });
+  </script>
+  <body>
+    <h1>440 Hz sine via MediaStream</h1>
+  </body>
+</html>
