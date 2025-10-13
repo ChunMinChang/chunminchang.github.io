@@ -3,8 +3,8 @@
     <title>AudioElement from WebAudio MediaStream (440 Hz)</title>
   </head>
   <script>
-    function createSineWaveInput(frequency = 440) {
-      const ctx = new AudioContext();
+    function createSineWaveInput(rate, frequency = 440) {
+      const ctx = new AudioContext({ sampleRate: rate });
       const osc = ctx.createOscillator();
       osc.type = "sine";
       osc.frequency.value = frequency;
@@ -86,12 +86,24 @@
       return maxDurationSec * 1000 + safetyMarginMs;
     }
 
-    async function testClosingOneContextStopsOnlyIt(tone, rates, cloneTracks) {
+    async function testClosingOneContextStopsOnlyIt(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
-        `Test closing one context stops only it: rates=${rates}, cloneTracks=${cloneTracks}`
+        `Test closing one context stops only it: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -101,7 +113,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -169,14 +181,22 @@
 
     async function testDisconnectingOneSourceSilencesOnlyIt(
       tone,
-      rates,
+      srcRate,
+      dstRates,
       cloneTracks
     ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
-        `Test disconnecting one source silences only it: rates=${rates}, cloneTracks=${cloneTracks}`
+        `Test disconnecting one source silences only it: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -186,7 +206,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -254,14 +274,26 @@
       console.log("Test completed.");
     }
 
-    async function testStopOneMediaStream(tone, rates, cloneTracks) {
+    async function testStopOneMediaStream(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
         `Test stopping one MediaStream silences ${
           cloneTracks ? "only it" : "all"
-        }: rates=${rates}, cloneTracks=${cloneTracks}`
+        }: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -271,7 +303,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -356,12 +388,24 @@
       document.body.removeChild(audioEl);
     }
 
-    async function testSuspendingOneContextSilencesOnlyIt(tone, rates, cloneTracks) {
+    async function testSuspendingOneContextSilencesOnlyIt(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
-        `Test suspending one context silences only it: rates=${rates}, cloneTracks=${cloneTracks}`
+        `Test suspending one context silences only it: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -371,7 +415,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -436,14 +480,26 @@
       document.body.removeChild(audioEl);
     }
 
-    async function testStoppingInputStream(tone, rates, cloneTracks) {
+    async function testStoppingInputStream(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
         `Test stopping input stream silences ${
           cloneTracks ? "nothing" : "all"
-        }: rates=${rates}, cloneTracks=${cloneTracks}`
+        }: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -453,7 +509,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -518,12 +574,24 @@
       console.log("Test completed.");
     }
 
-    async function testSuspendingInputContextSilencesAll(tone, rates, cloneTracks) {
+    async function testSuspendingInputContextSilencesAll(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
-        `Test suspending input context silences all: rates=${rates}, cloneTracks=${cloneTracks}`
+        `Test suspending input context silences all: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -533,7 +601,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -578,12 +646,24 @@
       console.log("Test completed.");
     }
 
-    async function testClosingInputContextSilencesAll(tone, rates, cloneTracks) {
+    async function testClosingInputContextSilencesAll(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
       console.log(
-        `Test closing input context silences all: rates=${rates}, cloneTracks=${cloneTracks}`
+        `Test closing input context silences all: rates=${dstRates}, cloneTracks=${cloneTracks}`
       );
 
-      const input = createSineWaveInput(tone);
+      const input = createSineWaveInput(srcRate, tone);
 
       // Play the MediaStream in an audio element to indicate that the stream is active.
       const audioEl = document.createElement("audio");
@@ -593,7 +673,7 @@
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
-      for (const rate of rates) {
+      for (const rate of dstRates) {
         const isolatedStream = new MediaStream(
           cloneTracks
             ? input.dest.stream.getTracks().map((track) => track.clone())
@@ -652,25 +732,71 @@
         783.99, // G5
       ];
 
-      const rates = [16000, 44100, 48000];
+      const srcRate = 44100;
+      const dstRates = [32000, 48000, 96000];
 
       // Tests with shared MediaStreamTracks.
-      await testClosingOneContextStopsOnlyIt(notes[0], rates, false);
-      await testDisconnectingOneSourceSilencesOnlyIt(notes[1], rates, false);
-      await testStopOneMediaStream(notes[2], rates, false);
-      await testSuspendingOneContextSilencesOnlyIt(notes[3], rates, false);
-      await testStoppingInputStream(notes[4], rates, false);
-      await testSuspendingInputContextSilencesAll(notes[5], rates, false);
-      await testClosingInputContextSilencesAll(notes[6], rates, false);
+      await testClosingOneContextStopsOnlyIt(
+        notes[0],
+        srcRate,
+        dstRates,
+        false
+      );
+      await testDisconnectingOneSourceSilencesOnlyIt(
+        notes[1],
+        srcRate,
+        dstRates,
+        false
+      );
+      await testStopOneMediaStream(notes[2], srcRate, dstRates, false);
+      await testSuspendingOneContextSilencesOnlyIt(
+        notes[3],
+        srcRate,
+        dstRates,
+        false
+      );
+      await testStoppingInputStream(notes[4], srcRate, dstRates, false);
+      await testSuspendingInputContextSilencesAll(
+        notes[5],
+        srcRate,
+        dstRates,
+        false
+      );
+      await testClosingInputContextSilencesAll(
+        notes[6],
+        srcRate,
+        dstRates,
+        false
+      );
 
       // Tests with cloned MediaStreamTracks.
-      await testClosingOneContextStopsOnlyIt(notes[0], rates, true);
-      await testDisconnectingOneSourceSilencesOnlyIt(notes[1], rates, true);
-      await testStopOneMediaStream(notes[2], rates, true);
-      await testSuspendingOneContextSilencesOnlyIt(notes[3], rates, true);
-      await testStoppingInputStream(notes[4], rates, true);
-      await testSuspendingInputContextSilencesAll(notes[5], rates, true);
-      await testClosingInputContextSilencesAll(notes[6], rates, true);
+      await testClosingOneContextStopsOnlyIt(notes[0], srcRate, dstRates, true);
+      await testDisconnectingOneSourceSilencesOnlyIt(
+        notes[1],
+        srcRate,
+        dstRates,
+        true
+      );
+      await testStopOneMediaStream(notes[2], srcRate, dstRates, true);
+      await testSuspendingOneContextSilencesOnlyIt(
+        notes[3],
+        srcRate,
+        dstRates,
+        true
+      );
+      await testStoppingInputStream(notes[4], srcRate, dstRates, true);
+      await testSuspendingInputContextSilencesAll(
+        notes[5],
+        srcRate,
+        dstRates,
+        true
+      );
+      await testClosingInputContextSilencesAll(
+        notes[6],
+        srcRate,
+        dstRates,
+        true
+      );
 
       btn.disabled = false;
       btn.textContent = "start";
