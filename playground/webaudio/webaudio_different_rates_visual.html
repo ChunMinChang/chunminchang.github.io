@@ -26,13 +26,58 @@
         analyser.timeDomainBuf = new Float32Array(analyser.frequencyBinCount);
 
         analyser.divElement = document.createElement("div");
+        analyser.divElement.style.border = "1px solid black";
+        analyser.divElement.style.margin = "10px";
+        analyser.divElement.style.display = "inline-block";
         document.body.appendChild(analyser.divElement);
+
+        const title = document.createElement("p");
+        title.textContent = `Context Rate: ${source.context.sampleRate} Hz`;
+        title.style.textAlign = "center";
+        title.style.margin = "5px";
+        analyser.divElement.appendChild(title);
+
         analyser.canvasElement = document.createElement("canvas");
         analyser.divElement.appendChild(analyser.canvasElement);
         analyser.canvasElement.width = 300;
         analyser.canvasElement.height = 300;
 
+        const controlsDiv = document.createElement("div");
+        controlsDiv.style.padding = "5px";
+        controlsDiv.style.textAlign = "center";
+        analyser.divElement.appendChild(controlsDiv);
+
+        const suspendBtn = document.createElement("button");
+        suspendBtn.textContent = "Suspend";
+        suspendBtn.onclick = () => {
+          if (analyser.context.state === "running") {
+            analyser.context.suspend().then(() => {
+              suspendBtn.textContent = "Resume";
+            });
+          } else if (analyser.context.state === "suspended") {
+            analyser.context.resume().then(() => {
+              suspendBtn.textContent = "Suspend";
+            });
+          }
+        };
+        controlsDiv.appendChild(suspendBtn);
+
+        const closeBtn = document.createElement("button");
+        closeBtn.textContent = "Close";
+        closeBtn.onclick = () => {
+          analyser.context.close().then(() => {
+            // Remove the entire div element from the DOM
+            analyser.divElement.remove();
+          });
+        };
+        controlsDiv.appendChild(closeBtn);
+
         analyser.notifyAnalysis = () => {
+          // Stop the animation loop if the context is closed.
+          if (analyser.context.state === "closed") {
+            return;
+          }
+
           const cvsCtx = analyser.canvasElement.getContext("2d");
           const { width, height } = analyser.canvasElement;
           cvsCtx.clearRect(0, 0, width, height);
@@ -89,7 +134,7 @@
         const sourceRate = 44100;
         const input = createSineWaveInput(sourceRate, toneFrequency);
 
-        const targetRates = [sourceRate, 48000, 96000];
+        const targetRates = [32000, 48000, 96000];
         const pairs = [];
         let maxWaitTime = 0; // ms
         for (const targetRate of targetRates) {
