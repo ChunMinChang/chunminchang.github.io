@@ -179,6 +179,98 @@
       console.log("Test completed.");
     }
 
+    async function testSuspendingOneContextSilencesOnlyIt(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      console.assert(
+        Array.isArray(dstRates) &&
+          dstRates.length >= 2 &&
+          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
+          !dstRates.includes(srcRate),
+        "dstRates should be an array of at least two positive integers different from srcRate."
+      );
+      console.log(
+        `Test suspending one context silences only it: rates=${dstRates}, cloneTracks=${cloneTracks}`
+      );
+
+      const input = createSineWaveInput(srcRate, tone);
+
+      // Play the MediaStream in an audio element to indicate that the stream is active.
+      const audioEl = document.createElement("audio");
+      audioEl.srcObject = input.dest.stream;
+      document.body.appendChild(audioEl);
+      await audioEl.play();
+
+      // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
+      const pairs = [];
+      for (const rate of dstRates) {
+        const isolatedStream = new MediaStream(
+          cloneTracks
+            ? input.dest.stream.getTracks().map((track) => track.clone())
+            : input.dest.stream.getTracks()
+        );
+        pairs.push(
+          await createAudioSourceAndSilenceDetector(rate, isolatedStream)
+        );
+        console.log(`Created context with sample rate ${rate}`);
+      }
+
+      // 1. Make sure all detectors are not silent.
+      await delay(calculateRequiredDelay(pairs.map((p) => p.detectorNode)));
+      for (const { detectorNode } of pairs) {
+        if (detectorNode.isSilent) {
+          console.error(
+            `Detector in context with rate ${detectorNode.context.sampleRate} is silent.`
+          );
+        } else {
+          console.log(
+            `Detector in context with rate ${detectorNode.context.sampleRate} is active.`
+          );
+        }
+      }
+
+      // 2. Verify that suspending one context silences its detector without impacting others.
+      console.log("Suspending the first context...");
+      await pairs[0].ctx.suspend();
+
+      // await waitForSilence(pairs[0].detectorNode);
+      // if (!pairs[0].detectorNode.isSilent) {
+      //   console.error(`Detector in context with rate ${pairs[0].detectorNode.context.sampleRate} should be silent after its context was suspended, but it is not.`);
+      // } else {
+      //   console.log(`Detector in context with rate ${pairs[0].detectorNode.context.sampleRate} is silent as expected.`);
+      // }
+
+      // Give other detectors time to process a new buffer.
+      await delay(
+        calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
+      );
+
+      // Verify the other active detectors are still running.
+      for (const { detectorNode } of pairs.slice(1)) {
+        if (detectorNode.isSilent) {
+          console.error(
+            `Detector in context with rate ${detectorNode.context.sampleRate} became silent but should not have.`
+          );
+        } else {
+          console.log(
+            `Detector in context with rate ${detectorNode.context.sampleRate} is still active as expected.`
+          );
+        }
+      }
+
+      // Clean up AudioContexts.
+      for (const { ctx } of pairs) {
+        await ctx.close();
+      }
+      input.ctx.close();
+
+      audioEl.pause();
+      document.body.removeChild(audioEl);
+    }
+
     async function testDisconnectingOneSourceSilencesOnlyIt(
       tone,
       srcRate,
@@ -446,7 +538,7 @@
       // 2. Verify that disabling the tracks of one MediaStream silences only its detector or all of them.
       console.log("Disabling the tracks for the first detector's stream...");
       const streamToStop = pairs[0].sourceNode.mediaStream;
-      streamToStop.getTracks().forEach((track) => track.enabled = false);
+      streamToStop.getTracks().forEach((track) => (track.enabled = false));
 
       await waitForSilence(pairs[0].detectorNode);
 
@@ -489,98 +581,6 @@
               `Detector in context with rate ${detectorNode.context.sampleRate} is silent as expected.`
             );
           }
-        }
-      }
-
-      // Clean up AudioContexts.
-      for (const { ctx } of pairs) {
-        await ctx.close();
-      }
-      input.ctx.close();
-
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-    }
-
-    async function testSuspendingOneContextSilencesOnlyIt(
-      tone,
-      srcRate,
-      dstRates,
-      cloneTracks
-    ) {
-      console.assert(
-        Array.isArray(dstRates) &&
-          dstRates.length >= 2 &&
-          dstRates.every((r) => Number.isInteger(r) && r > 0) &&
-          !dstRates.includes(srcRate),
-        "dstRates should be an array of at least two positive integers different from srcRate."
-      );
-      console.log(
-        `Test suspending one context silences only it: rates=${dstRates}, cloneTracks=${cloneTracks}`
-      );
-
-      const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
-
-      // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
-      const pairs = [];
-      for (const rate of dstRates) {
-        const isolatedStream = new MediaStream(
-          cloneTracks
-            ? input.dest.stream.getTracks().map((track) => track.clone())
-            : input.dest.stream.getTracks()
-        );
-        pairs.push(
-          await createAudioSourceAndSilenceDetector(rate, isolatedStream)
-        );
-        console.log(`Created context with sample rate ${rate}`);
-      }
-
-      // 1. Make sure all detectors are not silent.
-      await delay(calculateRequiredDelay(pairs.map((p) => p.detectorNode)));
-      for (const { detectorNode } of pairs) {
-        if (detectorNode.isSilent) {
-          console.error(
-            `Detector in context with rate ${detectorNode.context.sampleRate} is silent.`
-          );
-        } else {
-          console.log(
-            `Detector in context with rate ${detectorNode.context.sampleRate} is active.`
-          );
-        }
-      }
-
-      // 2. Verify that suspending one context silences its detector without impacting others.
-      console.log("Suspending the first context...");
-      await pairs[0].ctx.suspend();
-
-      // await waitForSilence(pairs[0].detectorNode);
-      // if (!pairs[0].detectorNode.isSilent) {
-      //   console.error(`Detector in context with rate ${pairs[0].detectorNode.context.sampleRate} should be silent after its context was suspended, but it is not.`);
-      // } else {
-      //   console.log(`Detector in context with rate ${pairs[0].detectorNode.context.sampleRate} is silent as expected.`);
-      // }
-
-      // Give other detectors time to process a new buffer.
-      await delay(
-        calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
-      );
-
-      // Verify the other active detectors are still running.
-      for (const { detectorNode } of pairs.slice(1)) {
-        if (detectorNode.isSilent) {
-          console.error(
-            `Detector in context with rate ${detectorNode.context.sampleRate} became silent but should not have.`
-          );
-        } else {
-          console.log(
-            `Detector in context with rate ${detectorNode.context.sampleRate} is still active as expected.`
-          );
         }
       }
 
@@ -831,89 +831,77 @@
       console.log("Test completed.");
     }
 
-    async function run() {
-      const btn = document.querySelector("button");
-      btn.textContent = "running...";
-      btn.disabled = true;
-
+    async function runAllTests(srcRate, dstRates, cloneTracks) {
       const notes = {
         C4: 261.63,
         D4: 293.66,
         E4: 329.63,
         F4: 349.23,
-        G4: 392.00,
-        A4: 440.00,
+        G4: 392.0,
+        A4: 440.0,
         B4: 493.88,
         C5: 523.25,
       };
 
-      const srcRate = 44100;
-      const dstRates = [32000, 48000, 96000];
-
-      // Tests with shared MediaStreamTracks.
       await testClosingOneContextStopsOnlyIt(
         notes.C4,
         srcRate,
         dstRates,
-        false
+        cloneTracks
       );
-      await testDisconnectingOneSourceSilencesOnlyIt(
+      await testSuspendingOneContextSilencesOnlyIt(
         notes.D4,
         srcRate,
         dstRates,
-        false
+        cloneTracks
       );
-      await testStoppingOneMediaStream(notes.E4, srcRate, dstRates, false);
-      await testDisablingOneMediaStream(notes.F4, srcRate, dstRates, false);
-      await testSuspendingOneContextSilencesOnlyIt(
+      await testDisconnectingOneSourceSilencesOnlyIt(
+        notes.E4,
+        srcRate,
+        dstRates,
+        cloneTracks
+      );
+      await testStoppingOneMediaStream(
+        notes.F4,
+        srcRate,
+        dstRates,
+        cloneTracks
+      );
+      await testDisablingOneMediaStream(
         notes.G4,
         srcRate,
         dstRates,
-        false
+        cloneTracks
       );
-      await testStoppingInputStream(notes.A4, srcRate, dstRates, false);
+      await testStoppingInputStream(notes.A4, srcRate, dstRates, cloneTracks);
       await testSuspendingInputContextSilencesAll(
         notes.B4,
         srcRate,
         dstRates,
-        false
+        cloneTracks
       );
       await testClosingInputContextSilencesAll(
         notes.C5,
         srcRate,
         dstRates,
-        false
+        cloneTracks
       );
+    }
+
+    async function run() {
+      const btn = document.querySelector("button");
+      btn.textContent = "running...";
+      btn.disabled = true;
+
+      const srcRate = 44100;
+      const dstRates = [32000, 48000, 96000];
+      const trackUsages = { cloned: true, shared: false };
+
+      // Tests with shared MediaStreamTracks.
+      runAllTests(srcRate, dstRates, trackUsages.shared);
 
       // Tests with cloned MediaStreamTracks.
-      await testClosingOneContextStopsOnlyIt(notes.C4, srcRate, dstRates, true);
-      await testDisconnectingOneSourceSilencesOnlyIt(
-        notes.D4,
-        srcRate,
-        dstRates,
-        true
-      );
-      await testStoppingOneMediaStream(notes.E4, srcRate, dstRates, true);
-      await testDisablingOneMediaStream(notes.F4, srcRate, dstRates, true);
-      await testSuspendingOneContextSilencesOnlyIt(
-        notes.G4,
-        srcRate,
-        dstRates,
-        true
-      );
-      await testStoppingInputStream(notes.A4, srcRate, dstRates, true);
-      await testSuspendingInputContextSilencesAll(
-        notes.B4,
-        srcRate,
-        dstRates,
-        true
-      );
-      await testClosingInputContextSilencesAll(
-        notes.C5,
-        srcRate,
-        dstRates,
-        true
-      );
+      runAllTests(srcRate, dstRates, trackUsages.cloned);
 
       btn.disabled = false;
       btn.textContent = "start";
