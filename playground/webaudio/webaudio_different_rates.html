@@ -76,8 +76,8 @@
         return 0;
       }
 
-      // The time to process one buffer is processingBlockSize / sampleRate.
-      // For AudioWorklets, the block size is fixed at 128 samples.
+      // Each buffer processing takes processingBlockSize / sampleRate seconds.
+      // The default block size is 128 samples.
       const processingBlockSize = 128;
       const maxDurationSec = Math.max(
         ...nodes.map((n) => processingBlockSize / n.context.sampleRate)
