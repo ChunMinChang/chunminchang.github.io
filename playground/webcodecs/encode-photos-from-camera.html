@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Encoder</title>
+    <script src="webrtc.js"></script>
+    <script src="circular-queue.js"></script>
+    <script src="average.js"></script>
+  </head>
+  <script>
+    const SHOWN_CONFIG = "usedConfig";
+    const RESULTS_DIV_ID = "results";
+    const CAMERA_DIV_ID = "camera";
+
+    var WORKER = null;
+
+    function updateOutputResults(frameCount) {
+      const resultsDiv = document.getElementById(RESULTS_DIV_ID);
+      const frameCountId = "frameCount";
+      let frameCountEl = document.getElementById(frameCountId);
+      if (!frameCountEl) {
+        frameCountEl = document.createElement("p");
+        frameCountEl.id = frameCountId;
+        resultsDiv.appendChild(frameCountEl);
+      }
+      frameCountEl.textContent = `Output frames: ${frameCount}`;
+    }
+
+    async function startTest() {
+      const {
+        codec,
+        videoSize,
+        displaySize,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+        hardwareAcceleration,
+      } = getConfig();
+      showConfig();
+
+      const { video, stream } = await createStreamingVideo(videoSize);
+      const stmSettings = stream.getVideoTracks()[0].getSettings();
+      console.log(
+        "stream size: " + stmSettings.width + "x" + stmSettings.height
+      );
+      console.log("video size: " + video.videoWidth + "x" + video.videoHeight);
+      const container = document.getElementById(CAMERA_DIV_ID);
+      container.appendChild(video);
+
+      WORKER = new Worker("encode-worker.js");
+      WORKER.postMessage({
+        command: "configure",
+        codec: codec.name,
+        width: videoSize.width,
+        height: videoSize.height,
+        displayWidth: displaySize.width,
+        displayHeight: displaySize.height,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+        hardwareAcceleration,
+        avcFormat: codec.avc,
+      });
+
+      let outputFrames = 0;
+      WORKER.addEventListener("message", (event) => {
+        if (event.data.chunk) {
+          outputFrames++;
+          updateOutputResults(outputFrames);
+        }
+        if (event.data.error) {
+          console.error("Encoder error: ", event.data.error);
+        }
+        if (event.data.result === "flushed") {
+          console.log("Encoder has been flushed");
+        }
+        if (event.data.result === "closed") {
+          console.log("Encoder has been closed");
+        }
+      });
+    }
+
+    async function endTest() {
+      await shutdown(WORKER);
+      WORKER = null;
+
+      clearElement(CAMERA_DIV_ID);
+      clearElement(RESULTS_DIV_ID);
+      clearElement(SHOWN_CONFIG);
+    }
+
+    async function encodePhoto() {
+      const container = document.getElementById(CAMERA_DIV_ID);
+      const video = container.querySelector("video");
+      if (!video) {
+        console.error("No video element found for taking photo");
+        return;
+      }
+
+      const frame = takePicture(video);
+
+      // Send the image data to the worker for encoding
+      WORKER.postMessage({
+        command: "encode",
+        frame,
+      });
+    }
+
+    async function shutdown(worker) {
+      worker.postMessage({ command: "close" });
+      return new Promise((resolve, reject) => {
+        worker.addEventListener("message", (event) => {
+          if (event.data.result === "closed") {
+            worker.terminate();
+            resolve();
+          }
+        });
+      });
+    }
+
+    function getConfig() {
+      const codec = {
+        name: document.getElementById("codecString").value,
+      };
+      if (document.querySelector('input[name="avcFormat"]:checked')) {
+        codec.avc = document.querySelector(
+          'input[name="avcFormat"]:checked'
+        ).value;
+      }
+      const videoSize = {
+        width: parseInt(document.getElementById("videoWidth").value, 10),
+        height: parseInt(document.getElementById("videoHeight").value, 10),
+      };
+      const displaySize = {
+        width: parseInt(document.getElementById("displayWidth").value, 10),
+        height: parseInt(document.getElementById("displayHeight").value, 10),
+      };
+      const framerate = parseInt(
+        document.getElementById("framerateValue").value,
+        10
+      );
+      const bitrate = parseInt(
+        document.getElementById("bitrateValue").value,
+        10
+      );
+      const bitrateMode = document.querySelector(
+        'input[name="bitrateMode"]:checked'
+      ).value;
+      const scalabilityMode = document.querySelector(
+        'input[name="scalabilityMode"]:checked'
+      ).value;
+      const latencyMode = document.querySelector(
+        'input[name="latencyMode"]:checked'
+      ).value;
+      const hardwareAcceleration = document.querySelector(
+        'input[name="hardwareAcceleration"]:checked'
+      ).value;
+      return {
+        codec,
+        videoSize,
+        displaySize,
+        framerate,
+        bitrate,
+        bitrateMode,
+        scalabilityMode,
+        latencyMode,
+        hardwareAcceleration,
+      };
+    }
+
+    function clearElement(id) {
+      const element = document.getElementById(id);
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+    }
+
+    function toggleAvcFormatSelection() {
+      const codecString = document.getElementById("codecString").value;
+      const enabled = codecString.startsWith("avc1");
+
+      const formats = document.querySelectorAll('input[name="avcFormat"]');
+      formats.forEach((format) => {
+        if (!enabled) {
+          format.checked = false;
+        }
+        format.disabled = !enabled;
+      });
+      if (enabled) {
+        const latencyMode = document.querySelector(
+          'input[name="latencyMode"]:checked'
+        ).value;
+        const defaultAvcFormat = latencyMode === "realtime" ? "annexb" : "avc";
+        document.getElementById(`avcFormat-${defaultAvcFormat}`).checked = true;
+      }
+    }
+
+    function parseSize(sizeString) {
+      const [width, height] = sizeString.split("x").map(Number);
+      return { width, height };
+    }
+
+    function setSize(sizeString, widthId, heightId) {
+      const { width, height } = parseSize(sizeString);
+      document.getElementById(widthId).value = width;
+      document.getElementById(heightId).value = height;
+    }
+
+    function initConfigSelection() {
+      // Codec selection
+      const codecString = document.getElementById("codecString");
+      codecString.addEventListener("input", (evt) => {
+        toggleAvcFormatSelection();
+      });
+
+      const codecSelect = document.getElementById("codecSelect");
+      codecSelect.addEventListener("change", (evt) => {
+        codecString.value = evt.target.value;
+        toggleAvcFormatSelection();
+      });
+
+      codecString.value = codecSelect.value;
+      toggleAvcFormatSelection();
+
+      // videoSize selection
+      const videoSizeSelect = document.getElementById("videoSizeSelect");
+      videoSizeSelect.addEventListener("change", (evt) => {
+        setSize(evt.target.value, "videoWidth", "videoHeight");
+      });
+      setSize(videoSizeSelect.value, "videoWidth", "videoHeight");
+
+      // displaySize selection
+      const displaySizeSelect = document.getElementById("displaySizeSelect");
+      displaySizeSelect.addEventListener("change", (evt) => {
+        setSize(evt.target.value, "displayWidth", "displayHeight");
+      });
+      setSize(displaySizeSelect.value, "displayWidth", "displayHeight");
+
+      // Framerate selection
+      const framerateSelect = document.getElementById("framerateSelect");
+      const framerateValue = document.getElementById("framerateValue");
+      framerateSelect.addEventListener("change", (evt) => {
+        framerateValue.value = evt.target.value;
+      });
+      framerateValue.value = framerateSelect.value;
+
+      // Bitrate selection
+      const bitrateSelect = document.getElementById("bitrateSelect");
+      const bitrateValue = document.getElementById("bitrateValue");
+      bitrateSelect.addEventListener("change", (evt) => {
+        bitrateValue.value = evt.target.value;
+      });
+      bitrateValue.value = bitrateSelect.value;
+    }
+
+    function showConfig() {
+      const usedConfig = document.getElementById(SHOWN_CONFIG);
+      clearElement(SHOWN_CONFIG);
+
+      const config = getConfig();
+      const codecText = config.codec.avc
+        ? `${config.codec.name} (${config.codec.avc})`
+        : config.codec.name;
+      const videoSizeText = `${config.videoSize.width}x${config.videoSize.height}`;
+      const displaySizeText = `${config.displaySize.width}x${config.displaySize.height}`;
+      const framerateText = `${config.framerate} fps`;
+      const bitrateText = `${config.bitrate} bps`;
+      const bitrateModeText = config.bitrateMode;
+      const scalabilityModeText = config.scalabilityMode;
+      const latencyModeText = config.latencyMode;
+      const hardwareAccelerationText = config.hardwareAcceleration;
+      const configText = `Codec: ${codecText}, Video Size: ${videoSizeText}, Display Size: ${displaySizeText}, Framerate: ${framerateText}, Bitrate: ${bitrateText}, Bitrate Mode: ${bitrateModeText}, Scalability Mode: ${scalabilityModeText}, Latency Mode: ${latencyModeText}, Hardware Acceleration: ${hardwareAccelerationText}`;
+      usedConfig.innerHTML = "<b>Current Configuration: </b>";
+      usedConfig.innerHTML += configText;
+    }
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+      initConfigSelection();
+
+      const endButton = document.getElementById("end");
+      endButton.disabled = true;
+      endButton.addEventListener("click", async () => {
+        endTest();
+        startButton.innerText = "Start";
+        endButton.disabled = true;
+      });
+
+      const startButton = document.getElementById("start");
+      startButton.addEventListener("click", async () => {
+        if (startButton.innerText == "Start") {
+          startTest();
+          startButton.innerText = "shot and encode";
+          endButton.disabled = false;
+        } else {
+          encodePhoto();
+        }
+      });
+    });
+  </script>
+  <body>
+    <div id="camera"></div>
+    <div id="results"></div>
+    <div id="usedConfig"></div>
+    <button id="start">Start</button>
+    <button id="end">End</button>
+    <div id="encoderConfig">
+      <h3>Encoder Configuration</h3>
+      <p>Choose default value from list, or enter custom value.</p>
+      <fieldset>
+        <legend>Codec</legend>
+        <select id="codecSelect" for="codecString">
+          <option value="avc1.42001E">H264 Baseline</option>
+          <option value="avc1.4D001E">H264 Main</option>
+          <option value="avc1.64001E">H264 High</option>
+          <option value="vp8">VP8</option>
+          <option value="vp09.00.10.08">VP9</option>
+          <option value="av01.0.04M.08">AV1</option>
+        </select>
+        <input type="text" id="codecString" />
+        <fieldset>
+          <legend>AVC Format</legend>
+          <input
+            type="radio"
+            id="avcFormat-avc"
+            name="avcFormat"
+            value="avc"
+            checked
+          />
+          <label for="avcFormat-avc">AVC</label>
+          <input
+            type="radio"
+            id="avcFormat-annexb"
+            name="avcFormat"
+            value="annexb"
+          />
+          <label for="avcFormat-annexb">Annex B</label>
+        </fieldset>
+      </fieldset>
+      <fieldset>
+        <select id="videoSizeSelect">
+          <option value="640x480">480p</option>
+          <option value="1280x720">720p</option>
+          <option value="1920x1080">1080p</option>
+          <option value="2560x1440">1440p</option>
+          <option value="3840x2160">2K</option>
+          <option value="7680x4320">4K</option>
+        </select>
+        <label
+          >Width
+          <input type="number" id="videoWidth" />
+        </label>
+        <label
+          >Height
+          <input type="number" id="videoHeight" />
+        </label>
+      </fieldset>
+      <fieldset>
+        <select id="displaySizeSelect">
+          <option value="640x480">480p</option>
+          <option value="1280x720">720p</option>
+          <option value="1920x1080">1080p</option>
+          <option value="2560x1440">1440p</option>
+          <option value="3840x2160">2K</option>
+          <option value="7680x4320">4K</option>
+        </select>
+        <label
+          >Display Width
+          <input type="number" id="displayWidth" />
+        </label>
+        <label
+          >Display Height
+          <input type="number" id="displayHeight" />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Framerate</legend>
+        <select id="framerateSelect" for="framerateValue">
+          <option value="30">30 fps</option>
+          <option value="60">60 fps</option>
+        </select>
+        <input type="number" id="framerateValue" />
+      </fieldset>
+      <fieldset>
+        <legend>Bitrate</legend>
+        <select id="bitrateSelect" for="bitrateValue">
+          <option value="1000000">1 Mbps</option>
+          <option value="2000000">2 Mbps</option>
+          <option value="5000000">5 Mbps</option>
+          <option value="10000000">10 Mbps</option>
+          <option value="20000000">20 Mbps</option>
+          <option value="50000000">50 Mbps</option>
+        </select>
+        <input type="number" id="bitrateValue" />
+      </fieldset>
+      <fieldset>
+        <legend>Bitrate Mode</legend>
+        <input
+          type="radio"
+          id="bitrate-variable"
+          name="bitrateMode"
+          value="variable"
+          checked
+        />
+        <label for="bitrate-variable">variable</label>
+        <input
+          type="radio"
+          id="bitrate-constant"
+          name="bitrateMode"
+          value="constant"
+        />
+        <label for="bitrate-constant">constant</label>
+      </fieldset>
+      <fieldset>
+        <legend>Scalability Mode</legend>
+        <!-- <select id="scalabilitySelect" for="scalabilityValue">
+          <option value="None">None</option>
+          <option value="L1T1">L1T1</option>
+          <option value="L1T2">L1T2</option>
+        </select> -->
+        <input
+          type="radio"
+          id="scalability-none"
+          name="scalabilityMode"
+          value="none"
+          checked
+        />
+        <label for="scalability-none">None</label>
+        <input
+          type="radio"
+          id="scalability-L1T1"
+          name="scalabilityMode"
+          value="L1T1"
+        />
+        <label for="scalability-L1T1">L1T1</label>
+        <input
+          type="radio"
+          id="scalability-L1T2"
+          name="scalabilityMode"
+          value="L1T2"
+        />
+        <label for="scalability-L1T2">L1T2</label>
+      </fieldset>
+      <fieldset>
+        <legend>Latency Mode</legend>
+        <input
+          type="radio"
+          id="latency-realtime"
+          name="latencyMode"
+          value="realtime"
+          checked
+        />
+        <label for="latency-realtime">realtime</label>
+        <input
+          type="radio"
+          id="latency-quality"
+          name="latencyMode"
+          value="quality"
+        />
+        <label for="latency-quality">quality</label>
+      </fieldset>
+      <fieldset>
+        <legend>Hardware Acceleration</legend>
+        <input
+          type="radio"
+          id="acceleration-none"
+          name="hardwareAcceleration"
+          value="no-preference"
+          checked
+        />
+        <label for="acceleration-none">no-preference</label>
+        <input
+          type="radio"
+          id="acceleration-hardware"
+          name="hardwareAcceleration"
+          value="prefer-hardware"
+        />
+        <label for="acceleration-hardware">prefer-hardware</label>
+        <input
+          type="radio"
+          id="acceleration-software"
+          name="hardwareAcceleration"
+          value="prefer-software"
+        />
+        <label for="acceleration-software">prefer-software</label>
+      </fieldset>
+    </div>
+  </body>
+</html>
