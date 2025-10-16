@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Video Encoder</title>
     <script src="webrtc.js"></script>
-    <script src="circular-queue.js"></script>
-    <script src="average.js"></script>
   </head>
   <script>
     const SHOWN_CONFIG = "usedConfig";
     const RESULTS_DIV_ID = "results";
     const CAMERA_DIV_ID = "camera";
+    const ENCODE_OPTIONS_DIV_ID = "encodeOptions";
 
     var WORKER = null;
 
@@ -40,6 +39,8 @@
         hardwareAcceleration,
       } = getConfig();
       showConfig();
+
+      showElement(ENCODE_OPTIONS_DIV_ID);
 
       const { video, stream } = await createStreamingVideo(videoSize);
       const stmSettings = stream.getVideoTracks()[0].getSettings();
@@ -92,6 +93,7 @@
       clearElement(CAMERA_DIV_ID);
       clearElement(RESULTS_DIV_ID);
       clearElement(SHOWN_CONFIG);
+      hideElement(ENCODE_OPTIONS_DIV_ID);
     }
 
     async function encodePhoto() {
@@ -103,11 +105,14 @@
       }
 
       const frame = takePicture(video);
+      const isKeyframe = document.getElementById("keyframe").checked;
+      const options = isKeyframe ? { keyFrame: true } : undefined;
 
       // Send the image data to the worker for encoding
       WORKER.postMessage({
         command: "encode",
         frame,
+        options,
       });
     }
 
@@ -178,6 +183,16 @@
       while (element.firstChild) {
         element.removeChild(element.firstChild);
       }
+    }
+
+    function hideElement(id) {
+      const element = document.getElementById(id);
+      element.style.display = "none";
+    }
+
+    function showElement(id) {
+      const element = document.getElementById(id);
+      element.style.display = "block";
     }
 
     function toggleAvcFormatSelection() {
@@ -306,6 +321,11 @@
     <div id="camera"></div>
     <div id="results"></div>
     <div id="usedConfig"></div>
+    <div id="encodeOptions" style="display: none">
+      <h4>Encode Options</h4>
+      <input type="checkbox" id="keyframe" />
+      <label for="keyframe">Keyframe</label>
+    </div>
     <button id="start">Start</button>
     <button id="end">End</button>
     <div id="encoderConfig">

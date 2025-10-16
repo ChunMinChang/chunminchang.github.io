@@ -84,9 +84,9 @@ self.onmessage = async (event) => {
 
     encoder.configure(config);
   } else if (event.data.command === "encode") {
-    const { command, frame } = event.data;
+    const { command, frame, options } = event.data;
     const currentTime = performance.now();
-    encoder.encode(frame);
+    encoder.encode(frame, options);
     self.postMessage({
       encodeTime: currentTime,
       frameTimestamp: frame.timestamp,
