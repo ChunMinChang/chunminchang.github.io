@@ -60,8 +60,28 @@
       <h2>1. Select Source</h2>
       <label>
         <input type="radio" name="source" value="default" checked />
-        Default Four-Color Square
+        Default RGBA (from Canvas)
       </label>
+      <label>
+        <input type="radio" name="source" value="buffer" />
+        Buffer Source (from raw data)
+      </label>
+      <div
+        id="buffer-options"
+        class="note"
+        style="display: none; padding-left: 20px"
+      >
+        <label>
+          <input type="radio" name="buffer-format" value="RGBX" checked />
+          RGBX
+        </label>
+        <label>
+          <input type="radio" name="buffer-format" value="I420" /> I420
+        </label>
+        <label>
+          <input type="radio" name="buffer-format" value="NV12" /> NV12
+        </label>
+      </div>
       <label>
         <input type="radio" name="source" value="webcam" />
         Webcam Photo
@@ -130,6 +150,7 @@
 
         const webcamVideo = document.getElementById("webcam");
         const webcamContainer = document.getElementById("webcam-container");
+        const bufferOptionsDiv = document.getElementById("buffer-options");
         let imageCapture;
 
         // --- Source Selection Logic ---
@@ -141,11 +162,15 @@
           const selectedSource = document.querySelector(
             'input[name="source"]:checked'
           ).value;
+
+          webcamContainer.style.display =
+            selectedSource === "webcam" ? "block" : "none";
+          bufferOptionsDiv.style.display =
+            selectedSource === "buffer" ? "block" : "none";
+
           if (selectedSource === "webcam") {
-            webcamContainer.style.display = "block";
             initWebcam();
           } else {
-            webcamContainer.style.display = "none";
             stopWebcam();
           }
         }
@@ -170,6 +195,30 @@
           }
         }
 
+        function createFourColorCanvas(width, height) {
+          const canvas = new OffscreenCanvas(width, height);
+          const ctx = canvas.getContext("2d");
+          const w = width / 2;
+          const h = height / 2;
+          ctx.fillStyle = "red";
+          ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = "green";
+          ctx.fillRect(w, 0, w, h);
+          ctx.fillStyle = "blue";
+          ctx.fillRect(0, h, w, h);
+          ctx.fillStyle = "yellow";
+          ctx.fillRect(w, h, w, h);
+          return canvas;
+        }
+
+        // --- RGBA to YUV conversion helpers ---
+        function rgbaToYuv(r, g, b) {
+          const y = 0.299 * r + 0.587 * g + 0.114 * b;
+          const u = -0.169 * r - 0.331 * g + 0.5 * b + 128;
+          const v = 0.5 * r - 0.419 * g - 0.081 * b + 128;
+          return { y, u, v };
+        }
+
         // --- VideoFrame Creation Logic ---
         async function getFrameSource() {
           const selectedSource = document.querySelector(
@@ -177,6 +226,91 @@
           ).value;
 
           switch (selectedSource) {
+            case "buffer": {
+              const format = document.querySelector(
+                'input[name="buffer-format"]:checked'
+              ).value;
+              const width = 320;
+              const height = 240;
+              const fourColorCanvas = createFourColorCanvas(width, height);
+              const rgba = fourColorCanvas
+                .getContext("2d")
+                .getImageData(0, 0, width, height).data;
+              const yuvPlanes = {
+                y: new Uint8Array(width * height),
+                u: new Uint8Array((width * height) / 4),
+                v: new Uint8Array((width * height) / 4),
+              };
+
+              // Convert the whole frame to YUV planes first
+              for (let j = 0; j < height; j++) {
+                for (let i = 0; i < width; i++) {
+                  const rgbaIndex = (j * width + i) * 4;
+                  const yuv = rgbaToYuv(
+                    rgba[rgbaIndex],
+                    rgba[rgbaIndex + 1],
+                    rgba[rgbaIndex + 2]
+                  );
+                  yuvPlanes.y[j * width + i] = yuv.y;
+                  if (j % 2 === 0 && i % 2 === 0) {
+                    const uvIndex = (j / 2) * (width / 2) + i / 2;
+                    yuvPlanes.u[uvIndex] = yuv.u;
+                    yuvPlanes.v[uvIndex] = yuv.v;
+                  }
+                }
+              }
+
+              if (format === "RGBX") {
+                return {
+                  data: rgba,
+                  init: {
+                    format: "RGBX",
+                    codedWidth: width,
+                    codedHeight: height,
+                    layout: [{ offset: 0, stride: width * 4 }],
+                  },
+                };
+              } else if (format === "I420") {
+                const i420Data = new Uint8Array(width * height * 1.5);
+                i420Data.set(yuvPlanes.y, 0);
+                i420Data.set(yuvPlanes.u, width * height);
+                i420Data.set(yuvPlanes.v, width * height * 1.25);
+                return {
+                  data: i420Data,
+                  init: {
+                    format: "I420",
+                    codedWidth: width,
+                    codedHeight: height,
+                    layout: [
+                      { offset: 0, stride: width }, // Y
+                      { offset: width * height, stride: width / 2 }, // U
+                      { offset: width * height * 1.25, stride: width / 2 }, // V
+                    ],
+                  },
+                };
+              } else if (format === "NV12") {
+                const nv12Data = new Uint8Array(width * height * 1.5);
+                nv12Data.set(yuvPlanes.y, 0);
+                const uvPlaneOffset = width * height;
+                for (let i = 0; i < yuvPlanes.u.length; i++) {
+                  nv12Data[uvPlaneOffset + i * 2] = yuvPlanes.u[i];
+                  nv12Data[uvPlaneOffset + i * 2 + 1] = yuvPlanes.v[i];
+                }
+                return {
+                  data: nv12Data,
+                  init: {
+                    format: "NV12",
+                    codedWidth: width,
+                    codedHeight: height,
+                    layout: [
+                      { offset: 0, stride: width }, // Y
+                      { offset: width * height, stride: width }, // UV
+                    ],
+                  },
+                };
+              }
+              return null;
+            }
             case "webcam":
               if (!imageCapture) {
                 alert("Webcam not initialized.");
@@ -196,19 +330,7 @@
               }
             case "default":
             default:
-              const offscreenCanvas = new OffscreenCanvas(320, 240);
-              const offscreenCtx = offscreenCanvas.getContext("2d");
-              const w = 160;
-              const h = 120;
-              offscreenCtx.fillStyle = "red";
-              offscreenCtx.fillRect(0, 0, w, h);
-              offscreenCtx.fillStyle = "green";
-              offscreenCtx.fillRect(w, 0, w, h);
-              offscreenCtx.fillStyle = "blue";
-              offscreenCtx.fillRect(0, h, w, h);
-              offscreenCtx.fillStyle = "yellow";
-              offscreenCtx.fillRect(w, h, w, h);
-              return offscreenCanvas;
+              return createFourColorCanvas(320, 240);
           }
         }
 
@@ -227,7 +349,15 @@
 
           let videoFrame;
           try {
-            videoFrame = new VideoFrame(frameSource, frameOptions);
+            // Handle both data-based and source-based frame creation
+            if (frameSource.data && frameSource.init) {
+              videoFrame = new VideoFrame(frameSource.data, {
+                ...frameSource.init,
+                ...frameOptions,
+              });
+            } else {
+              videoFrame = new VideoFrame(frameSource, frameOptions);
+            }
           } catch (err) {
             alert(
               "Error creating VideoFrame: " +
@@ -245,7 +375,6 @@
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.save();
 
-          // The browser automatically handles the native `rotation` property when drawing.
           ctx.drawImage(
             videoFrame,
             0,
