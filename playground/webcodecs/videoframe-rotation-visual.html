@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VideoFrame Property Visualizer</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+      .panel {
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 8px;
+        min-width: 320px;
+      }
+      .panel h2 {
+        margin-top: 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input[type="text"],
+      input[type="number"],
+      select,
+      button {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      canvas {
+        border: 2px solid black;
+        background-color: #f0f0f0;
+      }
+      #webcam-container {
+        display: none;
+      }
+      .note {
+        font-size: 0.8em;
+        color: #555;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <h2>1. Select Source</h2>
+      <label>
+        <input type="radio" name="source" value="default" checked />
+        Default Four-Color Square
+      </label>
+      <label>
+        <input type="radio" name="source" value="webcam" />
+        Webcam Photo
+      </label>
+      <label>
+        <input type="radio" name="source" value="url" />
+        Image from URL
+      </label>
+      <input
+        type="text"
+        id="imageUrl"
+        placeholder="Enter image URL"
+        value="https://upload.wikimedia.org/wikipedia/commons/7/72/Firefox_Browser_%E2%80%93_About-logo%402x.png"
+      />
+      <div id="webcam-container">
+        <video
+          id="webcam"
+          width="320"
+          height="240"
+          autoplay
+          playsinline
+        ></video>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>2. Set VideoFrame Properties</h2>
+      <label for="rotation">Rotation (degrees):</label>
+      <input type="number" id="rotation" value="0" />
+      <div class="note">
+        Note: An integer representing the rotation (0, 90, 180, or 270) in
+        degrees clockwise. Defaults to 0. Arbitrary numbers (including
+        negatives) are rounded to the next quarter turn.
+      </div>
+
+      <label for="flip">
+        <input type="checkbox" id="flip" style="width: auto" />
+        Horizontal Flip
+      </label>
+
+      <label for="displayWidth">Display Width:</label>
+      <input type="number" id="displayWidth" value="320" />
+
+      <label for="displayHeight">Display Height:</label>
+      <input type="number" id="displayHeight" value="240" />
+
+      <button id="drawButton">Create and Draw VideoFrame</button>
+    </div>
+
+    <div class="panel">
+      <h2>3. Result</h2>
+      <canvas id="canvas" width="320" height="240"></canvas>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const sourceRadios = document.querySelectorAll('input[name="source"]');
+        const imageUrlInput = document.getElementById("imageUrl");
+        const rotationInput = document.getElementById("rotation");
+        const flipCheckbox = document.getElementById("flip");
+        const displayWidthInput = document.getElementById("displayWidth");
+        const displayHeightInput = document.getElementById("displayHeight");
+        const drawButton = document.getElementById("drawButton");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const webcamVideo = document.getElementById("webcam");
+        const webcamContainer = document.getElementById("webcam-container");
+        let imageCapture;
+
+        // --- Source Selection Logic ---
+        sourceRadios.forEach((radio) => {
+          radio.addEventListener("change", handleSourceChange);
+        });
+
+        function handleSourceChange() {
+          const selectedSource = document.querySelector(
+            'input[name="source"]:checked'
+          ).value;
+          if (selectedSource === "webcam") {
+            webcamContainer.style.display = "block";
+            initWebcam();
+          } else {
+            webcamContainer.style.display = "none";
+            stopWebcam();
+          }
+        }
+
+        async function initWebcam() {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+            });
+            webcamVideo.srcObject = stream;
+            const track = stream.getVideoTracks()[0];
+            imageCapture = new ImageCapture(track);
+          } catch (err) {
+            alert("Could not access webcam: " + err.message);
+          }
+        }
+
+        function stopWebcam() {
+          if (webcamVideo.srcObject) {
+            webcamVideo.srcObject.getTracks().forEach((track) => track.stop());
+            webcamVideo.srcObject = null;
+          }
+        }
+
+        // --- VideoFrame Creation Logic ---
+        async function getFrameSource() {
+          const selectedSource = document.querySelector(
+            'input[name="source"]:checked'
+          ).value;
+
+          switch (selectedSource) {
+            case "webcam":
+              if (!imageCapture) {
+                alert("Webcam not initialized.");
+                return null;
+              }
+              return await imageCapture.grabFrame();
+            case "url":
+              try {
+                const response = await fetch(imageUrlInput.value, {
+                  mode: "cors",
+                });
+                const blob = await response.blob();
+                return await createImageBitmap(blob);
+              } catch (err) {
+                alert("Failed to load image from URL: " + err.message);
+                return null;
+              }
+            case "default":
+            default:
+              const offscreenCanvas = new OffscreenCanvas(320, 240);
+              const offscreenCtx = offscreenCanvas.getContext("2d");
+              const w = 160;
+              const h = 120;
+              offscreenCtx.fillStyle = "red";
+              offscreenCtx.fillRect(0, 0, w, h);
+              offscreenCtx.fillStyle = "green";
+              offscreenCtx.fillRect(w, 0, w, h);
+              offscreenCtx.fillStyle = "blue";
+              offscreenCtx.fillRect(0, h, w, h);
+              offscreenCtx.fillStyle = "yellow";
+              offscreenCtx.fillRect(w, h, w, h);
+              return offscreenCanvas;
+          }
+        }
+
+        // --- Main Drawing Logic ---
+        drawButton.addEventListener("click", async () => {
+          const frameSource = await getFrameSource();
+          if (!frameSource) return;
+
+          const frameOptions = {
+            rotation: parseFloat(rotationInput.value),
+            flip: flipCheckbox.checked,
+            displayWidth: parseInt(displayWidthInput.value, 10),
+            displayHeight: parseInt(displayHeightInput.value, 10),
+            timestamp: 0,
+          };
+
+          let videoFrame;
+          try {
+            videoFrame = new VideoFrame(frameSource, frameOptions);
+          } catch (err) {
+            alert(
+              "Error creating VideoFrame: " +
+                err.message +
+                "\n\nNote: The 'rotation' property must be 0, 90, 180, or 270."
+            );
+            return;
+          }
+
+          // Adjust canvas size to match the frame's display dimensions
+          canvas.width = videoFrame.displayWidth;
+          canvas.height = videoFrame.displayHeight;
+
+          // Clear canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.save();
+
+          // The browser automatically handles the native `rotation` property when drawing.
+          ctx.drawImage(
+            videoFrame,
+            0,
+            0,
+            videoFrame.displayWidth,
+            videoFrame.displayHeight
+          );
+
+          ctx.restore();
+
+          console.log("Drew VideoFrame with options:", frameOptions);
+
+          // Close the frame to free up resources
+          videoFrame.close();
+        });
+      });
+    </script>
+  </body>
+</html>
