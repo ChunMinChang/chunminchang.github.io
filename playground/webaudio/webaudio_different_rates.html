@@ -34,8 +34,12 @@
           );
         }
 
+        console.assert(
+          !detectorNode.port.onmessage,
+          "Expected no existing onmessage handler on the detector node."
+        );
+
         const timeoutId = setTimeout(() => {
-          detectorNode.port.onmessage = originalOnMessage;
           reject(
             new Error(
               `Timed out waiting for message from detector at rate ${detectorNode.context.sampleRate}.`
