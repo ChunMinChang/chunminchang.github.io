@@ -1,0 +1,240 @@
+<html>
+  <head>
+    <title>WebAudio Different Sample Rates Test</title>
+  </head>
+  <script>
+    function createSineWaveInput(rate, frequency = 440) {
+      const ctx = new AudioContext({ sampleRate: rate });
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = frequency;
+      const dest = new MediaStreamAudioDestinationNode(ctx);
+      osc.connect(dest);
+      osc.connections = [dest];
+      return { ctx, osc, dest };
+    }
+
+    function createAudioSource(rate, stream, cloneTracks) {
+      const ctx = new AudioContext({ sampleRate: rate });
+      const sourceStream = new MediaStream(
+        cloneTracks
+          ? stream.getTracks().map((track) => track.clone())
+          : stream.getTracks()
+      );
+      const sourceNode = ctx.createMediaStreamSource(sourceStream);
+      sourceNode.connect(ctx.destination);
+      return sourceNode;
+    }
+
+    async function waitForMessage(detectorNode, timeoutMs = 5000) {
+      return new Promise((resolve, reject) => {
+        // If the node's context is closed, resolve immediately.
+        if (detectorNode.context.state === "closed") {
+          return reject(
+            new Error(
+              `Detector at rate ${detectorNode.context.sampleRate} is closed.`
+            )
+          );
+        }
+
+        console.assert(
+          !detectorNode.port.onmessage,
+          "Expected no existing onmessage handler on the detector node."
+        );
+
+        const timeoutId = setTimeout(() => {
+          reject(
+            new Error(
+              `Timed out waiting for message from detector at rate ${detectorNode.context.sampleRate}.`
+            )
+          );
+        }, timeoutMs);
+
+        detectorNode.port.onmessage = (event) => {
+          clearTimeout(timeoutId);
+          // Clear the handler after receiving a message.
+          detectorNode.port.onmessage = null;
+          resolve(event.data);
+        };
+      });
+    }
+
+    function assert(condition, message) {
+      if (!condition) {
+        console.error(message || "Assertion failed");
+      }
+    }
+
+    function parseInputNumber(id, defaultValue) {
+      const input = document.getElementById(id);
+      const value = parseInt(input.value, 10);
+      return isNaN(value) ? defaultValue : value;
+    }
+
+    const TEST_STATE = { Running: true, Stopped: false };
+    function setUpControls(state) {
+      const controls = document.getElementById("controls");
+      for (const child of controls.children) {
+        if (child.id === "run") {
+          child.disabled = state === TEST_STATE.Running;
+        } else {
+          child.disabled = state === TEST_STATE.Stopped;
+        }
+      }
+    }
+
+    async function run() {
+      const sourceRate = parseInputNumber("sourceRate", 44100);
+      const targetRate = parseInputNumber("targetRate", 32000);
+      const toneFrequency = parseInputNumber("toneFrequency", 440);
+      console.log(
+        `Source Rate: ${sourceRate}, Target Rate: ${targetRate}, Tone Frequency: ${toneFrequency}`
+      );
+      const cloneTracks = document.getElementById("cloneTracks").checked;
+      const input = createSineWaveInput(sourceRate, toneFrequency);
+      const output = createAudioSource(
+        targetRate,
+        input.dest.stream,
+        cloneTracks
+      );
+      input.osc.start();
+
+      // Setup actions for control buttons
+
+      const toggleSourceButton = document.getElementById("toggleSource");
+      toggleSourceButton.onclick = () => {
+        input.dest.stream.getTracks().forEach((track) => {
+          track.enabled = !track.enabled;
+        });
+        toggleSourceButton.textContent =
+          (input.dest.stream.getTracks().some((track) => track.enabled)
+            ? "disable"
+            : "enable") + " source stream";
+      };
+
+      const stopSourceButton = document.getElementById("stopSource");
+      stopSourceButton.onclick = () => {
+        input.dest.stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        stopSourceButton.disabled = true;
+      };
+
+      const toggleOscillatorConnectionButton = document.getElementById(
+        "toggleOscillatorConnection"
+      );
+      toggleOscillatorConnectionButton.onclick = () => {
+        if (input.osc.connections.length > 0) {
+          input.osc.disconnect();
+          input.osc.connections = [];
+          toggleOscillatorConnectionButton.textContent =
+            "connect oscillator stream";
+        } else {
+          input.osc.connect(input.dest);
+          input.osc.connections.push(input.dest);
+          toggleOscillatorConnectionButton.textContent =
+            "disconnect oscillator stream";
+        }
+        console.log("Oscillator numberOfOutputs:", input.osc.numberOfOutputs);
+      };
+
+      const stopOscillatorButton = document.getElementById("stopOscillator");
+      stopOscillatorButton.onclick = () => {
+        input.osc.stop();
+        stopOscillatorButton.disabled = true;
+      };
+
+      const toggleSourceContextButton = document.getElementById(
+        "toggleSourceContext"
+      );
+      toggleSourceContextButton.onclick = async () => {
+        if (input.ctx.state === "running") {
+          await input.ctx.suspend();
+          toggleSourceContextButton.textContent = "resume source context";
+        } else {
+          await input.ctx.resume();
+          toggleSourceContextButton.textContent = "suspend source context";
+        }
+      };
+
+      const closeSourceContextButton =
+        document.getElementById("closeSourceContext");
+      closeSourceContextButton.onclick = async () => {
+        await input.ctx.close();
+        closeSourceContextButton.disabled = true;
+        toggleSourceContextButton.disabled = true;
+      };
+
+      const toggleTargetContextButton = document.getElementById(
+        "toggleTargetContext"
+      );
+      toggleTargetContextButton.onclick = async () => {
+        if (output.context.state === "running") {
+          await output.context.suspend();
+          toggleTargetContextButton.textContent = "resume target context";
+        } else {
+          await output.context.resume();
+          toggleTargetContextButton.textContent = "suspend target context";
+        }
+      };
+
+      const closeTargetContextButton =
+        document.getElementById("closeTargetContext");
+      closeTargetContextButton.onclick = async () => {
+        await output.context.close();
+        closeTargetContextButton.disabled = true;
+        toggleTargetContextButton.disabled = true;
+      };
+    }
+
+    window.addEventListener("DOMContentLoaded", (event) => {
+      setUpControls(TEST_STATE.Stopped);
+      const runButton = document.getElementById("run");
+      runButton.addEventListener("click", () => {
+        setUpControls(TEST_STATE.Running);
+        run();
+      });
+    });
+  </script>
+  <body>
+    <p>
+      Testing Source(oscillator -> MediaStreamAudioDestinationNode) ->
+      Target(MediaStreamAudioSourceNode) with different sample rates.
+    </p>
+    <input type="number" id="sourceRate" value="44100" />
+    <label for="sourceRate">Source Rate (Hz)</label>
+    <br />
+    <input type="number" id="targetRate" value="32000" />
+    <label for="targetRate">Target Rate (Hz)</label>
+    <br />
+    <input type="number" id="toneFrequency" value="440" />
+    <label for="toneFrequency">Tone Frequency (Hz)</label>
+    <br />
+    <input type="checkbox" id="cloneTracks" />
+    <label for="cloneTracks"
+      >Clone MediaStreamTracks when creating source</label
+    >
+    <br />
+    <div id="controls">
+      <button id="run">Start</button>
+      <br />
+      <button id="toggleSource" disabled>disable source stream</button>
+      <br />
+      <button id="stopSource" disabled>stop source stream</button>
+      <br />
+      <button id="toggleOscillatorConnection" disabled>
+        disconnect oscillator stream
+      </button>
+      <br />
+      <button id="stopOscillator" disabled>stop oscillator stream</button>
+      <br />
+      <button id="toggleSourceContext" disabled>suspend source context</button>
+      <br />
+      <button id="closeSourceContext" disabled>close source context</button>
+      <br />
+      <button id="toggleTargetContext" disabled>suspend target context</button>
+      <br />
+      <button id="closeTargetContext" disabled>close target context</button>
+    </div>
+  </body>
+</html>
