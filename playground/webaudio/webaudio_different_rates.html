@@ -20,6 +20,7 @@
       const detectorNode = new AudioWorkletNode(ctx, "silence-detector");
       sourceNode.connect(detectorNode);
       detectorNode.connect(ctx.destination);
+      sourceNode.connect(ctx.destination);
       return { ctx, sourceNode, detectorNode };
     }
 
@@ -101,12 +102,6 @@
 
       const input = createSineWaveInput(srcRate, tone);
 
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
-
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
       for (const rate of dstRates) {
@@ -171,9 +166,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -195,12 +187,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -260,9 +246,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -284,12 +267,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -350,9 +327,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -376,12 +350,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -454,9 +422,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -480,12 +445,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -558,9 +517,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -584,12 +540,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -665,9 +615,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -689,12 +636,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -745,9 +686,6 @@
       }
       input.ctx.close();
 
-      audioEl.pause();
-      document.body.removeChild(audioEl);
-
       console.log("Test completed.");
     }
 
@@ -769,12 +707,6 @@
       );
 
       const input = createSineWaveInput(srcRate, tone);
-
-      // Play the MediaStream in an audio element to indicate that the stream is active.
-      const audioEl = document.createElement("audio");
-      audioEl.srcObject = input.dest.stream;
-      document.body.appendChild(audioEl);
-      await audioEl.play();
 
       // Create multiple MediaStreamAudioSourceNodes with different AudioContext sample rates.
       const pairs = [];
@@ -823,9 +755,6 @@
       for (const { ctx } of pairs) {
         await ctx.close();
       }
-
-      audioEl.pause();
-      document.body.removeChild(audioEl);
 
       console.log("Test completed.");
     }
