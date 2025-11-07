@@ -24,7 +24,7 @@
       return { ctx, sourceNode, detectorNode };
     }
 
-    async function waitForMessage(detectorNode, timeoutMs = 5000) {
+    async function waitForMessage(detectorNode, type, timeoutMs = 5000) {
       return new Promise((resolve, reject) => {
         // If the node's context is closed, resolve immediately.
         if (detectorNode.context.state === "closed") {
@@ -48,11 +48,16 @@
           );
         }, timeoutMs);
 
+        let appendix = [];
         detectorNode.port.onmessage = (event) => {
+          if (!event.data.type || event.data.type != type) {
+            appendix.push(event.data);
+            return;
+          }
           clearTimeout(timeoutId);
           // Clear the handler after receiving a message.
           detectorNode.port.onmessage = null;
-          resolve(event.data);
+          resolve({ data: event.data, appendix });
         };
       });
     }
@@ -120,27 +125,23 @@
       for (const { detectorNode } of pairs) {
         detectorNode.isSilent = true; // The detector starts as silent.
       }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Ensure closing one sourceNode's context stops it without affecting others.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.port.onmessage = (event) => {
-          detectorNode.isSilent = event.data.isSilent;
-        };
-      }
-
+      const pairToClose = pairs.shift();
       console.log("Closing the context for the first detector...");
-      const ctxToClose = pairs[0].ctx;
+      const ctxToClose = pairToClose.ctx;
       await ctxToClose.close();
 
       console.assert(
@@ -148,20 +149,28 @@
         "Context should be closed."
       );
 
-      await delay(
-        calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
-      );
+      await delay(calculateRequiredDelay(pairs.map((p) => p.detectorNode)));
 
-      // Verify the other detectors are still active.
-      for (const { detectorNode } of pairs.slice(1)) {
-        assert(
-          !detectorNode.isSilent,
-          `Detector in context with rate ${detectorNode.context.sampleRate} should not be silent after another context was closed.`
-        );
+      for (const { detectorNode } of pairs) {
+        detectorNode.port.postMessage({ command: "queryState" });
       }
+      msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateQueryResponse")
+      );
+      msgs = await Promise.all(msgPromises);
+      msgs.forEach((msg, i) => {
+        assert(
+          !msg.data.isSilent,
+          `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after its context is closed.`
+        );
+        assert(
+          !msg.appendix.length,
+          `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not have any appendix messages.`
+        );
+      });
 
       // Clean up remaining contexts.
-      for (const { ctx } of pairs.slice(1)) {
+      for (const { ctx } of pairs) {
         await ctx.close();
       }
       input.ctx.close();
@@ -203,42 +212,46 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that suspending one context silences its detector without impacting others.
-
-      for (const { detectorNode } of pairs) {
-        detectorNode.port.onmessage = (event) => {
-          detectorNode.isSilent = event.data.isSilent;
-        };
-      }
+      const pairsToCheck = pairs.slice(1);
+      const pairToSuspend = pairs[0];
 
       console.log("Suspending the first context...");
-      await pairs[0].ctx.suspend();
+      await pairToSuspend.ctx.suspend();
 
       await delay(
         calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
       );
 
-      // Verify the other active detectors are still running.
-      for (const { detectorNode } of pairs.slice(1)) {
-        assert(
-          !detectorNode.isSilent,
-          `Detector in context with rate ${detectorNode.context.sampleRate} should not be silent after another context was suspended.`
-        );
+      for (const { detectorNode } of pairsToCheck) {
+        detectorNode.port.postMessage({ command: "queryState" });
       }
+      msgPromises = pairsToCheck.map((p) =>
+        waitForMessage(p.detectorNode, "stateQueryResponse")
+      );
+      msgs = await Promise.all(msgPromises);
+      msgs.forEach((msg, i) => {
+        assert(
+          !msg.data.isSilent,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not be silent after its context is suspended.`
+        );
+        assert(
+          !msg.appendix.length,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not have any appendix messages.`
+        );
+      });
 
       // Clean up AudioContexts.
       for (const { ctx } of pairs) {
@@ -283,43 +296,48 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that disconnecting one source node silences its detector without impacting others.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.port.onmessage = (event) => {
-          detectorNode.isSilent = event.data.isSilent;
-        };
-      }
+      const pairToDisconnect = pairs[0];
+      const pairsToCheck = pairs.slice(1);
 
       console.log("Disconnecting the source node for the first detector...");
-      const sourceNodeToDisconnect = pairs[0].sourceNode;
+      const sourceNodeToDisconnect = pairToDisconnect.sourceNode;
       sourceNodeToDisconnect.disconnect();
 
       await delay(
-        calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
+        calculateRequiredDelay(pairsToCheck.map((p) => p.detectorNode))
       );
 
-      // Verify the other active detectors are still running.
-      for (const { detectorNode } of pairs.slice(1)) {
-        assert(
-          !detectorNode.isSilent,
-          `Detector in context with rate ${detectorNode.context.sampleRate} should not be silent after another source was disconnected.`
-        );
+      for (const { detectorNode } of pairsToCheck) {
+        detectorNode.port.postMessage({ command: "queryState" });
       }
+      msgPromises = pairsToCheck.map((p) =>
+        waitForMessage(p.detectorNode, "stateQueryResponse")
+      );
+      msgs = await Promise.all(msgPromises);
+      msgs.forEach((msg, i) => {
+        assert(
+          !msg.data.isSilent,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not be silent after its context is suspended.`
+        );
+        assert(
+          !msg.appendix.length,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not have any appendix messages.`
+        );
+      });
 
       // Clean up AudioContexts.
       for (const { ctx } of pairs) {
@@ -366,55 +384,59 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that stopping the tracks of one MediaStream silences only its detector or all of them.
 
-      for (let i = 1; i < pairs.length; i++) {
-        const { detectorNode } = pairs[i];
-        detectorNode.port.onmessage = (event) => {
-          detectorNode.isSilent = event.data.isSilent;
-        };
-      }
-      let msgPromise = waitForMessage(pairs[0].detectorNode);
+      const pairToStop = pairs[0];
+      const pairsToCheck = pairs.slice(1);
+
+      let msgPromise = waitForMessage(pairToStop.detectorNode, "stateChanged");
 
       console.log("Stopping the tracks for the first detector's stream...");
-      const streamToStop = pairs[0].sourceNode.mediaStream;
+      const streamToStop = pairToStop.sourceNode.mediaStream;
       streamToStop.getTracks().forEach((track) => track.stop());
 
       let msg = await msgPromise;
       assert(
-        msg.isSilent,
-        `Detector in context with rate ${pairs[0].detectorNode.context.sampleRate} should be silent after its stream tracks were stopped.`
+        msg.data.isSilent,
+        `Detector in context with rate ${pairToStop.detectorNode.context.sampleRate} should be silent after its stream tracks were stopped.`
       );
-      pairs[0].detectorNode.isSilent = msg.isSilent;
 
       await delay(
-        calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
+        calculateRequiredDelay(pairsToCheck.map((p) => p.detectorNode))
       );
 
       // If MediaStreamTracks are shared across contexts, all detectors should be silent.
       // Otherwise, only the one with the stopped stream should be silent.
-      for (let i = 1; i < pairs.length; i++) {
-        const { detectorNode } = pairs[i];
+      for (const { detectorNode } of pairsToCheck) {
+        detectorNode.port.postMessage({ command: "queryState" });
+      }
+      msgPromises = pairsToCheck.map((p) =>
+        waitForMessage(p.detectorNode, "stateQueryResponse")
+      );
+      msgs = await Promise.all(msgPromises);
+      msgs.forEach((msg, i) => {
         const expectedSilent = !cloneTracks;
         assert(
-          detectorNode.isSilent === expectedSilent,
-          `Detector in context with rate ${detectorNode.context.sampleRate} expected isSilent=${expectedSilent}, but got isSilent=${detectorNode.isSilent}.`
+          msg.data.isSilent === expectedSilent,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} expected isSilent=${expectedSilent}, but got isSilent=${msg.data.isSilent}.`
         );
-      }
+        assert(
+          !msg.appendix.length,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not have any appendix messages.`
+        );
+      });
 
       // Clean up AudioContexts.
       for (const { ctx } of pairs) {
@@ -461,40 +483,37 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that disabling the tracks of one MediaStream silences only its detector or all of them.
 
-      for (let i = 1; i < pairs.length; i++) {
-        const { detectorNode } = pairs[i];
-        detectorNode.port.onmessage = (event) => {
-          detectorNode.isSilent = event.data.isSilent;
-        };
-      }
-      let msgPromise = waitForMessage(pairs[0].detectorNode);
+      const pairToDisable = pairs[0];
+      const pairsToCheck = pairs.slice(1);
+
+      let msgPromise = waitForMessage(
+        pairToDisable.detectorNode,
+        "stateChanged"
+      );
 
       console.log("Disabling the tracks for the first detector's stream...");
-      const streamToStop = pairs[0].sourceNode.mediaStream;
+      const streamToStop = pairToDisable.sourceNode.mediaStream;
       streamToStop.getTracks().forEach((track) => (track.enabled = false));
 
       let msg = await msgPromise;
       assert(
-        msg.isSilent,
-        `Detector in context with rate ${pairs[0].detectorNode.context.sampleRate} should be silent after its stream tracks were disabled.`
+        msg.data.isSilent,
+        `Detector in context with rate ${pairToDisable.detectorNode.context.sampleRate} should be silent after its stream tracks were disabled.`
       );
-      pairs[0].detectorNode.isSilent = msg.isSilent;
 
       await delay(
         calculateRequiredDelay(pairs.slice(1).map((p) => p.detectorNode))
@@ -502,14 +521,24 @@
 
       // If MediaStreamTracks are shared across contexts, all detectors should be silent.
       // Otherwise, only the one with the stopped stream should be silent.
-      for (let i = 1; i < pairs.length; i++) {
-        const { detectorNode } = pairs[i];
+      for (const { detectorNode } of pairsToCheck) {
+        detectorNode.port.postMessage({ command: "queryState" });
+      }
+      msgPromises = pairsToCheck.map((p) =>
+        waitForMessage(p.detectorNode, "stateQueryResponse")
+      );
+      msgs = await Promise.all(msgPromises);
+      msgs.forEach((msg, i) => {
         const expectedSilent = !cloneTracks;
         assert(
-          detectorNode.isSilent === expectedSilent,
-          `Detector in context with rate ${detectorNode.context.sampleRate} expected isSilent=${expectedSilent}, but got isSilent=${detectorNode.isSilent}.`
+          msg.data.isSilent === expectedSilent,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} expected isSilent=${expectedSilent}, but got isSilent=${msg.data.isSilent}.`
         );
-      }
+        assert(
+          !msg.appendix.length,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not have any appendix messages.`
+        );
+      });
 
       // Clean up AudioContexts.
       for (const { ctx } of pairs) {
@@ -556,18 +585,16 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that stopping the original input stream silences nothing or all detectors.
@@ -581,31 +608,37 @@
       // If MediaStreamTracks are shared across contexts, all detectors should become silent.
       // Otherwise, all detectors should still be active since they use cloned tracks.
       if (cloneTracks) {
-        for (const { detectorNode } of pairs) {
-          detectorNode.port.onmessage = (event) => {
-            detectorNode.isSilent = event.data.isSilent;
-          };
-        }
-
         stopInputStream();
 
         await delay(calculateRequiredDelay(pairs.map((p) => p.detectorNode)));
         for (const { detectorNode } of pairs) {
-          assert(
-            !detectorNode.isSilent,
-            `Detector in context with rate ${detectorNode.context.sampleRate} should not be silent after input stream was stopped.`
-          );
+          detectorNode.port.postMessage({ command: "queryState" });
         }
+        msgPromises = pairs.map((p) =>
+          waitForMessage(p.detectorNode, "stateQueryResponse")
+        );
+        msgs = await Promise.all(msgPromises);
+        msgs.forEach((msg, i) => {
+          assert(
+            !msg.data.isSilent,
+            `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after input stream was stopped.`
+          );
+          assert(
+            !msg.appendix.length,
+            `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not have any appendix messages.`
+          );
+        });
       } else {
-        msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+        msgPromises = pairs.map((p) =>
+          waitForMessage(p.detectorNode, "stateChanged")
+        );
         stopInputStream();
         msgs = await Promise.all(msgPromises);
         msgs.forEach((msg, i) => {
           assert(
-            msg.isSilent,
+            msg.data.isSilent,
             `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should be silent after input stream was stopped.`
           );
-          pairs[i].detectorNode.isSilent = msg.isSilent;
         });
       }
 
@@ -652,32 +685,31 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that suspending the original input context silences all detectors.
 
-      msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       console.log("Suspending the original input context...");
       await input.ctx.suspend();
       msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          msg.isSilent,
+          msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should be silent after input context was suspended.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // Clean up AudioContexts.
@@ -723,32 +755,31 @@
 
       // 1. Make sure all detectors are not silent after starting the oscillator.
 
-      for (const { detectorNode } of pairs) {
-        detectorNode.isSilent = true; // The detector starts as silent.
-      }
-      let msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      let msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       input.osc.start();
       let msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          !msg.isSilent,
+          !msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should not be silent after oscillator starts.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // 2. Verify that closing the original input context silences all detectors.
 
-      msgPromises = pairs.map((p) => waitForMessage(p.detectorNode));
+      msgPromises = pairs.map((p) =>
+        waitForMessage(p.detectorNode, "stateChanged")
+      );
       console.log("Closing the original input context...");
       await input.ctx.close();
       msgs = await Promise.all(msgPromises);
       msgs.forEach((msg, i) => {
         assert(
-          msg.isSilent,
+          msg.data.isSilent,
           `Detector in context with rate ${pairs[i].detectorNode.context.sampleRate} should be silent after input context was closed.`
         );
-        pairs[i].detectorNode.isSilent = msg.isSilent;
       });
 
       // Clean up AudioContexts.
