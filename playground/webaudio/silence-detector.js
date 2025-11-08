@@ -1,14 +1,11 @@
-/**
- * A simple AudioWorkletProcessor that detects silence.
- * It checks if the input buffer contains only zero values.
- * When the state (silent/not-silent) changes, it posts a message to the main thread.
- */
+// AudioWorkletProcessor that detects silence and notifies the main thread on state change.
 class SilenceDetector extends AudioWorkletProcessor {
   constructor() {
     super();
-    // Assume silence until the first non-zero buffer is processed.
+    // Assume silence and no input until the first buffer is processed.
     this.isSilent = true;
-    this.pendingStateCheck = true;
+    this.hasInput = false;
+    this.pendingStateCheck = false;
     this.port.onmessage = (event) => {
       if (event.data.command === "queryState") {
         this.pendingStateCheck = true;
@@ -17,32 +14,45 @@ class SilenceDetector extends AudioWorkletProcessor {
   }
 
   process(inputs, outputs, parameters) {
-    // Use the first input and first channel for detection.
     const input = inputs[0];
-    if (!input || input.length === 0) {
-      // No input, so we can't process. Keep processor alive.
-      return true;
-    }
+    const currentHasInput = input && input.length > 0;
 
-    const channel = input[0];
+    // Detect silence state (no input counts as silence)
     let isCurrentlySilent = true;
-    for (let i = 0; i < channel.length; i++) {
-      // If we find any non-zero sample, the buffer is not silent.
-      if (channel[i] !== 0) {
-        isCurrentlySilent = false;
-        break;
+    if (currentHasInput) {
+      const channel = input[0];
+      for (let i = 0; i < channel.length; i++) {
+        if (channel[i] !== 0) {
+          isCurrentlySilent = false;
+          break;
+        }
       }
     }
 
-    // If the silence state has changed, notify the main thread.
-    if (this.isSilent !== isCurrentlySilent) {
-      this.isSilent = isCurrentlySilent;
-      this.port.postMessage({ type: "stateChanged", isSilent: this.isSilent });
+    // Check if state changed
+    const hasInputChanged = this.hasInput !== currentHasInput;
+    const isSilentChanged = this.isSilent !== isCurrentlySilent;
+
+    // Update state
+    this.hasInput = currentHasInput;
+    this.isSilent = isCurrentlySilent;
+
+    // Send notifications
+    if (hasInputChanged || isSilentChanged) {
+      this.port.postMessage({
+        type: "stateChanged",
+        isSilent: this.isSilent,
+        hasInput: this.hasInput,
+        hasInputChanged: hasInputChanged,
+        isSilentChanged: isSilentChanged,
+      });
     }
+
     if (this.pendingStateCheck) {
       this.port.postMessage({
         type: "stateQueryResponse",
         isSilent: this.isSilent,
+        hasInput: this.hasInput,
       });
       this.pendingStateCheck = false;
     }
