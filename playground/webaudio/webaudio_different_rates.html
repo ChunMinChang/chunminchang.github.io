@@ -13,7 +13,9 @@
 
     function assert_true(value, message) {
       if (!value) {
-        throw new Error(`Assertion failed: ${message}. Expected true, got ${value}.`);
+        throw new Error(
+          `Assertion failed: ${message}. Expected true, got ${value}.`
+        );
       }
     }
 
@@ -89,7 +91,11 @@
 
       // Make sure all detectors are not silent after starting the oscillator.
       const msgPromises = pairs.map((p) =>
-        waitForMessage(p.detectorNode, "stateChanged", (data) => !data.isSilent)
+        waitForMessage(
+          p.detectorNode,
+          "stateChanged",
+          (data) => data.isSilentChanged
+        )
       );
       input.osc.start();
       const msgs = await Promise.all(msgPromises);
@@ -362,6 +368,7 @@
       const pairs = await createAndStartTestPairs(input, dstRates, cloneTracks);
 
       // Verify disabling the tracks of one MediaStream silences only its detector or all of them.
+
       const pairToDisable = pairs[0];
       const pairsToCheck = pairs.slice(1);
 
@@ -408,6 +415,54 @@
           );
         });
       }
+
+      // Clean up AudioContexts.
+
+      for (const { ctx } of pairs) {
+        await ctx.close();
+      }
+      input.ctx.close();
+    }
+
+    async function testRemovingTracksInOneMediaStream(
+      tone,
+      srcRate,
+      dstRates,
+      cloneTracks
+    ) {
+      assert_false(
+        dstRates.includes(srcRate),
+        "dstRates should not include srcRate."
+      );
+
+      const input = createSineWaveInput(srcRate, tone);
+      const pairs = await createAndStartTestPairs(input, dstRates, cloneTracks);
+
+      // Verify removing tracks from one MediaStream silences only its detector.
+
+      const pairToModify = pairs[0];
+      const pairsToCheck = pairs.slice(1);
+
+      const tracks = pairToModify.sourceNode.mediaStream.getTracks();
+      tracks.forEach((track) => {
+        pairToModify.sourceNode.mediaStream.removeTrack(track);
+      });
+
+      await delay(
+        calculateRequiredDelay(pairsToCheck.map((p) => p.detectorNode))
+      );
+      const msgs = await queryDetectorStates(pairsToCheck);
+      msgs.forEach((msg, i) => {
+        assert_false(
+          msg.data.isSilent,
+          `Detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate} should not be silent after removing tracks from the first stream.`
+        );
+        assert_equals(
+          msg.appendix.length,
+          0,
+          `Expected no additional messages for detector in context with rate ${pairsToCheck[i].detectorNode.context.sampleRate}.`
+        );
+      });
 
       // Clean up AudioContexts.
 
@@ -552,6 +607,8 @@
         A4: 440.0,
         B4: 493.88,
         C5: 523.25,
+        D5: 587.33,
+        E5: 659.25,
       };
 
       await testClosingOneContextStopsOnlyIt(
@@ -584,19 +641,37 @@
         dstRates,
         cloneTracks
       );
-      await testStoppingInputStream(notes.A4, srcRate, dstRates, cloneTracks);
-      await testSuspendingInputContextSilencesAll(
-        notes.B4,
+      await testRemovingTracksInOneMediaStream(
+        notes.A4,
         srcRate,
         dstRates,
         cloneTracks
       );
-      await testClosingInputContextSilencesAll(
+      await testStoppingInputStream(notes.B4, srcRate, dstRates, cloneTracks);
+      await testSuspendingInputContextSilencesAll(
         notes.C5,
         srcRate,
         dstRates,
         cloneTracks
       );
+      await testClosingInputContextSilencesAll(
+        notes.D5,
+        srcRate,
+        dstRates,
+        cloneTracks
+      );
+
+      // Tests for destination contexts have identical sample rates
+      for (let i = 0; i < dstRates.length; i++) {
+        const rates = [dstRates[i], dstRates[i]];
+        const tone = notes.E5 * Math.pow(2, i / 12);
+        await testRemovingTracksInOneMediaStream(
+          tone,
+          srcRate,
+          rates,
+          cloneTracks
+        );
+      }
     }
 
     async function run() {
