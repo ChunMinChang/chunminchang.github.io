@@ -14,6 +14,30 @@
       return { ctx, osc, dest };
     }
 
+    async function createMicrophoneInput(rate) {
+      // Check if sampleRate constraint is supported
+      const supportedConstraints =
+        navigator.mediaDevices.getSupportedConstraints();
+      const audioConstraints = supportedConstraints.sampleRate
+        ? { sampleRate: { ideal: rate } }
+        : true;
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: audioConstraints,
+      });
+
+      // Log the actual sample rate we got
+      const audioTrack = stream.getAudioTracks()[0];
+      const settings = audioTrack.getSettings();
+      console.log(
+        `Requested sample rate: ${rate}, Got: ${
+          settings.sampleRate || "unknown"
+        }`
+      );
+
+      return { stream };
+    }
+
     function createAudioSource(rate, stream, cloneTracks) {
       const ctx = new AudioContext({ sampleRate: rate });
       const sourceStream = new MediaStream(
@@ -71,53 +95,81 @@
       return isNaN(value) ? defaultValue : value;
     }
 
+    function toggleOscillatorSettings(show) {
+      document.getElementById("oscillator-settings").style.display = show
+        ? ""
+        : "none";
+      document.getElementById("source-context-controls").style.display = show
+        ? ""
+        : "none";
+    }
+
+    function toggleSourceContextControls(show) {
+      document.getElementById("source-context-controls").style.display = show
+        ? ""
+        : "none";
+    }
+
     const TEST_STATE = { Running: true, Stopped: false };
-    function setUpControls(state) {
-      const controls = document.getElementById("controls");
-      for (const child of controls.children) {
-        if (child.id === "run") {
-          child.disabled = state === TEST_STATE.Running;
-        } else {
-          child.disabled = state === TEST_STATE.Stopped;
+    function setUpControls(div, state) {
+      for (const child of div.children) {
+        if (child.tagName == "BUTTON") {
+          if (child.id === "run") {
+            child.disabled = state === TEST_STATE.Running;
+          } else {
+            child.disabled = state === TEST_STATE.Stopped;
+          }
+        } else if (child.tagName == "DIV") {
+          setUpControls(child, state);
         }
       }
     }
 
     async function run() {
+      const sourceType = document.getElementById("sourceType").value;
       const sourceRate = parseInputNumber("sourceRate", 44100);
       const targetRate = parseInputNumber("targetRate", 32000);
       const toneFrequency = parseInputNumber("toneFrequency", 440);
       console.log(
-        `Source Rate: ${sourceRate}, Target Rate: ${targetRate}, Tone Frequency: ${toneFrequency}`
+        `Source Type: ${sourceType}, Source Rate: ${sourceRate}, Target Rate: ${targetRate}, Tone Frequency: ${toneFrequency}`
       );
       const cloneTracks = document.getElementById("cloneTracks").checked;
-      const input = createSineWaveInput(sourceRate, toneFrequency);
-      const output = createAudioSource(
-        targetRate,
-        input.dest.stream,
-        cloneTracks
-      );
-      input.osc.start();
+
+      let inputStream;
+      let input; // This will hold the context and nodes for the source
+      if (sourceType === "microphone") {
+        input = await createMicrophoneInput(sourceRate);
+        inputStream = input.stream;
+      } else {
+        input = createSineWaveInput(sourceRate, toneFrequency);
+        inputStream = input.dest.stream;
+        input.osc.start();
+      }
+
+      toggleOscillatorSettings(sourceType === "oscillator");
+
+      const output = createAudioSource(targetRate, inputStream, cloneTracks);
 
       // Setup actions for control buttons
 
       const toggleSourceButton = document.getElementById("toggleSource");
       toggleSourceButton.onclick = () => {
-        input.dest.stream.getTracks().forEach((track) => {
+        inputStream.getTracks().forEach((track) => {
           track.enabled = !track.enabled;
         });
         toggleSourceButton.textContent =
-          (input.dest.stream.getTracks().some((track) => track.enabled)
+          (inputStream.getTracks().some((track) => track.enabled)
             ? "disable"
             : "enable") + " source stream";
       };
 
       const stopSourceButton = document.getElementById("stopSource");
       stopSourceButton.onclick = () => {
-        input.dest.stream.getTracks().forEach((track) => {
+        inputStream.getTracks().forEach((track) => {
           track.stop();
         });
         stopSourceButton.disabled = true;
+        toggleSourceButton.disabled = true;
       };
 
       const toggleOscillatorConnectionButton = document.getElementById(
@@ -142,6 +194,7 @@
       stopOscillatorButton.onclick = () => {
         input.osc.stop();
         stopOscillatorButton.disabled = true;
+        toggleOscillatorConnectionButton.disabled = true;
       };
 
       const toggleSourceContextButton = document.getElementById(
@@ -188,28 +241,47 @@
     }
 
     window.addEventListener("DOMContentLoaded", (event) => {
-      setUpControls(TEST_STATE.Stopped);
+      const controls = document.getElementById("controls");
+      setUpControls(controls, TEST_STATE.Stopped);
+
+      // Check sourceType at startup
+      const sourceType = document.getElementById("sourceType");
+      toggleOscillatorSettings(sourceType.value === "oscillator");
+
       const runButton = document.getElementById("run");
       runButton.addEventListener("click", () => {
-        setUpControls(TEST_STATE.Running);
+        setUpControls(controls, TEST_STATE.Running);
         run();
+      });
+
+      sourceType.addEventListener("change", () => {
+        toggleOscillatorSettings(sourceType.value === "oscillator");
       });
     });
   </script>
   <body>
     <p>
-      Testing Source(oscillator -> MediaStreamAudioDestinationNode) ->
-      Target(MediaStreamAudioSourceNode) with different sample rates.
+      Testing MediaStreamAudioSourceNode with different sample rates. Source can
+      be either an oscillator (via MediaStreamAudioDestinationNode) or
+      microphone (via getUserMedia).
     </p>
+    <label for="sourceType">Input Source:</label>
+    <select id="sourceType">
+      <option value="oscillator" selected>Oscillator</option>
+      <option value="microphone">Microphone</option>
+    </select>
+    <br />
     <input type="number" id="sourceRate" value="44100" />
     <label for="sourceRate">Source Rate (Hz)</label>
     <br />
     <input type="number" id="targetRate" value="32000" />
     <label for="targetRate">Target Rate (Hz)</label>
     <br />
-    <input type="number" id="toneFrequency" value="440" />
-    <label for="toneFrequency">Tone Frequency (Hz)</label>
-    <br />
+    <div id="oscillator-settings">
+      <input type="number" id="toneFrequency" value="440" />
+      <label for="toneFrequency">Tone Frequency (Hz)</label>
+      <br />
+    </div>
     <input type="checkbox" id="cloneTracks" />
     <label for="cloneTracks"
       >Clone MediaStreamTracks when creating source</label
@@ -222,19 +294,23 @@
       <br />
       <button id="stopSource" disabled>stop source stream</button>
       <br />
-      <button id="toggleOscillatorConnection" disabled>
-        disconnect oscillator stream
-      </button>
-      <br />
-      <button id="stopOscillator" disabled>stop oscillator stream</button>
-      <br />
-      <button id="toggleSourceContext" disabled>suspend source context</button>
-      <br />
-      <button id="closeSourceContext" disabled>close source context</button>
-      <br />
       <button id="toggleTargetContext" disabled>suspend target context</button>
       <br />
       <button id="closeTargetContext" disabled>close target context</button>
+      <div id="source-context-controls">
+        <button id="toggleOscillatorConnection" disabled>
+          disconnect oscillator stream
+        </button>
+        <br />
+        <button id="stopOscillator" disabled>stop oscillator stream</button>
+        <br />
+        <button id="toggleSourceContext" disabled>
+          suspend source context
+        </button>
+        <br />
+        <button id="closeSourceContext" disabled>close source context</button>
+        <br />
+      </div>
     </div>
   </body>
 </html>

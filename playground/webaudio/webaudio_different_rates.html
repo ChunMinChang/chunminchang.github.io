@@ -337,6 +337,7 @@
           pairsToCheck.map((p) => p.detectorNode),
           stopStream
         );
+        // Firefox will lose input, while Chromium-based browsers will get silence from the input.
         msgs.forEach((msg, i) => {
           assert_true(
             !msg.data.hasInput || msg.data.isSilent,
