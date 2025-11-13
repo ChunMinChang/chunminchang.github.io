@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <title>Web Audio Drop Active Stream</title>
+    <script>
+      async function runTest() {
+        const iframe = document.createElement("iframe");
+        iframe.srcdoc = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <script>
+              (async () => {
+                // Create AudioContext with 32000Hz sample rate
+                const ctx = new AudioContext({ sampleRate: 32000 });
+
+                // Get user media audio stream
+                const stream = await navigator.mediaDevices.getUserMedia({
+                  audio: true,
+                  fake: true  // Use fake device for testing
+                });
+
+                // Create MediaStreamAudioSourceNode from the stream
+                const sourceNode = ctx.createMediaStreamSource(stream);
+
+                // Connect to destination to ensure it's active
+                sourceNode.connect(ctx.destination);
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Notify parent that setup is complete
+                parent.postMessage("ready", "*");
+              })();
+            <\/script>
+          </head>
+          <body></body>
+          </html>
+        `;
+
+        document.body.appendChild(iframe);
+
+        // Wait for iframe to be ready, then close it
+        window.addEventListener("message", (event) => {
+          if (event.data === "ready") {
+            console.log(
+              "active web audio stream is set up in iframe. Starting drop test..."
+            );
+
+            // Close the iframe while MediaStream and MediaStreamAudioSourceNode are active
+            iframe.remove();
+
+            console.log("test complete.");
+          }
+        });
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        const runButton = document.getElementById("run");
+        runButton.addEventListener("click", async () => {
+          runTest();
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Web Audio Drop Active Stream Test</h1>
+    <p>
+      This test checks if the Web Audio API can handle dropping an active audio
+      stream.
+    </p>
+    <button id="run">Start test</button>
+  </body>
+</html>
