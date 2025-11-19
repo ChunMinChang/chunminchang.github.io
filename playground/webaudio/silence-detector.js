@@ -5,12 +5,6 @@ class SilenceDetector extends AudioWorkletProcessor {
     // Assume silence and no input until the first buffer is processed.
     this.isSilent = true;
     this.hasInput = false;
-    this.pendingStateCheck = false;
-    this.port.onmessage = (event) => {
-      if (event.data.command === "queryState") {
-        this.pendingStateCheck = true;
-      }
-    };
   }
 
   process(inputs, outputs, parameters) {
@@ -46,15 +40,6 @@ class SilenceDetector extends AudioWorkletProcessor {
         hasInputChanged: hasInputChanged,
         isSilentChanged: isSilentChanged,
       });
-    }
-
-    if (this.pendingStateCheck) {
-      this.port.postMessage({
-        type: "stateQueryResponse",
-        isSilent: this.isSilent,
-        hasInput: this.hasInput,
-      });
-      this.pendingStateCheck = false;
     }
 
     // Return true to keep the processor alive.

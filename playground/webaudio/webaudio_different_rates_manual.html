@@ -38,55 +38,27 @@
       return { stream };
     }
 
-    function createAudioSource(rate, stream, cloneTracks) {
+    function createAudioSource(rate, stream, cloneTracks, useTrackSource) {
       const ctx = new AudioContext({ sampleRate: rate });
-      const sourceStream = new MediaStream(
-        cloneTracks
-          ? stream.getTracks().map((track) => track.clone())
-          : stream.getTracks()
-      );
-      const sourceNode = ctx.createMediaStreamSource(sourceStream);
+      let sourceNode;
+      if (useTrackSource) {
+        // Use MediaStreamTrackAudioSourceNode
+        const track = cloneTracks
+          ? stream.getTracks()[0].clone()
+          : stream.getTracks()[0];
+        sourceNode = ctx.createMediaStreamTrackSource(track);
+      } else {
+        // Use MediaStreamAudioSourceNode
+        const sourceStream = new MediaStream(
+          cloneTracks
+            ? stream.getTracks().map((track) => track.clone())
+            : stream.getTracks()
+        );
+        sourceNode = ctx.createMediaStreamSource(sourceStream);
+      }
+
       sourceNode.connect(ctx.destination);
       return sourceNode;
-    }
-
-    async function waitForMessage(detectorNode, timeoutMs = 5000) {
-      return new Promise((resolve, reject) => {
-        // If the node's context is closed, resolve immediately.
-        if (detectorNode.context.state === "closed") {
-          return reject(
-            new Error(
-              `Detector at rate ${detectorNode.context.sampleRate} is closed.`
-            )
-          );
-        }
-
-        console.assert(
-          !detectorNode.port.onmessage,
-          "Expected no existing onmessage handler on the detector node."
-        );
-
-        const timeoutId = setTimeout(() => {
-          reject(
-            new Error(
-              `Timed out waiting for message from detector at rate ${detectorNode.context.sampleRate}.`
-            )
-          );
-        }, timeoutMs);
-
-        detectorNode.port.onmessage = (event) => {
-          clearTimeout(timeoutId);
-          // Clear the handler after receiving a message.
-          detectorNode.port.onmessage = null;
-          resolve(event.data);
-        };
-      });
-    }
-
-    function assert(condition, message) {
-      if (!condition) {
-        console.error(message || "Assertion failed");
-      }
     }
 
     function parseInputNumber(id, defaultValue) {
@@ -102,6 +74,26 @@
       document.getElementById("source-context-controls").style.display = show
         ? ""
         : "none";
+    }
+
+    function setToggleSourceButtonLabel(useTrackSource, enabled) {
+      const label = useTrackSource ? " source track" : " source stream";
+
+      const toggleSourceButton = document.getElementById("toggleSource");
+      toggleSourceButton.textContent = (enabled ? "disable" : "enable") + label;
+    }
+
+    function setStopSourceButtonLabel(useTrackSource) {
+      const label = useTrackSource ? " source track" : " source stream";
+
+      const stopSourceButton = document.getElementById("stopSource");
+      stopSourceButton.textContent = "stop" + label;
+    }
+
+    function setSourceTrackControlLabels(useTrackSource, enabled) {
+      const label = useTrackSource ? " source track" : " source stream";
+      setToggleSourceButtonLabel(useTrackSource, enabled);
+      setStopSourceButtonLabel(useTrackSource);
     }
 
     function toggleSourceContextControls(show) {
@@ -130,8 +122,10 @@
       const sourceRate = parseInputNumber("sourceRate", 44100);
       const targetRate = parseInputNumber("targetRate", 32000);
       const toneFrequency = parseInputNumber("toneFrequency", 440);
+      const audioSourceType = document.getElementById("audioSourceType").value;
+      const useTrackSource = audioSourceType === "track";
       console.log(
-        `Source Type: ${sourceType}, Source Rate: ${sourceRate}, Target Rate: ${targetRate}, Tone Frequency: ${toneFrequency}`
+        `Source Type: ${sourceType}, Audio Source Type: ${audioSourceType}, Source Rate: ${sourceRate}, Target Rate: ${targetRate}, Tone Frequency: ${toneFrequency}`
       );
       const cloneTracks = document.getElementById("cloneTracks").checked;
 
@@ -148,19 +142,25 @@
 
       toggleOscillatorSettings(sourceType === "oscillator");
 
-      const output = createAudioSource(targetRate, inputStream, cloneTracks);
+      const output = createAudioSource(
+        targetRate,
+        inputStream,
+        cloneTracks,
+        useTrackSource
+      );
 
       // Setup actions for control buttons
 
+      setSourceTrackControlLabels(useTrackSource, true);
+
       const toggleSourceButton = document.getElementById("toggleSource");
       toggleSourceButton.onclick = () => {
+        let enabled;
         inputStream.getTracks().forEach((track) => {
           track.enabled = !track.enabled;
+          enabled = track.enabled;
         });
-        toggleSourceButton.textContent =
-          (inputStream.getTracks().some((track) => track.enabled)
-            ? "disable"
-            : "enable") + " source stream";
+        setToggleSourceButtonLabel(useTrackSource, enabled);
       };
 
       const stopSourceButton = document.getElementById("stopSource");
@@ -257,6 +257,14 @@
       sourceType.addEventListener("change", () => {
         toggleOscillatorSettings(sourceType.value === "oscillator");
       });
+      toggleOscillatorSettings(sourceType.value === "oscillator");
+
+      const audioSourceType = document.getElementById("audioSourceType");
+      audioSourceType.addEventListener("change", () => {
+        const useTrackSource = audioSourceType.value === "track";
+        setSourceTrackControlLabels(useTrackSource, true);
+      });
+      setSourceTrackControlLabels(audioSourceType.value === "track", true);
     });
   </script>
   <body>
@@ -276,6 +284,12 @@
     <br />
     <input type="number" id="targetRate" value="32000" />
     <label for="targetRate">Target Rate (Hz)</label>
+    <br />
+    <label for="audioSourceType">Audio Source Node:</label>
+    <select id="audioSourceType">
+      <option value="stream" selected>MediaStreamAudioSourceNode</option>
+      <option value="track">MediaStreamTrackAudioSourceNode</option>
+    </select>
     <br />
     <div id="oscillator-settings">
       <input type="number" id="toneFrequency" value="440" />
