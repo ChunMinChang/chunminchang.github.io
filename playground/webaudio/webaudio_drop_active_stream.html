@@ -10,22 +10,80 @@
           <head>
             <script>
               (async () => {
-                // Create AudioContext with 32000Hz sample rate
                 const ctx = new AudioContext({ sampleRate: 32000 });
 
-                // Get user media audio stream
                 const stream = await navigator.mediaDevices.getUserMedia({
                   audio: true,
                   fake: true  // Use fake device for testing
                 });
 
-                // Create MediaStreamAudioSourceNode from the stream
                 const sourceNode = ctx.createMediaStreamSource(stream);
 
-                // Connect to destination to ensure it's active
                 sourceNode.connect(ctx.destination);
 
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Ensure audio is flowing using AudioWorklet silence detector
+                const silenceDetectorCode = \`
+                  class SilenceDetector extends AudioWorkletProcessor {
+                    constructor() {
+                      super();
+                      this.isSilent = true;
+                      this.hasInput = false;
+                    }
+
+                    process(inputs, outputs, parameters) {
+                      const input = inputs[0];
+                      const currentHasInput = input && input.length > 0;
+
+                      let isCurrentlySilent = true;
+                      if (currentHasInput) {
+                        const channel = input[0];
+                        for (let i = 0; i < channel.length; i++) {
+                          if (channel[i] !== 0) {
+                            isCurrentlySilent = false;
+                            break;
+                          }
+                        }
+                      }
+
+                      const hasInputChanged = this.hasInput !== currentHasInput;
+                      const isSilentChanged = this.isSilent !== isCurrentlySilent;
+
+                      this.hasInput = currentHasInput;
+                      this.isSilent = isCurrentlySilent;
+
+                      if (hasInputChanged || isSilentChanged) {
+                        this.port.postMessage({
+                          type: "stateChanged",
+                          isSilent: this.isSilent,
+                          hasInput: this.hasInput,
+                          hasInputChanged: hasInputChanged,
+                          isSilentChanged: isSilentChanged,
+                        });
+                      }
+
+                      return currentHasInput;
+                    }
+                  }
+
+                  registerProcessor("silence-detector", SilenceDetector);
+                \`;
+
+                const blob = new Blob([silenceDetectorCode], { type: "application/javascript" });
+                const moduleUrl = URL.createObjectURL(blob);
+                await ctx.audioWorklet.addModule(moduleUrl);
+                const detectorNode = new AudioWorkletNode(ctx, "silence-detector");
+
+                // Wait for the detector to confirm audio is not silent
+                const audioFlowingPromise = new Promise((resolve) => {
+                  detectorNode.port.onmessage = (event) => {
+                    if (event.data.isSilentChanged && !event.data.isSilent) {
+                      detectorNode.port.onmessage = null;
+                      resolve();
+                    }
+                  };
+                });
+                sourceNode.connect(detectorNode);
+                await audioFlowingPromise;
 
                 // Notify parent that setup is complete
                 parent.postMessage("ready", "*");
